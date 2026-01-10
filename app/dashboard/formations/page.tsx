@@ -176,7 +176,7 @@ export default function FormationsTab() {
     { id: 'stewardship', label: 'Gestion', count: formations.filter(f => f.category === 'stewardship').length },
   ];
 
-  const getStatusBadge = (status) => {
+  const getStatusBadge = (status: string) => {
     switch(status) {
       case 'in-progress':
         return { label: 'En cours', color: 'bg-blue-100 text-blue-700 border-blue-200' };
