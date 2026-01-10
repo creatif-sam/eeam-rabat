@@ -6,7 +6,7 @@ import { Users, Plus, Search, Filter, Calendar, User, MapPin, Clock, TrendingUp,
 export default function GroupesTab() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
-  const [selectedGroup, setSelectedGroup] = useState(null);
+  const [selectedGroup, setSelectedGroup] = useState<typeof groups[0] | null>(null);
 
   const groupStats = {
     totalGroups: 12,
