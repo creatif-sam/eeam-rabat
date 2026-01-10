@@ -6,7 +6,7 @@ import { GraduationCap, Plus, Search, Filter, Clock, Users, CheckCircle, Play, B
 export default function FormationsTab() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
-  const [selectedFormation, setSelectedFormation] = useState(null);
+  const [selectedFormation, setSelectedFormation] = useState<typeof formations[0] | null>(null);
 
   const formationStats = {
     totalFormations: 15,
