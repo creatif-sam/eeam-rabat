@@ -105,6 +105,10 @@ export function LoginForm({
           </form>
         </CardContent>
       </Card>
+      <p className="text-center text-sm text-gray-500">
+        Par la compassion de Christ, si tu n&apos;as pas un membre, de CP ou
+        corps pastoral, n&apos;essaie pas de tenter d&apos;entrer, Dieu est voyant.
+      </p>
     </div>
   );
 }

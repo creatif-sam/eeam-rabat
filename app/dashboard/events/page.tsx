@@ -1,114 +1,31 @@
-import React, { useState } from 'react';
+"use client";
+
+import React, { useEffect, useState } from 'react';
 import { Calendar, Plus, ChevronLeft, ChevronRight, Clock, MapPin, Users, Filter, Search, Eye, Edit, Trash2, Bell, Video, Download } from 'lucide-react';
+import { createClient } from "@/lib/supabase/client";
 
 export default function EventsTab() {
+  const [events, setEvents] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [currentDate, setCurrentDate] = useState(new Date(2026, 0, 9)); // January 9, 2026
   const [viewMode, setViewMode] = useState('month'); // 'month', 'week', 'day'
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
 
-  // Sample events data - replace with your API calls
-  const events = [
-    {
-      id: 1,
-      title: 'Culte Dominical',
-      date: new Date(2026, 0, 11),
-      startTime: '10:00',
-      endTime: '12:30',
-      location: 'Sanctuaire Principal',
-      type: 'worship',
-      attendees: 285,
-      description: 'Culte du dimanche matin avec louange et prédication',
-      isRecurring: true,
-      status: 'confirmed',
-      color: 'bg-blue-500'
-    },
-    {
-      id: 2,
-      title: 'Cours de Discipulat',
-      date: new Date(2026, 0, 14),
-      startTime: '20:00',
-      endTime: '21:30',
-      location: 'En visioconférence',
-      type: 'formation',
-      attendees: 45,
-      description: 'Formation avec Jonathan Santos',
-      isRecurring: true,
-      status: 'confirmed',
-      color: 'bg-purple-500',
-      isOnline: true
-    },
-    {
-      id: 3,
-      title: 'Réunion de Prière',
-      date: new Date(2026, 0, 15),
-      startTime: '19:00',
-      endTime: '20:30',
-      location: 'Salle de prière',
-      type: 'prayer',
-      attendees: 62,
-      description: 'Soirée de prière et intercession',
-      isRecurring: true,
-      status: 'confirmed',
-      color: 'bg-rose-500'
-    },
-    {
-      id: 4,
-      title: 'Groupe de Jeunes',
-      date: new Date(2026, 0, 17),
-      startTime: '18:30',
-      endTime: '20:00',
-      location: 'Salle jeunesse',
-      type: 'youth',
-      attendees: 38,
-      description: 'Rencontre hebdomadaire des jeunes',
-      isRecurring: true,
-      status: 'confirmed',
-      color: 'bg-green-500'
-    },
-    {
-      id: 5,
-      title: 'Baptême',
-      date: new Date(2026, 0, 18),
-      startTime: '15:00',
-      endTime: '17:00',
-      location: 'Sanctuaire Principal',
-      type: 'baptism',
-      attendees: 12,
-      description: 'Cérémonie de baptême - 6 candidats',
-      isRecurring: false,
-      status: 'confirmed',
-      color: 'bg-cyan-500'
-    },
-    {
-      id: 6,
-      title: 'Formation Leadership',
-      date: new Date(2026, 0, 20),
-      startTime: '19:00',
-      endTime: '21:00',
-      location: 'Salle de conférence',
-      type: 'formation',
-      attendees: 25,
-      description: 'Module 3: Gestion d\'équipe',
-      isRecurring: false,
-      status: 'confirmed',
-      color: 'bg-amber-500'
-    },
-    {
-      id: 7,
-      title: 'Concert de Louange',
-      date: new Date(2026, 0, 25),
-      startTime: '19:30',
-      endTime: '22:00',
-      location: 'Sanctuaire Principal',
-      type: 'special',
-      attendees: 320,
-      description: 'Concert spécial avec groupe invité',
-      isRecurring: false,
-      status: 'draft',
-      color: 'bg-indigo-500'
-    },
-  ];
+  useEffect(() => {
+    const fetchEvents = async () => {
+      const supabase = createClient();
+      const { data, error } = await supabase.from("events").select("*");
+      if (error) {
+        console.error("Error fetching events:", error);
+      } else {
+        setEvents(data);
+      }
+      setLoading(false);
+    };
+
+    fetchEvents();
+  }, []);
 
   const getDaysInMonth = (date) => {
     const year = date.getFullYear();
@@ -174,6 +91,10 @@ export default function EventsTab() {
     .filter(e => e.date >= new Date())
     .sort((a, b) => a.date - b.date)
     .slice(0, 5);
+
+  if (loading) {
+    return <p>Loading events...</p>;
+  }
 
   return (
     <div className="p-8 space-y-6 bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 min-h-screen">

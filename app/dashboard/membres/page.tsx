@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useState } from 'react';
 import { Users, UserPlus, Search, Filter, Download, Mail, Phone, MapPin, Calendar, Eye, Edit, MoreVertical, TrendingUp, UserCheck, UserX, Clock, Activity } from 'lucide-react';
 

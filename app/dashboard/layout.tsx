@@ -1,19 +1,26 @@
 "use client";
 
 import React, { useState } from 'react';
-import { Home, Droplet, HandHeart, Calendar, GraduationCap, Users, Bell, Mail, Menu, X, ChevronRight, Play, Clock, MapPin, DollarSign, UsersRound, FileText } from 'lucide-react';
+import { Home, Droplet, HandHeart, Calendar, GraduationCap, Users, Bell, Mail, Menu, X, ChevronRight, Play, Clock, MapPin, DollarSign, UsersRound, FileText,House } from 'lucide-react';
 import Link from 'next/link';
+import BaptemesTab from "./baptemes/page";
+import EventsTab from "./events/page";
+import FinancesTab from "./finances/page";
+import MembresTab from "./membres/page";
+import GroupesTab from "./groupes/page";
+import RapportsTab from "./rapports/page";
+import AnnexeJ5Tab from "./annexe-j5/page";
 
 const menuItems = [
   { label: 'Accueil', icon: Home, route: '/' },
-  { label: 'Baptêmes', icon: Droplet, route: '/baptismes' },
-  { label: 'Événements', icon: Calendar, route: '/events' },
-
-  { label: 'Finance', icon: DollarSign, route: '/finances' },
-  { label: 'Formations', icon: GraduationCap, route: '/formations' },
-  { label: 'Groupes', icon: Users, route: '/groupes' },
-  { label: 'Membres', icon: UsersRound, route: '/members' },
-  { label: 'Rapports', icon: FileText, route: '/rapports' },
+  { label: 'Baptêmes', icon: Droplet, route: '/dashboard/baptemes' },
+  { label: 'Événements', icon: Calendar, route: '/dashboard/events' },
+  { label: 'Finance', icon: DollarSign, route: '/dashboard/finances' },
+  { label: 'Formations', icon: GraduationCap, route: '/dashboard/formations' },
+  { label: 'Groupes', icon: Users, route: '/dashboard/groupes' },
+  { label: 'Membres', icon: UsersRound, route: '/dashboard/members' },
+  { label: 'Rapports', icon: FileText, route: '/dashboard/rapports' },
+  { label: 'Annexe de J5', icon: MapPin, route: '/dashboard/annexe-j5' },
 ];
 
 const featuredContent = [
@@ -61,10 +68,13 @@ export default function Dashboard() {
             const Icon = item.icon;
             const isActive = activeItem === item.label;
             return (
-              <Link
+              <a
                 key={item.label}
                 href={item.route}
-                onClick={() => setActiveItem(item.label)}
+                onClick={(e) => {
+                  e.preventDefault();
+                  setActiveItem(item.label);
+                }}
                 className={`w-full flex items-center gap-4 px-4 py-3 rounded-xl transition-all duration-200 group ${
                   isActive 
                     ? 'bg-gradient-to-r from-cyan-500 to-cyan-600 text-white shadow-lg shadow-cyan-500/30' 
@@ -78,7 +88,7 @@ export default function Dashboard() {
                     {isActive && <ChevronRight size={16} />}
                   </>
                 )}
-              </Link>
+              </a>
             );
           })}
         </nav>
@@ -148,69 +158,73 @@ export default function Dashboard() {
             </div>
           )}
 
-          {/* Welcome Section */}
-          <div className="relative overflow-hidden bg-gradient-to-br from-cyan-600 via-blue-600 to-indigo-700 rounded-3xl p-10 shadow-2xl">
-            <div className="absolute top-0 right-0 w-96 h-96 bg-white/10 rounded-full blur-3xl"></div>
-            <div className="absolute bottom-0 left-0 w-96 h-96 bg-blue-400/20 rounded-full blur-3xl"></div>
-            <div className="relative">
-              <p className="text-cyan-100 font-medium mb-2">Bon retour parmi nous ! 👋</p>
-              <h1 className="text-4xl font-bold text-white mb-4">
-                Espace Leadership
-              </h1>
-              <p className="text-cyan-50 text-lg max-w-2xl">
-                Gestion et supervision de l'église - Tableau de bord des leaders
-              </p>
-            </div>
-          </div>
-
-          {/* Featured Content */}
-          <div>
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-bold text-gray-800">Formations Leadership</h2>
-              <button className="text-cyan-600 hover:text-cyan-700 font-medium flex items-center gap-2">
-                Voir tout <ChevronRight size={16} />
-              </button>
-            </div>
-            
-            <div className="grid md:grid-cols-2 gap-6">
-              {featuredContent.map((card, i) => (
-                <div key={i} className="group relative overflow-hidden bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
-                  <div className="relative h-56 overflow-hidden">
-                    <img 
-                      src={card.image} 
-                      alt={card.title}
-                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                    />
-                    <div className={`absolute inset-0 bg-gradient-to-t ${card.color} opacity-60`}></div>
-                    <div className="absolute top-4 left-4">
-                      <span className="px-3 py-1 bg-white/90 backdrop-blur-sm rounded-full text-sm font-semibold text-gray-800">
-                        {card.type}
-                      </span>
-                    </div>
-                    <button className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                      <div className="w-16 h-16 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center shadow-xl">
-                        <Play size={24} className="text-cyan-600 ml-1" fill="currentColor" />
-                      </div>
-                    </button>
-                  </div>
-                  <div className="p-6">
-                    <h3 className="text-xl font-bold text-gray-800 mb-2 group-hover:text-cyan-600 transition-colors">
-                      {card.title}
-                    </h3>
-                    <p className="text-gray-600 mb-4">{card.description}</p>
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-500 flex items-center gap-1">
-                        <Clock size={14} /> {card.duration}
-                      </span>
-                      <button className="text-cyan-600 font-semibold flex items-center gap-1 hover:gap-2 transition-all">
-                        Commencer <ChevronRight size={16} />
-                      </button>
-                    </div>
-                  </div>
+          {/* Home Content */}
+          {activeItem === 'Accueil' && (
+            <>
+              {/* Welcome Section */}
+              <div className="relative overflow-hidden bg-gradient-to-br from-cyan-600 via-blue-600 to-indigo-700 rounded-3xl p-10 shadow-2xl">
+                <div className="absolute top-0 right-0 w-96 h-96 bg-white/10 rounded-full blur-3xl"></div>
+                <div className="absolute bottom-0 left-0 w-96 h-96 bg-blue-400/20 rounded-full blur-3xl"></div>
+                <div className="relative">
+                  <p className="text-cyan-100 font-medium mb-2">Bon retour parmi nous ! 👋</p>
+                  <h1 className="text-4xl font-bold text-white mb-4">
+                    Espace Leadership
+                  </h1>
+                  <p className="text-cyan-50 text-lg max-w-2xl">
+                    Gestion et supervision de l'église - Tableau de bord des leaders
+                  </p>
                 </div>
-              ))}
-            </div>
-          </div>
+              </div>
+
+              {/* Featured Content */}
+              <div>
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-2xl font-bold text-gray-800">Formations Leadership</h2>
+                  <button className="text-cyan-600 hover:text-cyan-700 font-medium flex items-center gap-2">
+                    Voir tout <ChevronRight size={16} />
+                  </button>
+                </div>
+                <div className="grid md:grid-cols-2 gap-6">
+                  {featuredContent.map((card, i) => (
+                    <div key={i} className="group relative overflow-hidden bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-1">
+                      <div className="relative h-56 overflow-hidden">
+                        <img 
+                          src={card.image} 
+                          alt={card.title}
+                          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                        />
+                        <div className={`absolute inset-0 bg-gradient-to-t ${card.color} opacity-60`}></div>
+                        <div className="absolute top-4 left-4">
+                          <span className="px-3 py-1 bg-white/90 backdrop-blur-sm rounded-full text-sm font-semibold text-gray-800">
+                            {card.type}
+                          </span>
+                        </div>
+                        <button className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                          <div className="w-16 h-16 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center shadow-xl">
+                            <Play size={24} className="text-cyan-600 ml-1" fill="currentColor" />
+                          </div>
+                        </button>
+                      </div>
+                      <div className="p-6">
+                        <h3 className="text-xl font-bold text-gray-800 mb-2 group-hover:text-cyan-600 transition-colors">
+                          {card.title}
+                        </h3>
+                        <p className="text-gray-600 mb-4">{card.description}</p>
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm text-gray-500 flex items-center gap-1">
+                            <Clock size={14} /> {card.duration}
+                          </span>
+                          <button className="text-cyan-600 font-semibold flex items-center gap-1 hover:gap-2 transition-all">
+                            Commencer <ChevronRight size={16} />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </>
+          )}
 
           {/* Upcoming Event */}
           <div className="relative overflow-hidden bg-gradient-to-br from-rose-50 to-pink-50 rounded-2xl p-8 border border-rose-100 shadow-sm">
@@ -246,6 +260,15 @@ export default function Dashboard() {
               </div>
             </div>
           </div>
+
+          {/* Dynamic Subpage Rendering */}
+          {activeItem === 'Baptêmes' && <BaptemesTab />}
+          {activeItem === 'Événements' && <EventsTab />}
+          {activeItem === 'Finance' && <FinancesTab />}
+          {activeItem === 'Membres' && <MembresTab />}
+          {activeItem === 'Groupes' && <GroupesTab />}
+          {activeItem === 'Rapports' && <RapportsTab />}
+          {activeItem === 'Annexe de J5' && <AnnexeJ5Tab />}
         </main>
       </div>
     </div>

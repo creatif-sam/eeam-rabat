@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useState } from 'react';
 import { Droplet, Plus, Search, Filter, Calendar, User, Phone, Mail, CheckCircle, Clock, XCircle, Eye, Edit, Download, Video, MapPin, Users, FileText } from 'lucide-react';
 
