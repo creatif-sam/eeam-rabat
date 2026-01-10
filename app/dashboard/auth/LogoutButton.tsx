@@ -1,9 +1,10 @@
+import { createSupabaseServerClient } from "../../../lib/supabase/server";
 export function LogoutButton() {
   return (
     <form
       action={async () => {
         "use server"
-        const supabase = createSupabaseServerClient()
+        const supabase = await createSupabaseServerClient()
         await supabase.auth.signOut()
       }}
     >
