@@ -2,6 +2,7 @@ import { createSupabaseServerClient } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
 import Header from "@/components/dashboard/Header"
 import Sidebar from "@/components/dashboard/Sidebar"
+import { Suspense } from "react"
 
 export default async function DashboardLayout({
   children
@@ -11,23 +12,31 @@ export default async function DashboardLayout({
   const supabase = await createSupabaseServerClient()
 
   const {
-    data: { user }
+    data: { user },
+    error
   } = await supabase.auth.getUser()
 
-  if (!user) {
+  if (error || !user) {
     redirect("/auth/login")
   }
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
-      <Sidebar />
+  // Profile is optional now
+  // We fetch it only for display purposes if needed
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("*")
+    .eq("id", user.id)
+    .maybeSingle()
 
-      <div className="ml-72">
-        <Header user={user} />
-        <main className="p-8">
-          {children}
-        </main>
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+        <Sidebar />
+        <div className="ml-72">
+          <Header user={user} profile={profile} />
+          <main className="p-8">{children}</main>
+        </div>
       </div>
-    </div>
+    </Suspense>
   )
 }
