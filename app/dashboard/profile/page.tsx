@@ -22,7 +22,7 @@ export default async function ProfilePage() {
       action={async (formData) => {
         "use server"
 
-        const supabase = createSupabaseServerClient()
+        const supabase = await createSupabaseServerClient()
 
         await supabase
           .from("profiles")
