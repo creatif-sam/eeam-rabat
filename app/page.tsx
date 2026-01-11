@@ -26,9 +26,10 @@ export default function EEAMIntranetHome() {
 
   // Initialize date on client side
   React.useEffect(() => {
+    const today = new Date().toISOString().split('T')[0];
     setAttendanceData(prev => ({
       ...prev,
-      date: new Date().toISOString().split('T')[0]
+      date: today
     }));
   }, []);
 
@@ -83,7 +84,7 @@ export default function EEAMIntranetHome() {
     return { daysInMonth, startingDayOfWeek };
   };
 
-  const getEventsForDate = (date) => {
+  const getEventsForDate = (date: Date) => {
     return events.filter(event => 
       event.date.toDateString() === date.toDateString()
     );
@@ -114,21 +115,33 @@ export default function EEAMIntranetHome() {
     calendarDays.push(day);
   }
 
-  const handleLogin = (e) => {
+  const [currentDateValue, setCurrentDateValue] = useState('');
+
+  // Initialize date on client side
+  React.useEffect(() => {
+    const today = new Date().toISOString().split('T')[0];
+    setCurrentDateValue(today);
+    setAttendanceData(prev => ({
+      ...prev,
+      date: today
+    }));
+  }, []);
+
+  const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     console.log('Login attempt:', { email, password });
     // Add your login logic here
     setIsLoginModalOpen(false);
   };
 
-  const handleAttendanceSubmit = (e) => {
+  const handleAttendanceSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     console.log('Attendance submitted:', attendanceData);
     // Add your attendance submission logic here
     setIsAttendanceModalOpen(false);
     // Reset form
     setAttendanceData({
-      date: new Date().toISOString().split('T')[0],
+      date: currentDateValue,
       culte: '',
       hommes: '',
       femmes: '',
@@ -138,7 +151,7 @@ export default function EEAMIntranetHome() {
     });
   };
 
-  const handleAttendanceChange = (field, value) => {
+  const handleAttendanceChange = (field: string, value: string) => {
     setAttendanceData(prev => ({
       ...prev,
       [field]: value
