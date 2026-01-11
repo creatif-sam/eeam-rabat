@@ -33,7 +33,7 @@ export default async function DashboardLayout({
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
         <Sidebar />
         <div className="ml-72">
-          <Header user={user} profile={profile} />
+          <Header user={user} />
           <main className="p-8">{children}</main>
         </div>
       </div>
