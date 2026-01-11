@@ -568,7 +568,7 @@ export default function EEAMIntranetHome() {
                   value={attendanceData.notes}
                   onChange={(e) => handleAttendanceChange('notes', e.target.value)}
                   className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-transparent"
-                  rows="3"
+                  rows={3}
                   placeholder="Remarques ou observations..."
                 ></textarea>
               </div>
@@ -663,7 +663,7 @@ export default function EEAMIntranetHome() {
                 <label className="block text-sm font-medium text-gray-700 mb-2">Comment avez-vous connu l'église?</label>
                 <textarea
                   className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  rows="3"
+                  rows={3}
                   placeholder="Votre témoignage..."
                 ></textarea>
               </div>
@@ -731,7 +731,7 @@ export default function EEAMIntranetHome() {
                 <label className="block text-sm font-medium text-gray-700 mb-2">Détails de la demande</label>
                 <textarea
                   className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500"
-                  rows="5"
+                  rows={5}
                   placeholder="Décrivez votre demande en détail..."
                 ></textarea>
               </div>
@@ -831,7 +831,7 @@ export default function EEAMIntranetHome() {
                 <label className="block text-sm font-medium text-gray-700 mb-2">Motif de l'entretien</label>
                 <textarea
                   className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500"
-                  rows="4"
+                  rows={4}
                   placeholder="Décrivez brièvement le sujet que vous souhaitez aborder..."
                 ></textarea>
               </div>
@@ -964,7 +964,7 @@ export default function EEAMIntranetHome() {
                   value={attendanceData.notes}
                   onChange={(e) => handleAttendanceChange('notes', e.target.value)}
                   className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-transparent"
-                  rows="3"
+                  rows={3}
                   placeholder="Remarques ou observations..."
                 ></textarea>
               </div>
