@@ -126,7 +126,7 @@ export default function MembersTab() {
     }
   };
 
-  const getStatusLabel = (status) => {
+  const getStatusLabel = (status: string) => {
     switch(status) {
       case 'active': return 'Actif';
       case 'inactive': return 'Inactif';
