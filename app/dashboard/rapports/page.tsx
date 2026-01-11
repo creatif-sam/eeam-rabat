@@ -248,7 +248,7 @@ export default function ReportsTab() {
               <YAxis stroke="#9ca3af" tickFormatter={formatCurrency} />
               <Tooltip 
                 contentStyle={{ backgroundColor: '#fff', border: '1px solid #e5e7eb', borderRadius: '8px' }}
-                formatter={(value) => `${value.toLocaleString()} MAD`}
+                formatter={(value) => value !== undefined ? `${value.toLocaleString()} MAD` : ''}
               />
               <Legend />
               <Bar dataKey="revenus" fill="#10b981" radius={[8, 8, 0, 0]} />
