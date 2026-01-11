@@ -132,7 +132,7 @@ export default function ReportsTab() {
 
   const COLORS = ['#06b6d4', '#3b82f6', '#ec4899', '#8b5cf6', '#f59e0b'];
 
-  const formatCurrency = (value) => {
+  const formatCurrency = (value: number) => {
     return `${(value / 1000).toFixed(0)}K`;
   };
 
