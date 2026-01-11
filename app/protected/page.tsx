@@ -14,9 +14,9 @@ async function UserDetails() {
   return data.user;
 }
 
+
 async function ProtectedDashboard() {
-  const user = await UserDetails();
-  return <Dashboard user={user} />;
+  return <Dashboard>{null}</Dashboard>;
 }
 
 export default function ProtectedPage() {
