@@ -97,6 +97,7 @@ export default function EventsSection() {
               <div className="flex items-center gap-2">
                 <Clock size={12} />
                 {event.date.toLocaleDateString("fr-FR", {
+                  weekday: "long",
                   day: "numeric",
                   month: "long"
                 })} · {event.start_time}
