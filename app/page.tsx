@@ -15,6 +15,7 @@ import RequestSubmissionForm from "@/components/public/RequestSubmissionForm";
 import PastoralMeetingForm from "@/components/public/CounsellingBooking";
 import AttendanceForm from "@/components/public/AttendanceForm";
 import PublicCalendar from "@/components/public/PublicCalender";
+import { LoginForm } from "@/components/login-form";
 
 export default function EEAMIntranetHome() {
   const [loginOpen, setLoginOpen] = useState(false);
@@ -106,6 +107,16 @@ export default function EEAMIntranetHome() {
         headerClass="bg-gradient-to-r from-rose-500 to-pink-600"
       >
         <AttendanceForm />
+      </BaseModal>
+
+      <BaseModal
+        open={loginOpen}
+        onClose={() => setLoginOpen(false)}
+        title="Connexion"
+        subtitle="Accédez à votre compte"
+        headerClass="bg-gradient-to-r from-cyan-500 to-blue-600"
+      >
+        <LoginForm />
       </BaseModal>
     </div>
   );
