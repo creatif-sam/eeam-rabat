@@ -25,12 +25,14 @@ type Event = {
 export default function PublicCalendar() {
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
-  const [currentDate, setCurrentDate] = useState(new Date());
+  const [currentDate, setCurrentDate] = useState<Date | null>(null);
+  const [today, setToday] = useState<Date | null>(null);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
 
-  const today = new Date();
-
   useEffect(() => {
+    const now = new Date();
+    setCurrentDate(now);
+    setToday(now);
     fetchEvents();
   }, []);
 
@@ -54,6 +56,14 @@ export default function PublicCalendar() {
 
     setLoading(false);
   };
+
+  if (loading || !currentDate || !today) {
+    return (
+      <div className="bg-white rounded-2xl p-8 shadow">
+        Chargement du calendrier...
+      </div>
+    );
+  }
 
   const getDaysInMonth = (date: Date) => {
     const year = date.getFullYear();
@@ -84,14 +94,6 @@ export default function PublicCalendar() {
     ...Array.from({ length: startingDayOfWeek }, () => null),
     ...Array.from({ length: daysInMonth }, (_, i) => i + 1)
   ];
-
-  if (loading) {
-    return (
-      <div className="bg-white rounded-2xl p-8 shadow">
-        Chargement du calendrier...
-      </div>
-    );
-  }
 
   return (
     <section className="bg-white rounded-2xl shadow-lg p-8 mt-12">
@@ -138,7 +140,7 @@ export default function PublicCalendar() {
         </div>
       </div>
 
-      {/* Days */}
+      {/* Day headers */}
       <div className="grid grid-cols-7 gap-2 mb-2">
         {dayNames.map(day => (
           <div
@@ -150,11 +152,15 @@ export default function PublicCalendar() {
         ))}
       </div>
 
-      {/* Calendar Grid */}
+      {/* Calendar grid */}
       <div className="grid grid-cols-7 gap-2">
         {calendarDays.map((day, index) => {
           if (!day) {
-            return <div key={index} />;
+            return (
+              <div
+                key={`empty-${currentDate.getFullYear()}-${currentDate.getMonth()}-${index}`}
+              />
+            );
           }
 
           const date = new Date(
@@ -170,10 +176,12 @@ export default function PublicCalendar() {
 
           return (
             <div
-              key={day}
-              className={`border rounded-lg p-2 transition
-                ${isToday ? "bg-cyan-50 border-cyan-400 ring-2 ring-cyan-300" : "bg-slate-50"}
-              `}
+              key={`${currentDate.getFullYear()}-${currentDate.getMonth()}-${day}`}
+              className={`border rounded-lg p-2 transition ${
+                isToday
+                  ? "bg-cyan-50 border-cyan-400 ring-2 ring-cyan-300"
+                  : "bg-slate-50"
+              }`}
             >
               <div className="font-semibold text-sm mb-1">
                 {day}
@@ -193,7 +201,7 @@ export default function PublicCalendar() {
         })}
       </div>
 
-      {/* Event Modal */}
+      {/* Event modal */}
       {selectedEvent && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
           <div className="bg-white rounded-2xl p-6 w-full max-w-lg">
@@ -210,7 +218,8 @@ export default function PublicCalendar() {
             <div className="text-sm text-gray-600 space-y-2">
               <p className="flex items-center gap-2">
                 <Clock size={14} />
-                {selectedEvent.start_time} {selectedEvent.end_time}
+                {selectedEvent.start_time}{" "}
+                {selectedEvent.end_time}
               </p>
               <p className="flex items-center gap-2">
                 <MapPin size={14} />

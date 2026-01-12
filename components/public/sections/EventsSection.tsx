@@ -12,6 +12,7 @@ type EventItem = {
   location: string;
   is_online: boolean;
   color: string;
+  date: Date;
 };
 
 export default function EventsSection() {
@@ -24,31 +25,36 @@ export default function EventsSection() {
 
   const fetchEvents = async () => {
     const supabase = createClient();
-    const today = new Date().toISOString().split("T")[0];
+    const today = new Date();
 
     const { data, error } = await supabase
       .from("events")
-      .select(`
-        id,
-        title,
-        event_date,
-        start_time,
-        location,
-        is_online,
-        color
-      `)
-      .gte("event_date", today)
-      .order("event_date", { ascending: true })
-      .order("start_time", { ascending: true })
-      .limit(5);
+      .select(
+        "id,title,event_date,start_time,location,is_online,color"
+      );
 
-    if (error) {
-      console.error("Failed to load public events", error);
+    if (error || !data) {
+      console.error("Failed to load events", error);
       setLoading(false);
       return;
     }
 
-    setEvents(data ?? []);
+    const upcoming = data
+      .map(e => ({
+        ...e,
+        date: new Date(e.event_date)
+      }))
+      .filter(e => e.date >= new Date(
+        today.getFullYear(),
+        today.getMonth(),
+        today.getDate()
+      ))
+      .sort(
+        (a, b) => a.date.getTime() - b.date.getTime()
+      )
+      .slice(0, 5);
+
+    setEvents(upcoming);
     setLoading(false);
   };
 
@@ -61,17 +67,23 @@ export default function EventsSection() {
   }
 
   return (
-    <section className="bg-white rounded-2xl shadow-lg p-8">
+    <section className="bg-white rounded-2xl shadow-lg p-8 mt-12">
       <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-2">
-        <Calendar size={28} className="text-cyan-600" />
+        <Calendar className="text-cyan-600" />
         Prochains événements
       </h2>
 
-      <div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-4">
+      {!events.length && (
+        <p className="text-sm text-gray-500">
+          Aucun événement à venir pour le moment.
+        </p>
+      )}
+
+      <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {events.map(event => (
           <div
             key={event.id}
-            className="p-4 border border-gray-100 rounded-xl hover:shadow-md transition-all hover:border-cyan-300"
+            className="p-4 border border-gray-100 rounded-xl hover:shadow-md transition-all"
           >
             <div
               className={`w-full h-2 ${event.color} rounded-full mb-3`}
@@ -81,36 +93,28 @@ export default function EventsSection() {
               {event.title}
             </h4>
 
-            <div className="space-y-1">
-              <div className="flex items-center gap-2 text-xs text-gray-600">
+            <div className="space-y-1 text-xs text-gray-600">
+              <div className="flex items-center gap-2">
                 <Clock size={12} />
-                <span>
-                  {new Date(event.event_date).toLocaleDateString(
-                    "fr-FR",
-                    { day: "numeric", month: "long" }
-                  )} · {event.start_time}
-                </span>
+                {event.date.toLocaleDateString("fr-FR", {
+                  day: "numeric",
+                  month: "long"
+                })} · {event.start_time}
               </div>
 
-              <div className="flex items-center gap-2 text-xs text-gray-600">
+              <div className="flex items-center gap-2">
                 {event.is_online ? (
                   <Video size={12} />
                 ) : (
                   <MapPin size={12} />
                 )}
-                <span className="truncate">
-                  {event.is_online ? "En ligne" : event.location}
-                </span>
+                {event.is_online
+                  ? "En ligne"
+                  : event.location}
               </div>
             </div>
           </div>
         ))}
-
-        {!events.length && (
-          <p className="text-sm text-gray-500 col-span-full">
-            Aucun événement à venir pour le moment.
-          </p>
-        )}
       </div>
     </section>
   );
