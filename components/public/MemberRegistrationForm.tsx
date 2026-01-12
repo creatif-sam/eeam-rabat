@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 
 export default function MemberRegistrationForm() {
   const [form, setForm] = useState({
@@ -16,8 +17,11 @@ export default function MemberRegistrationForm() {
     baptise: "",
     date_bapteme: "",
     adresse: "",
-    commissions: [] as string[]
+    commissions: [] as string[],
+    consent: false
   });
+
+  const [error, setError] = useState("");
 
   const commissionsList = [
     "Conseil Presbytéral",
@@ -50,12 +54,29 @@ export default function MemberRegistrationForm() {
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
-    const { name, value } = e.target;
-    setForm(prev => ({ ...prev, [name]: value }));
+    const { name, value, type } = e.target;
+
+    if (type === "checkbox") {
+      setForm(prev => ({
+        ...prev,
+        [name]: (e.target as HTMLInputElement).checked
+      }));
+    } else {
+      setForm(prev => ({ ...prev, [name]: value }));
+    }
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!form.consent) {
+      setError(
+        "Vous devez accepter la politique de confidentialité pour continuer."
+      );
+      return;
+    }
+
+    setError("");
     console.log(form);
   };
 
@@ -204,6 +225,38 @@ export default function MemberRegistrationForm() {
           ))}
         </div>
       </div>
+
+      {/* Consent */}
+      <div className="border rounded-xl p-4 bg-slate-50">
+        <label className="flex items-start gap-3 text-sm">
+          <input
+            type="checkbox"
+            name="consent"
+            checked={form.consent}
+            onChange={handleChange}
+            className="mt-1"
+            required
+          />
+          <span className="text-gray-700">
+            J’ai lu et j’accepte la{" "}
+            <Link
+              href="/politique-de-confidentialite"
+              target="_blank"
+              className="text-cyan-600 underline"
+            >
+              politique de confidentialité
+            </Link>{" "}
+            et j’autorise l’église à traiter mes données
+            dans le cadre de ses activités.
+          </span>
+        </label>
+      </div>
+
+      {error && (
+        <p className="text-red-600 text-sm">
+          {error}
+        </p>
+      )}
 
       <button
         type="submit"
