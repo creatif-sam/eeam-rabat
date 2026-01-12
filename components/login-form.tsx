@@ -93,7 +93,7 @@ export function LoginForm({
             <div className="mt-4 text-center text-sm">
               Vous n’avez pas de compte ?{" "}
               <Link
-                href="/auth/sign-up"
+                href="/?modal=signup"
                 className="underline underline-offset-4"
               >
                 Créer un compte

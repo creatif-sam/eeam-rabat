@@ -1,10 +1,10 @@
 "use client";
 
 import Image from "next/image";
-import { LogIn } from "lucide-react";
+import { LogIn, UserPlus } from "lucide-react";
 import { useRouter } from "next/navigation";
 
-export default function Header({ onLogin }: { onLogin?: () => void }) {
+export default function Header({ onLogin, onSignUp }: { onLogin?: () => void; onSignUp?: () => void }) {
   const router = useRouter();
 
   return (
@@ -33,23 +33,42 @@ export default function Header({ onLogin }: { onLogin?: () => void }) {
             </div>
           </div>
 
-          {/* Connexion Button */}
-          <button
-            onClick={() =>
-              onLogin ? onLogin() : router.push("/auth/login")
-            }
-            className="flex items-center justify-center gap-2
-              px-3 py-3 sm:px-6 sm:py-3
-              bg-gradient-to-r from-cyan-500 to-blue-600
-              text-white rounded-xl shadow-lg
-              hover:from-cyan-600 hover:to-blue-700 transition"
-            aria-label="Connexion"
-          >
-            <LogIn size={20} />
-            <span className="hidden sm:inline font-medium">
-              Connexion
-            </span>
-          </button>
+          {/* Buttons */}
+          <div className="flex gap-3">
+            <button
+              onClick={() =>
+                onSignUp ? onSignUp() : router.push("/auth/sign-up")
+              }
+              className="flex items-center justify-center gap-2
+                px-3 py-3 sm:px-6 sm:py-3
+                bg-white border-2 border-cyan-500 text-cyan-600
+                rounded-xl shadow-lg
+                hover:bg-cyan-50 transition"
+              aria-label="S'inscrire"
+            >
+              <UserPlus size={20} />
+              <span className="hidden sm:inline font-medium">
+                S'inscrire
+              </span>
+            </button>
+
+            <button
+              onClick={() =>
+                onLogin ? onLogin() : router.push("/auth/login")
+              }
+              className="flex items-center justify-center gap-2
+                px-3 py-3 sm:px-6 sm:py-3
+                bg-gradient-to-r from-cyan-500 to-blue-600
+                text-white rounded-xl shadow-lg
+                hover:from-cyan-600 hover:to-blue-700 transition"
+              aria-label="Connexion"
+            >
+              <LogIn size={20} />
+              <span className="hidden sm:inline font-medium">
+                Connexion
+              </span>
+            </button>
+          </div>
         </div>
       </div>
     </header>

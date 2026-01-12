@@ -48,9 +48,9 @@ export default function ServicesGrid({
         <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-violet-600 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
           <i className="fa-solid fa-users text-2xl text-white"></i>
         </div>
-        <h3 className="text-xl font-bold text-gray-800 mb-2">Rejoindre un Groupe</h3>
+        <h3 className="text-xl font-bold text-gray-800 mb-2">Rejoindre une Commission</h3>
         <p className="text-gray-600 text-sm">
-          Intégrez une cellule ou commission pour grandir ensemble
+          Intégrez une commission ou cellule  pour grandir ensemble
         </p>
       </div>
 
