@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
@@ -24,6 +24,25 @@ export default function CreateEventPage() {
     color: "bg-blue-500",
     is_recurring: false
   });
+
+  useEffect(() => {
+    // Reset form and loading state when component mounts
+    setForm({
+      title: "",
+      description: "",
+      event_date: "",
+      start_time: "",
+      end_time: "",
+      type: "worship",
+      location: "",
+      is_online: false,
+      attendees: 0,
+      color: "bg-blue-500",
+      is_recurring: false
+    });
+    setLoading(false);
+    setError(null);
+  }, []);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
@@ -77,6 +96,7 @@ export default function CreateEventPage() {
       <form
         onSubmit={handleSubmit}
         className="bg-white p-6 rounded-2xl shadow space-y-4"
+        autoComplete="off"
       >
         {error && (
           <p className="text-red-600 font-medium">
@@ -91,6 +111,7 @@ export default function CreateEventPage() {
           onChange={handleChange}
           required
           className="w-full border p-3 rounded-lg"
+          autoComplete="off"
         />
 
         <textarea
@@ -99,6 +120,7 @@ export default function CreateEventPage() {
           value={form.description}
           onChange={handleChange}
           className="w-full border p-3 rounded-lg"
+          autoComplete="off"
         />
 
         <div className="grid grid-cols-2 gap-4">
@@ -109,6 +131,7 @@ export default function CreateEventPage() {
             onChange={handleChange}
             required
             className="border p-3 rounded-lg"
+            autoComplete="off"
           />
 
           <select
@@ -116,6 +139,7 @@ export default function CreateEventPage() {
             value={form.type}
             onChange={handleChange}
             className="border p-3 rounded-lg"
+            autoComplete="off"
           >
             <option value="worship">Culte</option>
             <option value="formation">Formation</option>
@@ -135,6 +159,7 @@ export default function CreateEventPage() {
             onChange={handleChange}
             required
             className="border p-3 rounded-lg"
+            autoComplete="off"
           />
 
           <input
@@ -144,6 +169,7 @@ export default function CreateEventPage() {
             onChange={handleChange}
             required
             className="border p-3 rounded-lg"
+            autoComplete="off"
           />
         </div>
 
@@ -154,6 +180,7 @@ export default function CreateEventPage() {
           onChange={handleChange}
           required
           className="w-full border p-3 rounded-lg"
+          autoComplete="off"
         />
 
         <div className="flex items-center gap-4">
