@@ -2,8 +2,11 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { createClient } from "@/lib/supabase/client";
 
 export default function MemberRegistrationForm() {
+  const supabase = createClient();
+
   const [form, setForm] = useState({
     paroisse: "",
     nom: "",
@@ -21,7 +24,9 @@ export default function MemberRegistrationForm() {
     consent: false
   });
 
-  const [error, setError] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const commissionsList = [
     "Conseil Presbytéral",
@@ -62,23 +67,86 @@ export default function MemberRegistrationForm() {
         [name]: (e.target as HTMLInputElement).checked
       }));
     } else {
-      setForm(prev => ({ ...prev, [name]: value }));
+      setForm(prev => ({
+        ...prev,
+        [name]: value
+      }));
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+  if (loading) return;
 
-    if (!form.consent) {
-      setError(
-        "Vous devez accepter la politique de confidentialité pour continuer."
-      );
-      return;
-    }
+  if (!form.consent) {
+    setError(
+      "Vous devez accepter la politique de confidentialité pour continuer."
+    );
+    return;
+  }
 
-    setError("");
-    console.log(form);
-  };
+  if (!form.commissions.length) {
+    setError("Veuillez sélectionner au moins une commission.");
+    return;
+  }
+
+  setLoading(true);
+  setError(null);
+
+  const { error } = await supabase
+    .from("member_registrations")
+    .insert({
+      paroisse: form.paroisse,
+      nom: form.nom.trim(),
+      prenom: form.prenom.trim(),
+      genre: form.genre,
+      nationalite: form.nationalite.trim(),
+      date_naissance: form.date_naissance || null,
+      telephone: form.telephone.trim(),
+      email: form.email || null,
+      profession: form.profession.trim(),
+      baptise: form.baptise,
+      date_bapteme: form.date_bapteme || null,
+      adresse: form.adresse.trim(),
+      commissions: form.commissions,
+      consent: true // 🔥 FORCE TRUE — REQUIRED FOR RLS
+    });
+
+ if (error) {
+  if (error.code === "23505") {
+    setError(
+      "Un membre avec ce numéro de téléphone ou cet email existe déjà."
+    );
+    setLoading(false);
+    return;
+  }
+
+  setError(
+    error.message ||
+      "Une erreur est survenue lors de l’envoi. Veuillez réessayer."
+  );
+  setLoading(false);
+  return;
+}
+
+
+  setSuccess(true);
+  setLoading(false);
+};
+
+  if (success) {
+    return (
+      <div className="text-center py-10">
+        <h3 className="text-xl font-bold text-green-600 mb-2">
+          Inscription envoyée
+        </h3>
+        <p className="text-gray-600">
+          Votre demande a bien été enregistrée.  
+          L’équipe vous contactera si nécessaire.
+        </p>
+      </div>
+    );
+  }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
@@ -92,8 +160,9 @@ export default function MemberRegistrationForm() {
                 type="radio"
                 name="paroisse"
                 value={p}
-                required
+                checked={form.paroisse === p}
                 onChange={handleChange}
+                required
               />
               {p}
             </label>
@@ -101,23 +170,9 @@ export default function MemberRegistrationForm() {
         </div>
       </div>
 
-      <input
-        name="nom"
-        placeholder="Nom *"
-        required
-        className="w-full border rounded-xl p-3"
-        onChange={handleChange}
-      />
+      <input name="nom" required placeholder="Nom *" className="w-full border rounded-xl p-3" onChange={handleChange} />
+      <input name="prenom" required placeholder="Prénom *" className="w-full border rounded-xl p-3" onChange={handleChange} />
 
-      <input
-        name="prenom"
-        placeholder="Prénom *"
-        required
-        className="w-full border rounded-xl p-3"
-        onChange={handleChange}
-      />
-
-      {/* Genre */}
       <div>
         <label className="font-medium">Genre *</label>
         <div className="mt-2 space-y-2">
@@ -127,8 +182,9 @@ export default function MemberRegistrationForm() {
                 type="radio"
                 name="genre"
                 value={g}
-                required
+                checked={form.genre === g}
                 onChange={handleChange}
+                required
               />
               {g}
             </label>
@@ -136,48 +192,14 @@ export default function MemberRegistrationForm() {
         </div>
       </div>
 
-      <input
-        name="nationalite"
-        placeholder="Nationalité *"
-        required
-        className="w-full border rounded-xl p-3"
-        onChange={handleChange}
-      />
+      <input name="nationalite" required placeholder="Nationalité *" className="w-full border rounded-xl p-3" onChange={handleChange} />
+      <input type="date" name="date_naissance" className="w-full border rounded-xl p-3" onChange={handleChange} />
+      <input name="telephone" required placeholder="Téléphone *" className="w-full border rounded-xl p-3" onChange={handleChange} />
+      <input type="email" name="email" placeholder="Email" className="w-full border rounded-xl p-3" onChange={handleChange} />
+      <input name="profession" required placeholder="Occupation professionnelle *" className="w-full border rounded-xl p-3" onChange={handleChange} />
 
-      <input
-        type="date"
-        name="date_naissance"
-        className="w-full border rounded-xl p-3"
-        onChange={handleChange}
-      />
-
-      <input
-        name="telephone"
-        placeholder="Téléphone *"
-        required
-        className="w-full border rounded-xl p-3"
-        onChange={handleChange}
-      />
-
-      <input
-        type="email"
-        name="email"
-        placeholder="Email"
-        className="w-full border rounded-xl p-3"
-        onChange={handleChange}
-      />
-
-      <input
-        name="profession"
-        placeholder="Occupation profession *"
-        required
-        className="w-full border rounded-xl p-3"
-        onChange={handleChange}
-      />
-
-      {/* Baptisé */}
       <div>
-        <label className="font-medium">Baptisé e *</label>
+        <label className="font-medium">Baptisé(e) *</label>
         <div className="mt-2 space-y-2">
           {["Oui", "Non"].map(b => (
             <label key={b} className="flex items-center gap-2">
@@ -185,8 +207,9 @@ export default function MemberRegistrationForm() {
                 type="radio"
                 name="baptise"
                 value={b}
-                required
+                checked={form.baptise === b}
                 onChange={handleChange}
+                required
               />
               {b}
             </label>
@@ -194,24 +217,11 @@ export default function MemberRegistrationForm() {
         </div>
       </div>
 
-      <input
-        name="date_bapteme"
-        placeholder="Date ou année de baptême"
-        className="w-full border rounded-xl p-3"
-        onChange={handleChange}
-      />
+      <input name="date_bapteme" placeholder="Date ou année de baptême" className="w-full border rounded-xl p-3" onChange={handleChange} />
+      <input name="adresse" required placeholder="Adresse / Quartier *" className="w-full border rounded-xl p-3" onChange={handleChange} />
 
-      <input
-        name="adresse"
-        placeholder="Adresse Quartier *"
-        required
-        className="w-full border rounded-xl p-3"
-        onChange={handleChange}
-      />
-
-      {/* Commissions */}
       <div>
-        <label className="font-medium">Commission s *</label>
+        <label className="font-medium">Commissions *</label>
         <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2">
           {commissionsList.map(c => (
             <label key={c} className="flex items-center gap-2">
@@ -226,7 +236,6 @@ export default function MemberRegistrationForm() {
         </div>
       </div>
 
-      {/* Consent */}
       <div className="border rounded-xl p-4 bg-slate-50">
         <label className="flex items-start gap-3 text-sm">
           <input
@@ -234,35 +243,25 @@ export default function MemberRegistrationForm() {
             name="consent"
             checked={form.consent}
             onChange={handleChange}
-            className="mt-1"
             required
           />
-          <span className="text-gray-700">
+          <span>
             J’ai lu et j’accepte la{" "}
-            <Link
-              href="/politique-de-confidentialite"
-              target="_blank"
-              className="text-cyan-600 underline"
-            >
+            <Link href="/politique-de-confidentialite" target="_blank" className="text-cyan-600 underline">
               politique de confidentialité
-            </Link>{" "}
-            et j’autorise l’église à traiter mes données
-            dans le cadre de ses activités.
+            </Link>.
           </span>
         </label>
       </div>
 
-      {error && (
-        <p className="text-red-600 text-sm">
-          {error}
-        </p>
-      )}
+      {error && <p className="text-red-600 text-sm">{error}</p>}
 
       <button
         type="submit"
-        className="w-full bg-cyan-600 text-white py-3 rounded-xl font-semibold"
+        disabled={loading}
+        className="w-full bg-cyan-600 text-white py-3 rounded-xl font-semibold disabled:opacity-60"
       >
-        Soumettre
+        {loading ? "Envoi en cours..." : "Soumettre"}
       </button>
     </form>
   );
