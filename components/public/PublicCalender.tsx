@@ -59,7 +59,7 @@ export default function PublicCalendar() {
 
   if (loading || !currentDate || !today) {
     return (
-      <div className="bg-white rounded-2xl p-8 shadow">
+      <div className="bg-white rounded-2xl p-6 shadow">
         Chargement du calendrier...
       </div>
     );
@@ -96,11 +96,11 @@ export default function PublicCalendar() {
   ];
 
   return (
-    <section className="bg-white rounded-2xl shadow-lg p-8 mt-12">
+    <section className="bg-white rounded-2xl shadow-lg p-4 sm:p-8 mt-8 sm:mt-12">
       {/* Header */}
-      <div className="flex justify-between items-center mb-6">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
         <div>
-          <h2 className="text-2xl font-bold flex items-center gap-2">
+          <h2 className="text-xl sm:text-2xl font-bold flex items-center gap-2">
             <Calendar className="text-cyan-600" />
             Calendrier de l’église
           </h2>
@@ -110,7 +110,7 @@ export default function PublicCalendar() {
           </p>
         </div>
 
-        <div className="flex gap-2">
+        <div className="flex gap-2 self-start sm:self-auto">
           <button
             onClick={() =>
               setCurrentDate(
@@ -121,8 +121,9 @@ export default function PublicCalendar() {
                 )
               )
             }
+            className="p-2 rounded-lg border hover:bg-gray-50"
           >
-            <ChevronLeft />
+            <ChevronLeft size={18} />
           </button>
           <button
             onClick={() =>
@@ -134,18 +135,19 @@ export default function PublicCalendar() {
                 )
               )
             }
+            className="p-2 rounded-lg border hover:bg-gray-50"
           >
-            <ChevronRight />
+            <ChevronRight size={18} />
           </button>
         </div>
       </div>
 
       {/* Day headers */}
-      <div className="grid grid-cols-7 gap-2 mb-2">
+      <div className="grid grid-cols-7 gap-1 sm:gap-2 mb-2 text-xs sm:text-sm">
         {dayNames.map(day => (
           <div
             key={day}
-            className="text-center font-semibold text-sm"
+            className="text-center font-semibold"
           >
             {day}
           </div>
@@ -153,12 +155,12 @@ export default function PublicCalendar() {
       </div>
 
       {/* Calendar grid */}
-      <div className="grid grid-cols-7 gap-2">
+      <div className="grid grid-cols-7 gap-1 sm:gap-2">
         {calendarDays.map((day, index) => {
           if (!day) {
             return (
               <div
-                key={`empty-${currentDate.getFullYear()}-${currentDate.getMonth()}-${index}`}
+                key={`empty-${index}`}
               />
             );
           }
@@ -177,13 +179,13 @@ export default function PublicCalendar() {
           return (
             <div
               key={`${currentDate.getFullYear()}-${currentDate.getMonth()}-${day}`}
-              className={`border rounded-lg p-2 transition ${
+              className={`border rounded-lg p-1.5 sm:p-2 transition text-xs sm:text-sm ${
                 isToday
                   ? "bg-cyan-50 border-cyan-400 ring-2 ring-cyan-300"
                   : "bg-slate-50"
               }`}
             >
-              <div className="font-semibold text-sm mb-1">
+              <div className="font-semibold mb-1">
                 {day}
               </div>
 
@@ -191,7 +193,7 @@ export default function PublicCalendar() {
                 <div
                   key={ev.id}
                   onClick={() => setSelectedEvent(ev)}
-                  className={`${ev.color} text-white text-xs px-2 py-1 rounded mb-1 cursor-pointer`}
+                  className={`${ev.color} text-white text-[10px] sm:text-xs px-2 py-1 rounded mb-1 cursor-pointer truncate`}
                 >
                   {ev.title}
                 </div>
@@ -203,14 +205,14 @@ export default function PublicCalendar() {
 
       {/* Event modal */}
       {selectedEvent && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl p-6 w-full max-w-lg">
-            <h3 className="text-xl font-bold mb-2">
+            <h3 className="text-lg sm:text-xl font-bold mb-2">
               {selectedEvent.title}
             </h3>
 
             {selectedEvent.description && (
-              <p className="text-gray-600 mb-4">
+              <p className="text-gray-600 mb-4 text-sm">
                 {selectedEvent.description}
               </p>
             )}

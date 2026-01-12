@@ -1,6 +1,7 @@
 "use client";
 
-import { Church, LogIn } from "lucide-react";
+import Image from "next/image";
+import { LogIn } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 export default function Header({ onLogin }: { onLogin?: () => void }) {
@@ -8,28 +9,46 @@ export default function Header({ onLogin }: { onLogin?: () => void }) {
 
   return (
     <header className="bg-white border-b border-gray-100 shadow-sm">
-      <div className="max-w-7xl mx-auto px-6 py-6">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <div className="w-16 h-16 bg-gradient-to-br from-rose-600 to-rose-700 rounded-2xl flex items-center justify-center shadow-lg">
-              <Church size={32} className="text-white" />
+          {/* Logo + Title */}
+          <div className="flex items-center gap-3">
+            <div className="relative w-11 h-11 sm:w-14 sm:h-14">
+              <Image
+                src="/images/eeam-logo.png"
+                alt="EEAM Logo"
+                fill
+                className="object-contain"
+                priority
+              />
             </div>
-            <div>
-              <h1 className="text-3xl font-bold text-gray-800">
-                EEAM RABAT LEAD
+
+            <div className="leading-tight">
+              <h1 className="text-lg sm:text-2xl font-bold text-gray-800">
+                EEAM Rabat
               </h1>
-              <p className="text-gray-600">
-                Intranet_Lead
+              <p className="text-xs sm:text-sm text-gray-600">
+                Intranet Lead
               </p>
             </div>
           </div>
 
+          {/* Connexion Button */}
           <button
-            onClick={() => onLogin ? onLogin() : router.push("/auth/login")}
-            className="px-6 py-3 bg-gradient-to-r from-cyan-500 to-blue-600 text-white rounded-xl shadow-lg font-medium flex items-center gap-2"
+            onClick={() =>
+              onLogin ? onLogin() : router.push("/auth/login")
+            }
+            className="flex items-center justify-center gap-2
+              px-3 py-3 sm:px-6 sm:py-3
+              bg-gradient-to-r from-cyan-500 to-blue-600
+              text-white rounded-xl shadow-lg
+              hover:from-cyan-600 hover:to-blue-700 transition"
+            aria-label="Connexion"
           >
             <LogIn size={20} />
-            Connexion
+            <span className="hidden sm:inline font-medium">
+              Connexion
+            </span>
           </button>
         </div>
       </div>
