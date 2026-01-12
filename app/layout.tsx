@@ -8,8 +8,8 @@ const defaultUrl = process.env.VERCEL_URL
 
 export const metadata: Metadata = {
   metadataBase: new URL(defaultUrl),
-  title: "EEAM eLead-Rabat",
-  description: "Tech and Excellence for God's Glory",
+  title: "EEAM Rabat Tableau de bord des Anciens",
+  description: "La technologie et l’excellence pour la gloire de Dieu Corinthiens 10:31.",
 }
 
 export default function RootLayout({
