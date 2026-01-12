@@ -24,7 +24,7 @@ const menuItems = [
   { label: "Événements", icon: Calendar, route: "/dashboard/events" },
   { label: "Finance", icon: DollarSign, route: "/dashboard/finances" },
   { label: "Formations", icon: GraduationCap, route: "/dashboard/formations" },
-  { label: "Groupes", icon: Users, route: "/dashboard/groupes" },
+  { label: "Commissions", icon: Users, route: "/dashboard/groupes" },
   { label: "Membres", icon: UsersRound, route: "/dashboard/membres" },
   { label: "Rapports", icon: FileText, route: "/dashboard/rapports" },
   { label: "Annexe de J5", icon: MapPin, route: "/dashboard/annexe-j5" }
