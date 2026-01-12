@@ -3,7 +3,7 @@
 import { Church, LogIn } from "lucide-react";
 import { useRouter } from "next/navigation";
 
-export default function Header() {
+export default function Header({ onLogin }: { onLogin?: () => void }) {
   const router = useRouter();
 
   return (
@@ -25,7 +25,7 @@ export default function Header() {
           </div>
 
           <button
-            onClick={() => router.push("/auth/login")}
+            onClick={() => onLogin ? onLogin() : router.push("/auth/login")}
             className="px-6 py-3 bg-gradient-to-r from-cyan-500 to-blue-600 text-white rounded-xl shadow-lg font-medium flex items-center gap-2"
           >
             <LogIn size={20} />
