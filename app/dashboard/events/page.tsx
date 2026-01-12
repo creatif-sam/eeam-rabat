@@ -224,9 +224,18 @@ export default function EventsTab() {
             onClick={() => setSelectedEvent(ev)}
           >
             <p className="font-semibold">{ev.title}</p>
+            <p className="text-sm text-gray-500 flex items-center gap-2 mb-1">
+              <Calendar size={12} />
+              {ev.date.toLocaleDateString('fr-FR', { 
+                weekday: 'long', 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+              })}
+            </p>
             <p className="text-sm text-gray-500 flex items-center gap-2">
               <Clock size={12} />
-              {ev.start_time} {ev.end_time}
+              {ev.start_time} - {ev.end_time}
             </p>
           </div>
         ))}
