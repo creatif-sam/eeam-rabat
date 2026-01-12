@@ -1,10 +1,16 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 
-export default function MemberRegistrationForm() {
+type MemberRegistrationFormProps = {
+  isEdit?: boolean;
+  initialData?: any;
+  onSuccess?: () => void;
+};
+
+export default function MemberRegistrationForm({ isEdit, initialData, onSuccess }: MemberRegistrationFormProps) {
   const supabase = createClient();
 
   const [form, setForm] = useState({
@@ -27,6 +33,27 @@ export default function MemberRegistrationForm() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (isEdit && initialData) {
+      setForm({
+        paroisse: initialData.paroisse || "",
+        nom: initialData.nom || "",
+        prenom: initialData.prenom || "",
+        genre: initialData.genre || "",
+        nationalite: initialData.nationalite || "",
+        date_naissance: initialData.date_naissance || "",
+        telephone: initialData.telephone || "",
+        email: initialData.email || "",
+        profession: initialData.profession || "",
+        baptise: initialData.baptise || "",
+        date_bapteme: initialData.date_bapteme || "",
+        adresse: initialData.adresse || "",
+        commissions: initialData.commissions || [],
+        consent: initialData.consent || false
+      });
+    }
+  }, [isEdit, initialData]);
 
   const commissionsList = [
     "Conseil Presbytéral",
@@ -78,7 +105,7 @@ export default function MemberRegistrationForm() {
   e.preventDefault();
   if (loading) return;
 
-  if (!form.consent) {
+  if (!isEdit && !form.consent) {
     setError(
       "Vous devez accepter la politique de confidentialité pour continuer."
     );
@@ -93,24 +120,44 @@ export default function MemberRegistrationForm() {
   setLoading(true);
   setError(null);
 
-  const { error } = await supabase
-    .from("member_registrations")
-    .insert({
-      paroisse: form.paroisse,
-      nom: form.nom.trim(),
-      prenom: form.prenom.trim(),
-      genre: form.genre,
-      nationalite: form.nationalite.trim(),
-      date_naissance: form.date_naissance || null,
-      telephone: form.telephone.trim(),
-      email: form.email || null,
-      profession: form.profession.trim(),
-      baptise: form.baptise,
-      date_bapteme: form.date_bapteme || null,
-      adresse: form.adresse.trim(),
-      commissions: form.commissions,
-      consent: true // 🔥 FORCE TRUE — REQUIRED FOR RLS
-    });
+  const { error } = isEdit && initialData
+    ? await supabase
+        .from("member_registrations")
+        .update({
+          paroisse: form.paroisse,
+          nom: form.nom.trim(),
+          prenom: form.prenom.trim(),
+          genre: form.genre,
+          nationalite: form.nationalite.trim(),
+          date_naissance: form.date_naissance || null,
+          telephone: form.telephone.trim(),
+          email: form.email || null,
+          profession: form.profession.trim(),
+          baptise: form.baptise,
+          date_bapteme: form.date_bapteme || null,
+          adresse: form.adresse.trim(),
+          commissions: form.commissions,
+          consent: true // 🔥 FORCE TRUE — REQUIRED FOR RLS
+        })
+        .eq('id', initialData.id)
+    : await supabase
+        .from("member_registrations")
+        .insert({
+          paroisse: form.paroisse,
+          nom: form.nom.trim(),
+          prenom: form.prenom.trim(),
+          genre: form.genre,
+          nationalite: form.nationalite.trim(),
+          date_naissance: form.date_naissance || null,
+          telephone: form.telephone.trim(),
+          email: form.email || null,
+          profession: form.profession.trim(),
+          baptise: form.baptise,
+          date_bapteme: form.date_bapteme || null,
+          adresse: form.adresse.trim(),
+          commissions: form.commissions,
+          consent: true // 🔥 FORCE TRUE — REQUIRED FOR RLS
+        });
 
  if (error) {
   if (error.code === "23505") {
@@ -132,17 +179,17 @@ export default function MemberRegistrationForm() {
 
   setSuccess(true);
   setLoading(false);
+  if (onSuccess) onSuccess();
 };
 
   if (success) {
     return (
       <div className="text-center py-10">
         <h3 className="text-xl font-bold text-green-600 mb-2">
-          Inscription envoyée
+          {isEdit ? "Membre modifié" : "Inscription envoyée"}
         </h3>
         <p className="text-gray-600">
-          Votre demande a bien été enregistrée.  
-          L’équipe vous contactera si nécessaire.
+          {isEdit ? "Les informations ont été mises à jour." : "Votre demande a bien été enregistrée. L'équipe vous contactera si nécessaire."}
         </p>
       </div>
     );
@@ -236,6 +283,7 @@ export default function MemberRegistrationForm() {
         </div>
       </div>
 
+      {!isEdit && (
       <div className="border rounded-xl p-4 bg-slate-50">
         <label className="flex items-start gap-3 text-sm">
           <input
@@ -246,13 +294,14 @@ export default function MemberRegistrationForm() {
             required
           />
           <span>
-            J’ai lu et j’accepte la{" "}
+            J'ai lu et j'accepte la{" "}
             <Link href="/politique-de-confidentialite" target="_blank" className="text-cyan-600 underline">
               politique de confidentialité
             </Link>.
           </span>
         </label>
       </div>
+      )}
 
       {error && <p className="text-red-600 text-sm">{error}</p>}
 
@@ -261,7 +310,7 @@ export default function MemberRegistrationForm() {
         disabled={loading}
         className="w-full bg-cyan-600 text-white py-3 rounded-xl font-semibold disabled:opacity-60"
       >
-        {loading ? "Envoi en cours..." : "Soumettre"}
+        {loading ? "Envoi en cours..." : isEdit ? "Modifier" : "Soumettre"}
       </button>
     </form>
   );
