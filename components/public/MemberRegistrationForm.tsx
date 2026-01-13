@@ -44,7 +44,7 @@ export default function MemberRegistrationForm({ isEdit, initialData, onSuccess 
 
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
-  const [loading, setLoading] = useState(false);
+      <div className="text-center py-10 bg-white text-gray-900 rounded-xl shadow-md">
 
   useEffect(() => {
     if (isEdit && initialData) {
@@ -55,12 +55,14 @@ export default function MemberRegistrationForm({ isEdit, initialData, onSuccess 
         genre: initialData.genre || "",
         nationalite: initialData.nationalite || "",
         date_naissance: initialData.date_naissance || "",
-        telephone: initialData.telephone || "",
-        email: initialData.email || "",
-        profession: initialData.profession || "",
-        baptise: initialData.baptise || "",
-        date_bapteme: initialData.date_bapteme || "",
-        adresse: initialData.adresse || "",
+  return (
+    <div className="bg-white text-gray-900 rounded-xl shadow-md p-6 md:p-10 max-w-2xl mx-auto">
+      <form onSubmit={handleSubmit} className="space-y-6">
+        {/* Paroisse */}
+        // ...existing code...
+      </form>
+    </div>
+  );
         commissions: initialData.commissions || [],
         consent: initialData.consent || false
       });
