@@ -12,7 +12,7 @@ export default function Footer() {
 
   return (
     <>
-      <footer className="relative bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white overflow-hidden">
+      <footer className="hidden md:block relative bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white overflow-hidden">
         {/* Background Pattern */}
         <div className="absolute inset-0 opacity-5">
           <div className="absolute top-0 left-0 w-32 h-32 bg-cyan-500 rounded-full -translate-x-16 -translate-y-16"></div>
@@ -25,12 +25,18 @@ export default function Footer() {
             {/* Organization Info */}
             <div className="lg:col-span-2">
               <div className="flex items-center gap-3 mb-6">
-                <div className="w-12 h-12 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg">
-                  <Church className="text-white" size={24} />
+                <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center shadow-lg overflow-hidden">
+                  <Image
+                    src="/images/eeam-logo.png"
+                    alt="EEAM Logo"
+                    width={48}
+                    height={48}
+                    className="object-contain"
+                  />
                 </div>
                 <div>
                   <h3 className="text-2xl font-bold bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">
-                    Église Évangélique Au Maroc--Paroisse de Rabat
+                    Église Évangélique Au Maroc
                   </h3>
                   <p className="text-sm text-cyan-400 font-medium">Paroisse de Rabat</p>
                 </div>

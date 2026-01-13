@@ -168,27 +168,36 @@ export default function CookieSettingsModal({ isOpen, onClose }: CookieSettingsM
             Refuser tous les cookies
           </button>
 
-          <div className="flex gap-3 ml-auto">
+          <div className="flex flex-col sm:flex-row gap-3 ml-auto">
             <button
-              onClick={handleReset}
-              className="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium"
+              onClick={onClose}
+              className="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium order-2 sm:order-1"
             >
-              <RotateCcw className="w-4 h-4 inline mr-2" />
-              Réinitialiser
+              Fermer
             </button>
 
-            <button
-              onClick={handleSave}
-              disabled={!hasChanges}
-              className={`px-4 py-2 rounded-lg transition-colors text-sm font-medium ${
-                hasChanges
-                  ? "bg-blue-600 text-white hover:bg-blue-700"
-                  : "bg-gray-300 text-gray-500 cursor-not-allowed"
-              }`}
-            >
-              <Save className="w-4 h-4 inline mr-2" />
-              Enregistrer
-            </button>
+            <div className="flex gap-3 order-1 sm:order-2">
+              <button
+                onClick={handleReset}
+                className="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium"
+              >
+                <RotateCcw className="w-4 h-4 inline mr-2" />
+                Réinitialiser
+              </button>
+
+              <button
+                onClick={handleSave}
+                disabled={!hasChanges}
+                className={`px-4 py-2 rounded-lg transition-colors text-sm font-medium ${
+                  hasChanges
+                    ? "bg-blue-600 text-white hover:bg-blue-700"
+                    : "bg-gray-300 text-gray-500 cursor-not-allowed"
+                }`}
+              >
+                <Save className="w-4 h-4 inline mr-2" />
+                Enregistrer
+              </button>
+            </div>
           </div>
         </div>
       </div>
