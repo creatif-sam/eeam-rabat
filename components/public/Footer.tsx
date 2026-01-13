@@ -55,7 +55,7 @@ export default function Footer() {
                 </div>
                 <div className="flex items-center gap-3 text-gray-400">
                   <Mail size={18} className="text-cyan-400" />
-                  <span>contact@eeam.ma</span>
+                  <span>cpeeamrabat@gmail.com</span>
                 </div>
               </div>
             </div>
