@@ -188,7 +188,7 @@ export default function MemberRegistrationForm({ isEdit, initialData, onSuccess 
         <h3 className="text-xl font-bold text-green-600 mb-2">
           {isEdit ? "Membre modifié" : "Inscription envoyée"}
         </h3>
-        <p className="text-gray-600">
+        <p className="text-muted-foreground">
           {isEdit ? "Les informations ont été mises à jour." : "Votre demande a bien été enregistrée. L'équipe vous contactera si nécessaire."}
         </p>
       </div>
@@ -284,7 +284,7 @@ export default function MemberRegistrationForm({ isEdit, initialData, onSuccess 
       </div>
 
       {!isEdit && (
-      <div className="border rounded-xl p-4 bg-slate-50">
+      <div className="border rounded-xl p-4 bg-muted">
         <label className="flex items-start gap-3 text-sm">
           <input
             type="checkbox"
@@ -295,7 +295,7 @@ export default function MemberRegistrationForm({ isEdit, initialData, onSuccess 
           />
           <span>
             J'ai lu et j'accepte la{" "}
-            <Link href="/politique-de-confidentialite" target="_blank" className="text-cyan-600 underline">
+            <Link href="/politique-de-confidentialite" target="_blank" className="text-primary underline hover:text-primary/80">
               politique de confidentialité
             </Link>.
           </span>
@@ -303,12 +303,12 @@ export default function MemberRegistrationForm({ isEdit, initialData, onSuccess 
       </div>
       )}
 
-      {error && <p className="text-red-600 text-sm">{error}</p>}
+      {error && <p className="text-destructive text-sm">{error}</p>}
 
       <button
         type="submit"
         disabled={loading}
-        className="w-full bg-cyan-600 text-white py-3 rounded-xl font-semibold disabled:opacity-60"
+        className="w-full bg-primary text-primary-foreground py-3 rounded-xl font-semibold disabled:opacity-60 hover:bg-primary/90 transition-colors"
       >
         {loading ? "Envoi en cours..." : isEdit ? "Modifier" : "Soumettre"}
       </button>

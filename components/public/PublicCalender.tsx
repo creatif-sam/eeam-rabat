@@ -59,7 +59,7 @@ export default function PublicCalendar() {
 
   if (loading || !currentDate || !today) {
     return (
-      <div className="bg-white rounded-2xl p-6 shadow">
+      <div className="bg-card rounded-2xl p-6 shadow border">
         Chargement du calendrier...
       </div>
     );
@@ -96,7 +96,7 @@ export default function PublicCalendar() {
   ];
 
   return (
-    <section className="bg-white rounded-2xl shadow-lg p-4 sm:p-8 mt-8 sm:mt-12">
+    <section className="bg-card rounded-2xl shadow-lg border p-4 sm:p-8 mt-8 sm:mt-12">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6">
         <div>
@@ -104,7 +104,7 @@ export default function PublicCalendar() {
             <Calendar className="text-cyan-600" />
             Calendrier de l’église
           </h2>
-          <p className="text-gray-600 text-sm">
+          <p className="text-muted-foreground text-sm">
             {monthNames[currentDate.getMonth()]}{" "}
             {currentDate.getFullYear()}
           </p>
@@ -121,7 +121,7 @@ export default function PublicCalendar() {
                 )
               )
             }
-            className="p-2 rounded-lg border hover:bg-gray-50"
+            className="p-2 rounded-lg border hover:bg-muted transition-colors"
           >
             <ChevronLeft size={18} />
           </button>
@@ -135,7 +135,7 @@ export default function PublicCalendar() {
                 )
               )
             }
-            className="p-2 rounded-lg border hover:bg-gray-50"
+            className="p-2 rounded-lg border hover:bg-muted transition-colors"
           >
             <ChevronRight size={18} />
           </button>
@@ -212,12 +212,12 @@ export default function PublicCalendar() {
             </h3>
 
             {selectedEvent.description && (
-              <p className="text-gray-600 mb-4 text-sm">
+              <p className="text-muted-foreground mb-4 text-sm">
                 {selectedEvent.description}
               </p>
             )}
 
-            <div className="text-sm text-gray-600 space-y-2">
+            <div className="text-sm text-muted-foreground space-y-2">
               <p className="flex items-center gap-2">
                 <Clock size={14} />
                 {selectedEvent.start_time}{" "}
@@ -231,7 +231,7 @@ export default function PublicCalendar() {
 
             <button
               onClick={() => setSelectedEvent(null)}
-              className="mt-4 text-sm text-gray-500"
+              className="mt-4 text-sm text-muted-foreground hover:text-foreground transition-colors"
             >
               Fermer
             </button>

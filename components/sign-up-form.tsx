@@ -72,6 +72,9 @@ export function SignUpForm({
           <CardDescription>
             Créez un nouveau compte pour accéder à l’intranet
           </CardDescription>
+          <p className="text-sm text-muted-foreground mt-2">
+            L'inscription est uniquement pour le CP et personnes autorisées.
+          </p>
         </CardHeader>
 
         <CardContent>

@@ -5,8 +5,10 @@ import {
   Lock,
   Clock,
   UserCheck,
-  HeartHandshake
+  HeartHandshake,
+  ArrowLeft
 } from "lucide-react";
+import Link from "next/link";
 
 export default function PrivacyPolicy() {
   return (
@@ -22,10 +24,21 @@ export default function PrivacyPolicy() {
         </h1>
 
         <p className="text-gray-600 max-w-2xl mx-auto">
-          L’Église Évangélique Africaine au Maroc s’engage à protéger
+          L'Église Évangélique au Maroc (EEAM), paroisse de Rabat s'engage à protéger
           les informations personnelles confiées par ses membres,
           visiteurs et partenaires.
         </p>
+      </div>
+
+      {/* Registration Button */}
+      <div className="text-center mb-8">
+        <Link
+          href="/#services"
+          className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-medium rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105"
+        >
+          <ArrowLeft size={18} />
+          Accéder aux formulaires d'inscription
+        </Link>
       </div>
 
       {/* Content */}
