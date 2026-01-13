@@ -12,7 +12,7 @@ type Counselling = {
   phone: string;
   email: string | null;
   reason: string;
-  pastor: { name: string } | null;
+  pastors: { name: string } | null;
 };
 
 export default function PastoralCounsellingList() {
@@ -37,7 +37,7 @@ export default function PastoralCounsellingList() {
         phone,
         email,
         reason,
-        pastor:pastors(name)
+        pastors!pastor_id(name)
         `
       )
       .order("counselling_date", { ascending: true })
@@ -113,7 +113,7 @@ export default function PastoralCounsellingList() {
                     </td>
 
                     <td className="px-4 py-3 font-medium">
-                      {item.pastor?.name || "Indifférent"}
+                      {item.pastors?.name || "Indifférent"}
                     </td>
 
                     <td className="px-4 py-3 text-right">
@@ -157,7 +157,7 @@ export default function PastoralCounsellingList() {
             )}
             <p><strong>Date</strong> {selected.counselling_date}</p>
             <p><strong>Heure</strong> {selected.counselling_time}</p>
-            <p><strong>Pasteur</strong> {selected.pastor?.name || "Indifférent"}</p>
+            <p><strong>Pasteur</strong> {selected.pastors?.name || "Indifférent"}</p>
             <p><strong>Motif</strong> {selected.reason}</p>
 
             <div className="flex justify-end gap-3 pt-4">
