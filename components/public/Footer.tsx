@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { Cookie, Shield, ExternalLink, MapPin, Mail, Heart, Church, BookOpen, Settings } from "lucide-react";
 import { useState } from "react";
 import CookieSettingsModal from "@/components/CookieSettingsModal";
