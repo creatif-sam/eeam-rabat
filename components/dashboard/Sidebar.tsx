@@ -36,30 +36,47 @@ const menuItems = [
 ]
 
 export default function Sidebar() {
-  const [sidebarOpen, setSidebarOpen] = useState(true)
+  const [sidebarOpen, setSidebarOpen] = useState(false)
   const pathname = usePathname()
 
   return (
-    <aside
-      className={`fixed left-0 top-0 h-screen bg-white shadow-2xl transition-all duration-300 z-50 ${
-        sidebarOpen ? "w-72" : "w-20"
-      } flex flex-col`}
-    >
-      <div className="h-20 flex items-center justify-between px-6 border-b border-gray-100 bg-gradient-to-r from-rose-600 to-rose-700 shrink-0">
+    <>
+      {/* Mobile menu button */}
+      <button
+        onClick={() => setSidebarOpen(true)}
+        className="fixed top-4 left-4 z-50 md:hidden p-2 bg-white rounded-lg shadow-lg border border-gray-200"
+      >
+        <Menu size={20} />
+      </button>
+
+      {/* Overlay for mobile */}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 z-40 md:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
+      <aside
+        className={`fixed left-0 top-0 h-screen bg-white shadow-2xl transition-all duration-300 z-50 ${
+          sidebarOpen ? "w-72" : "w-0 md:w-20"
+        } flex flex-col overflow-hidden`}
+      >
+      <div className="h-16 md:h-20 flex items-center justify-between px-4 md:px-6 border-b border-gray-100 bg-gradient-to-r from-rose-600 to-rose-700 shrink-0">
         {sidebarOpen && (
-          <span className="text-2xl font-bold text-white tracking-tight">
+          <span className="text-xl md:text-2xl font-bold text-white tracking-tight">
             EEAM Rabat
           </span>
         )}
         <button
           onClick={() => setSidebarOpen(!sidebarOpen)}
-          className="p-2 rounded-lg hover:bg-white/20 transition-colors text-white"
+          className="p-2 rounded-lg hover:bg-white/20 transition-colors text-white ml-auto md:ml-0"
         >
           {sidebarOpen ? <X size={20} /> : <Menu size={20} />}
         </button>
       </div>
 
-      <nav className="flex-1 overflow-y-auto p-4 space-y-2">
+      <nav className="flex-1 overflow-y-auto p-3 md:p-4 space-y-1 md:space-y-2">
         {menuItems.map(item => {
           const Icon = item.icon
           const isActive = pathname === item.route
@@ -68,7 +85,8 @@ export default function Sidebar() {
             <Link
               key={item.label}
               href={item.route}
-              className={`w-full flex items-center gap-4 px-4 py-3 rounded-xl transition-all duration-200 group ${
+              onClick={() => setSidebarOpen(false)} // Close sidebar on mobile after navigation
+              className={`w-full flex items-center gap-3 md:gap-4 px-3 md:px-4 py-2 md:py-3 rounded-xl transition-all duration-200 group ${
                 isActive
                   ? "bg-gradient-to-r from-cyan-500 to-cyan-600 text-white shadow-lg shadow-cyan-500/30"
                   : "text-gray-600 hover:bg-gray-50 hover:text-cyan-600"
@@ -92,12 +110,13 @@ export default function Sidebar() {
       </nav>
 
       {sidebarOpen && (
-        <div className="p-6 border-t border-gray-100 shrink-0">
+        <div className="p-4 md:p-6 border-t border-gray-100 shrink-0">
           <p className="text-xs text-gray-400 text-center">
             © EEAM 2026
           </p>
         </div>
       )}
     </aside>
+    </>
   )
 }

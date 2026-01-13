@@ -7,6 +7,7 @@ import Header from "@/components/public/layout/Header";
 import WelcomeSection from "@/components/public/sections/WelcomeSection";
 import ServicesGrid from "@/components/public/sections/ServicesGrid";
 import EventsSection from "@/components/public/sections/EventsSection";
+import MobileNavbar from "@/components/public/MobileNavbar";
 import BaseModal from "@/components/modals/BaseModal";
 
 import MemberRegistrationForm from "@/components/public/MemberRegistrationForm";
@@ -44,19 +45,28 @@ export default function HomePage() {
       <Header onLogin={() => setLoginOpen(true)} onSignUp={() => setSignUpOpen(true)} />
 
       <main className="max-w-7xl mx-auto px-6 py-8">
-        <WelcomeSection />
+        <div id="home">
+          <WelcomeSection />
+        </div>
 
-        <ServicesGrid
-          onMember={() => setMemberOpen(true)}
-          onVolunteer={() => setVolunteerOpen(true)}
-          onJoinGroup={() => setJoinGroupOpen(true)}
-          onRequest={() => setRequestOpen(true)}
-          onPastoral={() => setPastoralOpen(true)}
-          onAttendance={() => setAttendanceOpen(true)}
-        />
+        <div id="responsables">
+          <ServicesGrid
+            onMember={() => setMemberOpen(true)}
+            onVolunteer={() => setVolunteerOpen(true)}
+            onJoinGroup={() => setJoinGroupOpen(true)}
+            onRequest={() => setRequestOpen(true)}
+            onPastoral={() => setPastoralOpen(true)}
+            onAttendance={() => setAttendanceOpen(true)}
+          />
+        </div>
 
-        <PublicCalendar />
-        <EventsSection />
+        <div id="calendar">
+          <PublicCalendar />
+        </div>
+
+        <div id="events">
+          <EventsSection />
+        </div>
 
       </main>
 
@@ -139,6 +149,17 @@ export default function HomePage() {
       >
         <SignUpForm />
       </BaseModal>
+
+      <MobileNavbar
+        onNavigate={(section) => {
+          const element = document.getElementById(section);
+          if (element) {
+            element.scrollIntoView({ behavior: "smooth" });
+          }
+        }}
+        onLogin={() => setLoginOpen(true)}
+        onSignUp={() => setSignUpOpen(true)}
+      />
     </div>
   );
 }

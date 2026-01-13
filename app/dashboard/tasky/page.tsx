@@ -98,18 +98,18 @@ export default function TaskyTab() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="p-4 md:p-6 space-y-4 md:space-y-6">
       {/* Header */}
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-semibold flex items-center gap-2">
+      <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center gap-4">
+        <h1 className="text-xl md:text-2xl font-semibold flex items-center gap-2">
           <FolderKanban />
           Gestion des projets
         </h1>
 
-        <div className="flex gap-2">
+        <div className="flex flex-col sm:flex-row gap-2">
           <button
             onClick={() => setOpenProject(true)}
-            className="px-4 py-2 rounded-lg bg-gray-900 text-white"
+            className="px-4 py-2 rounded-lg bg-gray-900 text-white text-sm md:text-base"
           >
             Nouveau projet
           </button>
@@ -117,7 +117,7 @@ export default function TaskyTab() {
           {activeProject && (
             <button
               onClick={() => setOpenTask(true)}
-              className="px-4 py-2 rounded-lg bg-cyan-600 text-white"
+              className="px-4 py-2 rounded-lg bg-cyan-600 text-white text-sm md:text-base"
             >
               Nouvelle tâche
             </button>
@@ -126,15 +126,15 @@ export default function TaskyTab() {
       </div>
 
       {/* Projects */}
-      <div className="flex gap-3 overflow-x-auto">
+      <div className="flex gap-2 md:gap-3 overflow-x-auto pb-2">
         {projects.map(p => (
           <button
             key={p.id}
             onClick={() => setActiveProject(p.id)}
-            className={`px-4 py-2 rounded-lg border ${
+            className={`px-3 md:px-4 py-2 rounded-lg border whitespace-nowrap text-sm md:text-base ${
               activeProject === p.id
                 ? "bg-cyan-600 text-white"
-                : "bg-white"
+                : "bg-white hover:bg-gray-50"
             }`}
           >
             {p.name}
@@ -144,10 +144,10 @@ export default function TaskyTab() {
 
       {/* Kanban */}
       {activeProject && (
-        <div className="grid md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {columns.map(col => (
-            <div key={col.key} className="rounded-xl border bg-gray-50 p-3">
-              <h2 className="font-medium mb-3">{col.label}</h2>
+            <div key={col.key} className="rounded-xl border bg-gray-50 p-3 md:p-4">
+              <h2 className="font-medium mb-3 text-sm md:text-base">{col.label}</h2>
 
               <div className="space-y-3">
                 {tasks
@@ -159,17 +159,17 @@ export default function TaskyTab() {
                   .map(task => (
                     <div
                       key={task.id}
-                      className="bg-white rounded-lg border p-3 shadow-sm"
+                      className="bg-white rounded-lg border p-3 md:p-4 shadow-sm"
                     >
-                      <p className="font-medium">{task.title}</p>
+                      <p className="font-medium text-sm md:text-base">{task.title}</p>
 
                       {task.description && (
-                        <p className="text-sm text-gray-500 mt-1">
+                        <p className="text-xs md:text-sm text-gray-500 mt-1">
                           {task.description}
                         </p>
                       )}
 
-                      <div className="flex justify-between mt-3 text-xs text-gray-500">
+                      <div className="flex flex-col sm:flex-row sm:justify-between gap-2 mt-3 text-xs text-gray-500">
                         <span className="capitalize">
                           {task.priority}
                         </span>
@@ -202,7 +202,7 @@ export default function TaskyTab() {
                               onClick={() =>
                                 moveTask(task.id, c.key)
                               }
-                              className="px-2 py-1 text-xs rounded bg-gray-100"
+                              className="px-2 py-1 text-xs rounded bg-gray-100 hover:bg-gray-200"
                             >
                               {c.label}
                             </button>
@@ -218,9 +218,9 @@ export default function TaskyTab() {
 
       {/* Project Modal */}
       <Modal open={openProject} onClose={() => setOpenProject(false)} title="Créer un projet">
-        <div className="space-y-3">
+        <div className="space-y-4">
           <input
-            className="w-full border rounded px-3 py-2"
+            className="w-full border rounded px-3 py-2 text-sm md:text-base"
             placeholder="Nom du projet"
             value={projectForm.name}
             onChange={e =>
@@ -229,8 +229,9 @@ export default function TaskyTab() {
           />
 
           <textarea
-            className="w-full border rounded px-3 py-2"
+            className="w-full border rounded px-3 py-2 text-sm md:text-base"
             placeholder="Description"
+            rows={3}
             value={projectForm.description}
             onChange={e =>
               setProjectForm({
@@ -242,7 +243,7 @@ export default function TaskyTab() {
 
           <button
             onClick={createProject}
-            className="w-full bg-gray-900 text-white py-2 rounded"
+            className="w-full bg-gray-900 text-white py-3 rounded-lg font-medium text-sm md:text-base"
           >
             Créer le projet
           </button>
@@ -251,9 +252,9 @@ export default function TaskyTab() {
 
       {/* Task Modal */}
       <Modal open={openTask} onClose={() => setOpenTask(false)} title="Créer une tâche">
-        <div className="space-y-3">
+        <div className="space-y-4">
           <input
-            className="w-full border rounded px-3 py-2"
+            className="w-full border rounded px-3 py-2 text-sm md:text-base"
             placeholder="Titre"
             value={taskForm.title}
             onChange={e =>
@@ -262,8 +263,9 @@ export default function TaskyTab() {
           />
 
           <textarea
-            className="w-full border rounded px-3 py-2"
+            className="w-full border rounded px-3 py-2 text-sm md:text-base"
             placeholder="Description"
+            rows={3}
             value={taskForm.description}
             onChange={e =>
               setTaskForm({
@@ -274,7 +276,7 @@ export default function TaskyTab() {
           />
 
           <select
-            className="w-full border rounded px-3 py-2"
+            className="w-full border rounded px-3 py-2 text-sm md:text-base"
             value={taskForm.assignee_id}
             onChange={e =>
               setTaskForm({
@@ -293,7 +295,7 @@ export default function TaskyTab() {
 
           <input
             type="date"
-            className="w-full border rounded px-3 py-2"
+            className="w-full border rounded px-3 py-2 text-sm md:text-base"
             value={taskForm.due_date}
             onChange={e =>
               setTaskForm({ ...taskForm, due_date: e.target.value })
@@ -302,7 +304,7 @@ export default function TaskyTab() {
 
           <button
             onClick={createTask}
-            className="w-full bg-cyan-600 text-white py-2 rounded"
+            className="w-full bg-cyan-600 text-white py-3 rounded-lg font-medium text-sm md:text-base"
           >
             Créer la tâche
           </button>

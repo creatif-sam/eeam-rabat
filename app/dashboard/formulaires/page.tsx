@@ -38,9 +38,9 @@ export default function FormulairesPage() {
   ] as const;
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-4 md:space-y-8">
       <div>
-        <h1 className="text-2xl font-bold text-gray-800">
+        <h1 className="text-xl md:text-2xl font-bold text-gray-800">
           Formulaires
         </h1>
         <p className="text-gray-600 text-sm">
@@ -48,7 +48,7 @@ export default function FormulairesPage() {
         </p>
       </div>
 
-      <div className="flex flex-wrap gap-3 border-b pb-4">
+      <div className="flex flex-wrap gap-2 md:gap-3 border-b pb-4">
         {tabs.map(tab => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.key;
@@ -57,20 +57,21 @@ export default function FormulairesPage() {
             <button
               key={tab.key}
               onClick={() => setActiveTab(tab.key)}
-              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition ${
+              className={`flex items-center gap-2 px-3 md:px-4 py-2 rounded-xl text-xs md:text-sm font-medium transition ${
                 isActive
                   ? "bg-cyan-600 text-white"
                   : "bg-white border text-gray-700 hover:bg-gray-50"
               }`}
             >
-              <Icon size={16} />
-              {tab.label}
+              <Icon size={14} className="md:w-4 md:h-4" />
+              <span className="hidden sm:inline">{tab.label}</span>
+              <span className="sm:hidden">{tab.label.split(' ')[0]}</span>
             </button>
           );
         })}
       </div>
 
-      <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
+      <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-4 md:p-6">
         {activeTab === "attendance" && <AttendanceDashboard />}
         {activeTab === "volunteer" && <VolunteerRequestsDashboard />}
         {activeTab === "pastoral" && <PastoralCounsellingList />}

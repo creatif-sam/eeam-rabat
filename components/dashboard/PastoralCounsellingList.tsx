@@ -71,14 +71,53 @@ export default function PastoralCounsellingList() {
   }
 
   return (
-    <div className="space-y-10">
+    <div className="space-y-6 md:space-y-10">
       {Object.entries(groupedByDate).map(([date, items]) => (
         <div key={date} className="space-y-4">
           <h3 className="text-lg font-semibold text-gray-800">
             {date}
           </h3>
 
-          <div className="overflow-x-auto">
+          {/* Mobile Card View */}
+          <div className="block md:hidden space-y-3">
+            {items.map((item, index) => (
+              <div
+                key={item.id}
+                className="bg-white border rounded-xl p-4 shadow-sm"
+              >
+                <div className="flex justify-between items-start mb-3">
+                  <div>
+                    <p className="font-medium text-gray-800">{item.full_name}</p>
+                    <p className="text-sm text-gray-600">{item.phone}</p>
+                    {item.email && (
+                      <p className="text-sm text-gray-600">{item.email}</p>
+                    )}
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => setSelected(item)}
+                      className="p-2 rounded-lg border hover:bg-gray-100"
+                      title="Voir"
+                    >
+                      <Eye size={16} />
+                    </button>
+                  </div>
+                </div>
+                <div className="text-sm text-gray-600">
+                  <p><span className="font-medium">Heure:</span> {item.counselling_time}</p>
+                  {item.pastors && (
+                    <p><span className="font-medium">Pasteur:</span> {item.pastors.name}</p>
+                  )}
+                </div>
+                <div className="mt-3 p-3 bg-gray-50 rounded-lg">
+                  <p className="text-sm text-gray-700">{item.reason}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Desktop Table View */}
+          <div className="hidden md:block overflow-x-auto">
             <table className="min-w-full border border-gray-200 rounded-xl overflow-hidden">
               <thead className="bg-gray-50">
                 <tr className="text-left text-sm text-gray-600">
@@ -150,26 +189,31 @@ export default function PastoralCounsellingList() {
       ))}
 
       {selected && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-          <div className="bg-white rounded-2xl p-6 w-full max-w-md space-y-4">
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl p-4 md:p-6 w-full max-w-md space-y-4 max-h-[90vh] overflow-y-auto">
             <h3 className="text-lg font-semibold text-gray-800">
               Détails de l'entretien
             </h3>
 
-            <p><strong>Nom</strong> {selected.full_name}</p>
-            <p><strong>Téléphone</strong> {selected.phone}</p>
-            {selected.email && (
-              <p><strong>Email</strong> {selected.email}</p>
-            )}
-            <p><strong>Date</strong> {selected.counselling_date}</p>
-            <p><strong>Heure</strong> {selected.counselling_time}</p>
-            <p><strong>Pasteur</strong> {selected.pastors?.name || "Indifférent"}</p>
-            <p><strong>Motif</strong> {selected.reason}</p>
+            <div className="space-y-3 text-sm">
+              <p><strong>Nom:</strong> {selected.full_name}</p>
+              <p><strong>Téléphone:</strong> {selected.phone}</p>
+              {selected.email && (
+                <p><strong>Email:</strong> {selected.email}</p>
+              )}
+              <p><strong>Date:</strong> {selected.counselling_date}</p>
+              <p><strong>Heure:</strong> {selected.counselling_time}</p>
+              <p><strong>Pasteur:</strong> {selected.pastors?.name || "Indifférent"}</p>
+              <div>
+                <p className="font-semibold mb-1">Motif:</p>
+                <p className="text-gray-700 bg-gray-50 p-3 rounded-lg">{selected.reason}</p>
+              </div>
+            </div>
 
             <div className="flex justify-end gap-3 pt-4">
               <button
                 onClick={() => setSelected(null)}
-                className="px-4 py-2 rounded-lg border"
+                className="px-4 py-2 rounded-lg border text-sm font-medium w-full sm:w-auto"
               >
                 Fermer
               </button>

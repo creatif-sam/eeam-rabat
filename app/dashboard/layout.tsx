@@ -14,9 +14,9 @@ export default function DashboardLayout({
         {({ user }) => (
           <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
             <Sidebar />
-            <div className="ml-72">
+            <div className="md:ml-20">
               <Header user={user} />
-              <main className="p-8">{children}</main>
+              <main className="p-4 md:p-8">{children}</main>
             </div>
           </div>
         )}

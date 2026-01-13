@@ -150,18 +150,18 @@ export default function AttendanceDashboard() {
   };
 
   return (
-    <div className="space-y-10">
+    <div className="space-y-6 md:space-y-10">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <h2 className="text-xl font-bold text-gray-800">
+        <h2 className="text-lg md:text-xl font-bold text-gray-800">
           Tableau d’assiduité
         </h2>
 
-        <div className="flex items-center gap-3">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 w-full sm:w-auto">
           <select
             value={selectedMonth}
             onChange={e => setSelectedMonth(e.target.value)}
-            className="px-3 py-2 border rounded-lg text-sm"
+            className="px-3 py-2 border rounded-lg text-sm w-full sm:w-auto"
           >
             <option value="">Tous les mois</option>
             {months.map(m => (
@@ -173,7 +173,7 @@ export default function AttendanceDashboard() {
 
           <button
             onClick={exportCSV}
-            className="flex items-center gap-2 px-4 py-2 rounded-lg bg-cyan-600 text-white text-sm"
+            className="flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-cyan-600 text-white text-sm w-full sm:w-auto"
           >
             <Download size={16} />
             Exporter
@@ -224,70 +224,130 @@ export default function AttendanceDashboard() {
 
       {/* Table with actions */}
       <div className="bg-white border rounded-2xl overflow-hidden">
-        <div className="px-6 py-4 border-b font-semibold text-gray-800">
+        <div className="px-4 md:px-6 py-4 border-b font-semibold text-gray-800">
           Historique détaillé
         </div>
 
-        <table className="min-w-full text-sm">
-          <thead className="bg-gray-50 text-gray-600">
-            <tr>
-              <th className="px-4 py-3 text-left">Date</th>
-              <th className="px-4 py-3 text-left">Service</th>
-              <th className="px-4 py-3 text-center">Culte</th>
-              <th className="px-4 py-3 text-center">Hommes</th>
-              <th className="px-4 py-3 text-center">Femmes</th>
-              <th className="px-4 py-3 text-center">Enfants</th>
-              <th className="px-4 py-3 text-center">Nouveaux</th>
-              <th className="px-4 py-3 text-right">Actions</th>
-            </tr>
-          </thead>
+        {/* Mobile Card View */}
+        <div className="block md:hidden">
+          {filteredData.map(row => (
+            <div
+              key={`${row.attendance_date}-${row.service.name}`}
+              className="p-4 border-b last:border-b-0"
+            >
+              <div className="flex justify-between items-start mb-3">
+                <div>
+                  <p className="font-medium text-gray-800">
+                    {new Date(row.attendance_date).toLocaleDateString()}
+                  </p>
+                  <p className="text-sm text-gray-600">{row.service.name}</p>
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setViewRow(row)}
+                    className="p-2 rounded-lg border hover:bg-gray-100"
+                    title="Voir"
+                  >
+                    <Eye size={16} />
+                  </button>
+                  <button
+                    onClick={() => setEditRow(row)}
+                    className="p-2 rounded-lg border hover:bg-gray-100"
+                    title="Modifier"
+                  >
+                    <Edit size={16} />
+                  </button>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                  <span className="text-gray-500">Culte:</span>
+                  <span className="ml-2 font-medium">{row.culte_total}</span>
+                </div>
+                <div>
+                  <span className="text-gray-500">Hommes:</span>
+                  <span className="ml-2 font-medium">{row.hommes}</span>
+                </div>
+                <div>
+                  <span className="text-gray-500">Femmes:</span>
+                  <span className="ml-2 font-medium">{row.femmes}</span>
+                </div>
+                <div>
+                  <span className="text-gray-500">Enfants:</span>
+                  <span className="ml-2 font-medium">{row.enfants}</span>
+                </div>
+                <div className="col-span-2">
+                  <span className="text-gray-500">Nouveaux:</span>
+                  <span className="ml-2 font-medium">{row.nouveaux}</span>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
 
-          <tbody>
-            {filteredData.map(row => (
-              <tr
-                key={`${row.attendance_date}-${row.service.name}`}
-                className="border-t"
-              >
-                <td className="px-4 py-3 font-medium">
-                  {new Date(row.attendance_date).toLocaleDateString()}
-                </td>
-                <td className="px-4 py-3">{row.service.name}</td>
-                <td className="px-4 py-3 text-center">{row.culte_total}</td>
-                <td className="px-4 py-3 text-center">{row.hommes}</td>
-                <td className="px-4 py-3 text-center">{row.femmes}</td>
-                <td className="px-4 py-3 text-center">{row.enfants}</td>
-                <td className="px-4 py-3 text-center">{row.nouveaux}</td>
-                <td className="px-4 py-3 text-right">
-                  <div className="flex justify-end gap-3">
-                    <button
-                      onClick={() => setViewRow(row)}
-                      className="p-2 rounded-lg border hover:bg-gray-100"
-                      title="Voir"
-                    >
-                      <Eye size={16} />
-                    </button>
-
-                    <button
-                      onClick={() => setEditRow(row)}
-                      className="p-2 rounded-lg border hover:bg-gray-100"
-                      title="Modifier"
-                    >
-                      <Edit size={16} />
-                    </button>
-                  </div>
-                </td>
+        {/* Desktop Table View */}
+        <div className="hidden md:block overflow-x-auto">
+          <table className="min-w-full text-sm">
+            <thead className="bg-gray-50 text-gray-600">
+              <tr>
+                <th className="px-4 py-3 text-left">Date</th>
+                <th className="px-4 py-3 text-left">Service</th>
+                <th className="px-4 py-3 text-center">Culte</th>
+                <th className="px-4 py-3 text-center">Hommes</th>
+                <th className="px-4 py-3 text-center">Femmes</th>
+                <th className="px-4 py-3 text-center">Enfants</th>
+                <th className="px-4 py-3 text-center">Nouveaux</th>
+                <th className="px-4 py-3 text-right">Actions</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+
+            <tbody>
+              {filteredData.map(row => (
+                <tr
+                  key={`${row.attendance_date}-${row.service.name}`}
+                  className="border-t"
+                >
+                  <td className="px-4 py-3 font-medium">
+                    {new Date(row.attendance_date).toLocaleDateString()}
+                  </td>
+                  <td className="px-4 py-3">{row.service.name}</td>
+                  <td className="px-4 py-3 text-center">{row.culte_total}</td>
+                  <td className="px-4 py-3 text-center">{row.hommes}</td>
+                  <td className="px-4 py-3 text-center">{row.femmes}</td>
+                  <td className="px-4 py-3 text-center">{row.enfants}</td>
+                  <td className="px-4 py-3 text-center">{row.nouveaux}</td>
+                  <td className="px-4 py-3 text-right">
+                    <div className="flex justify-end gap-3">
+                      <button
+                        onClick={() => setViewRow(row)}
+                        className="p-2 rounded-lg border hover:bg-gray-100"
+                        title="Voir"
+                      >
+                        <Eye size={16} />
+                      </button>
+
+                      <button
+                        onClick={() => setEditRow(row)}
+                        className="p-2 rounded-lg border hover:bg-gray-100"
+                        title="Modifier"
+                      >
+                        <Edit size={16} />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
 
       {/* View modal */}
     {viewRow && (
-  <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-    <div className="bg-white w-full max-w-lg rounded-xl shadow-xl border border-gray-200">
+  <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
+    <div className="bg-white w-full max-w-lg rounded-xl shadow-xl border border-gray-200 max-h-[90vh] overflow-y-auto">
       {/* Header */}
-      <div className="px-6 py-4 border-b">
+      <div className="px-4 md:px-6 py-4 border-b">
         <h3 className="text-lg font-semibold text-gray-800">
           Détails de l’assiduité
         </h3>
@@ -297,8 +357,8 @@ export default function AttendanceDashboard() {
       </div>
 
       {/* Content */}
-      <div className="px-6 py-5 space-y-4 text-sm">
-        <div className="grid grid-cols-2 gap-4">
+      <div className="px-4 md:px-6 py-5 space-y-4 text-sm">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <Detail label="Date" value={viewRow.attendance_date} />
           <Detail label="Service" value={viewRow.service.name} />
           <Detail label="Culte total" value={viewRow.culte_total} />
@@ -310,10 +370,10 @@ export default function AttendanceDashboard() {
       </div>
 
       {/* Footer */}
-      <div className="px-6 py-4 border-t flex justify-end">
+      <div className="px-4 md:px-6 py-4 border-t flex justify-end">
         <button
           onClick={() => setViewRow(null)}
-          className="px-5 py-2 rounded-lg border text-sm font-medium text-gray-700 hover:bg-gray-50"
+          className="px-5 py-2 rounded-lg border text-sm font-medium text-gray-700 hover:bg-gray-50 w-full sm:w-auto"
         >
           Fermer
         </button>
@@ -324,31 +384,35 @@ export default function AttendanceDashboard() {
 
       {/* Edit modal */}
       {editRow && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-          <div className="bg-white rounded-2xl p-6 w-full max-w-md space-y-4">
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl p-4 md:p-6 w-full max-w-md space-y-4 max-h-[90vh] overflow-y-auto">
             <h3 className="text-lg font-semibold">Modifier</h3>
 
             {(["culte_total","hommes","femmes","enfants","nouveaux"] as const).map(
               field => (
-                <input
-                  key={field}
-                  type="number"
-                  value={(editRow as any)[field]}
-                  onChange={e =>
-                    setEditRow({
-                      ...editRow,
-                      [field]: Number(e.target.value)
-                    })
-                  }
-                  className="w-full px-4 py-2 border rounded-lg"
-                />
+                <div key={field}>
+                  <label className="block text-sm font-medium text-gray-700 mb-1 capitalize">
+                    {field.replace('_', ' ')}
+                  </label>
+                  <input
+                    type="number"
+                    value={(editRow as any)[field]}
+                    onChange={e =>
+                      setEditRow({
+                        ...editRow,
+                        [field]: Number(e.target.value)
+                      })
+                    }
+                    className="w-full px-4 py-2 border rounded-lg text-sm"
+                  />
+                </div>
               )
             )}
 
-            <div className="flex justify-end gap-3">
+            <div className="flex flex-col sm:flex-row justify-end gap-3 pt-4">
               <button
                 onClick={() => setEditRow(null)}
-                className="px-4 py-2 border rounded-lg"
+                className="px-4 py-2 border rounded-lg text-sm font-medium w-full sm:w-auto"
               >
                 Annuler
               </button>
@@ -368,7 +432,7 @@ export default function AttendanceDashboard() {
                   setEditRow(null);
                   loadData();
                 }}
-                className="px-4 py-2 bg-cyan-600 text-white rounded-lg"
+                className="px-4 py-2 bg-cyan-600 text-white rounded-lg text-sm font-medium w-full sm:w-auto"
               >
                 Enregistrer
               </button>

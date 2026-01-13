@@ -57,19 +57,19 @@ export default function Header({ user }: { user: User }) {
     .toUpperCase()
 
   return (
-    <header className="h-20 bg-white/80 backdrop-blur-lg border-b border-gray-100 sticky top-0 z-40 shadow-sm">
-      <div className="h-full px-8 flex items-center justify-between">
-        <div className="text-2xl font-bold bg-gradient-to-r from-cyan-600 to-blue-600 bg-clip-text text-transparent">
+    <header className="h-16 md:h-20 bg-white/80 backdrop-blur-lg border-b border-gray-100 sticky top-0 z-30 shadow-sm">
+      <div className="h-full px-4 md:px-8 flex items-center justify-between">
+        <div className="text-lg md:text-2xl font-bold bg-gradient-to-r from-cyan-600 to-blue-600 bg-clip-text text-transparent">
           Tableau de bord
         </div>
 
-        <div className="flex items-center gap-6">
+        <div className="flex items-center gap-3 md:gap-6">
           <button className="relative p-2 hover:bg-gray-100 rounded-xl">
-            <Bell size={20} className="text-gray-600" />
+            <Bell size={18} className="text-gray-600" />
           </button>
 
-          <div className="flex items-center gap-4 pl-6 border-l border-gray-200">
-            <div className="text-right">
+          <div className="flex items-center gap-3 md:gap-4 pl-3 md:pl-6 border-l border-gray-200">
+            <div className="text-right hidden sm:block">
               <p className="text-sm font-semibold text-gray-800">
                 {fullName}
               </p>
@@ -80,7 +80,7 @@ export default function Header({ user }: { user: User }) {
 
             <Link
               href="/dashboard/profile"
-              className="w-11 h-11 rounded-full overflow-hidden shadow-lg border border-gray-200 hover:ring-2 hover:ring-cyan-500 transition flex items-center justify-center bg-gradient-to-br from-cyan-500 to-blue-600 text-white font-semibold"
+              className="w-9 h-9 md:w-11 md:h-11 rounded-full overflow-hidden shadow-lg border border-gray-200 hover:ring-2 hover:ring-cyan-500 transition flex items-center justify-center bg-gradient-to-br from-cyan-500 to-blue-600 text-white font-semibold text-sm md:text-base"
               title="Voir le profil"
             >
               {profile?.avatar_url ? (
@@ -100,7 +100,7 @@ export default function Header({ user }: { user: User }) {
                 className="p-2 rounded-lg hover:bg-gray-100"
                 title="Déconnexion"
               >
-                <LogOut size={18} />
+                <LogOut size={16} />
               </button>
             </form>
           </div>
