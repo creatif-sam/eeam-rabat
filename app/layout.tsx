@@ -61,9 +61,9 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <CookieManager />
+          {/* <CookieManager /> */}
           {children}
-          <CookieBanner />
+          {/* <CookieBanner /> */}
           <PWAInstallPrompt />
         </ThemeProvider>
 
