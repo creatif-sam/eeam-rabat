@@ -64,11 +64,17 @@ export default function AttendanceDashboard() {
         femmes,
         enfants,
         nouveaux,
-        service:service_types(name)
+        service_types(name)
       `)
       .order("attendance_date", { ascending: true });
 
-    setData(data || []);
+    // Transform the data to match the expected type
+    const transformedData = (data || []).map(item => ({
+      ...item,
+      service: item.service_types && item.service_types.length > 0 ? { name: item.service_types[0].name } : { name: '' }
+    }));
+
+    setData(transformedData);
   };
 
   const months = useMemo(() => {

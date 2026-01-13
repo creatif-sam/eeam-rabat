@@ -37,13 +37,19 @@ export default function PastoralCounsellingList() {
         phone,
         email,
         reason,
-        pastors!pastor_id(name)
+        pastors(name)
         `
       )
       .order("counselling_date", { ascending: true })
       .order("counselling_time", { ascending: true });
 
-    setData(data || []);
+    // Transform the data to match the expected type
+    const transformedData = (data || []).map(item => ({
+      ...item,
+      pastors: item.pastors && item.pastors.length > 0 ? { name: item.pastors[0].name } : null
+    }));
+
+    setData(transformedData);
     setLoading(false);
   };
 

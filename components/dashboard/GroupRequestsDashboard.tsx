@@ -38,17 +38,23 @@ export default function GroupRequestsDashboard() {
         motivation,
         created_at,
         processed,
-        group:groupes_commissions(name)
+        groupes_commissions(name)
         `
       )
       .order("created_at", { ascending: false });
 
+    // Transform the data to match the expected type
+    const transformedData = (data || []).map(item => ({
+      ...item,
+      group: item.groupes_commissions && item.groupes_commissions.length > 0 ? { name: item.groupes_commissions[0].name } : { name: '' }
+    }));
+
     const statMap: Record<string, number> = {};
-    data?.forEach(r => {
+    transformedData?.forEach(r => {
       statMap[r.group.name] = (statMap[r.group.name] || 0) + 1;
     });
 
-    setRequests(data || []);
+    setRequests(transformedData);
     setStats(statMap);
     setLoading(false);
   };
