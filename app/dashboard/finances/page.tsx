@@ -51,19 +51,54 @@ export default function FinancesTab() {
   }, [selectedPeriod]);
 
   const fetchAll = async () => {
-    const [{ data: resume }, { data: tx }, { data: budget }] =
-      await Promise.all([
-        supabase.from("vue_finance_resume").select("*").single(),
-        supabase
-          .from("transactions_financieres")
-          .select("*")
-          .order("date_transaction", { ascending: false }),
-        supabase.from("vue_depenses_par_categorie").select("*")
-      ]);
+    try {
+      const [{ data: resume, error: resumeError }, { data: tx, error: txError }, { data: budget, error: budgetError }] =
+        await Promise.all([
+          supabase.from("vue_finance_resume").select("*").single(),
+          supabase
+            .from("transactions_financieres")
+            .select("*")
+            .order("date_transaction", { ascending: false }),
+          supabase.from("vue_depenses_par_categorie").select("*")
+        ]);
 
-    setSummary(resume);
-    setTransactions(tx || []);
-    setBudgets(budget || []);
+      // Handle errors gracefully
+      if (resumeError) {
+        console.warn("Finance summary view not available:", resumeError.message);
+        setSummary({
+          total_revenus: 0,
+          total_depenses: 0,
+          solde_net: 0,
+          total_dimes: 0
+        });
+      } else {
+        setSummary(resume);
+      }
+
+      if (txError) {
+        console.warn("Transactions table not available:", txError.message);
+        setTransactions([]);
+      } else {
+        setTransactions(tx || []);
+      }
+
+      if (budgetError) {
+        console.warn("Budget view not available:", budgetError.message);
+        setBudgets([]);
+      } else {
+        setBudgets(budget || []);
+      }
+    } catch (error) {
+      console.error("Error fetching finance data:", error);
+      setSummary({
+        total_revenus: 0,
+        total_depenses: 0,
+        solde_net: 0,
+        total_dimes: 0
+      });
+      setTransactions([]);
+      setBudgets([]);
+    }
   };
 
   const formatCurrency = (amount: number) =>
@@ -77,7 +112,16 @@ export default function FinancesTab() {
     t.categorie.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  if (!summary) return <p className="p-8">Chargement...</p>;
+  if (!summary) return (
+    <div className="p-8 space-y-6 bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 min-h-screen">
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-cyan-200 border-t-cyan-600 rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-600">Chargement des données financières...</p>
+        </div>
+      </div>
+    </div>
+  );
 
   return (
     <div className="p-8 space-y-6 bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 min-h-screen">
