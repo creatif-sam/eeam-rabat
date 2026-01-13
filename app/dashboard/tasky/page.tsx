@@ -1,22 +1,18 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Plus, Calendar } from "lucide-react";
+import {
+  Plus,
+  Calendar,
+  User,
+  FolderKanban
+} from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import Modal from "@/components/dashboard/Modal";
 
-type TaskStatus = "backlog" | "in_progress" | "review" | "done";
+type Status = "backlog" | "in_progress" | "review" | "done";
 
-interface Task {
-  id: string;
-  title: string;
-  description: string | null;
-  status: TaskStatus;
-  priority: "low" | "medium" | "high";
-  due_date: string | null;
-}
-
-const colonnes: { key: TaskStatus; label: string }[] = [
+const columns: { key: Status; label: string }[] = [
   { key: "backlog", label: "À faire" },
   { key: "in_progress", label: "En cours" },
   { key: "review", label: "En révision" },
@@ -26,123 +22,187 @@ const colonnes: { key: TaskStatus; label: string }[] = [
 export default function TaskyTab() {
   const supabase = createClient();
 
-  const [tasks, setTasks] = useState<Task[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [open, setOpen] = useState(false);
+  const [projects, setProjects] = useState<any[]>([]);
+  const [users, setUsers] = useState<any[]>([]);
+  const [tasks, setTasks] = useState<any[]>([]);
+  const [activeProject, setActiveProject] = useState<string | null>(null);
 
-  const [form, setForm] = useState({
+  const [openProject, setOpenProject] = useState(false);
+  const [openTask, setOpenTask] = useState(false);
+
+  const [projectForm, setProjectForm] = useState({
+    name: "",
+    description: ""
+  });
+
+  const [taskForm, setTaskForm] = useState({
     title: "",
     description: "",
-    status: "backlog" as TaskStatus,
-    priority: "medium" as "low" | "medium" | "high",
-    due_date: ""
+    status: "backlog" as Status,
+    priority: "medium",
+    due_date: "",
+    assignee_id: ""
   });
 
   useEffect(() => {
-    fetchTasks();
+    loadAll();
   }, []);
 
-  async function fetchTasks() {
-    setLoading(true);
-    const { data } = await supabase
-      .from("tasks")
-      .select("*")
-      .order("created_at", { ascending: true });
+  async function loadAll() {
+    const [{ data: p }, { data: u }, { data: t }] = await Promise.all([
+      supabase.from("projects").select("*").order("created_at"),
+      supabase.from("users").select("id, full_name").order("full_name"),
+      supabase.from("tasks").select("*")
+    ]);
 
-    setTasks(data || []);
-    setLoading(false);
+    setProjects(p || []);
+    setUsers(u || []);
+    setTasks(t || []);
+  }
+
+  async function createProject() {
+    if (!projectForm.name) return;
+
+    await supabase.from("projects").insert(projectForm);
+    setProjectForm({ name: "", description: "" });
+    setOpenProject(false);
+    loadAll();
   }
 
   async function createTask() {
-    if (!form.title) return;
+    if (!taskForm.title || !activeProject) return;
 
     await supabase.from("tasks").insert({
-      title: form.title,
-      description: form.description,
-      status: form.status,
-      priority: form.priority,
-      due_date: form.due_date || null
+      ...taskForm,
+      project_id: activeProject,
+      due_date: taskForm.due_date || null,
+      assignee_id: taskForm.assignee_id || null
     });
 
-    setOpen(false);
-    setForm({
+    setTaskForm({
       title: "",
       description: "",
       status: "backlog",
       priority: "medium",
-      due_date: ""
+      due_date: "",
+      assignee_id: ""
     });
 
-    fetchTasks();
+    setOpenTask(false);
+    loadAll();
   }
 
-  async function moveTask(taskId: string, status: TaskStatus) {
-    await supabase.from("tasks").update({ status }).eq("id", taskId);
-    fetchTasks();
+  async function moveTask(id: string, status: Status) {
+    await supabase.from("tasks").update({ status }).eq("id", id);
+    loadAll();
   }
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">Tableau de planification Tasky</h1>
+      {/* Header */}
+      <div className="flex justify-between items-center">
+        <h1 className="text-2xl font-semibold flex items-center gap-2">
+          <FolderKanban />
+          Gestion des projets
+        </h1>
 
-        <button
-          onClick={() => setOpen(true)}
-          className="flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-white"
-        >
-          <Plus size={18} />
-          Nouvelle tâche
-        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={() => setOpenProject(true)}
+            className="px-4 py-2 rounded-lg bg-gray-900 text-white"
+          >
+            Nouveau projet
+          </button>
+
+          {activeProject && (
+            <button
+              onClick={() => setOpenTask(true)}
+              className="px-4 py-2 rounded-lg bg-cyan-600 text-white"
+            >
+              Nouvelle tâche
+            </button>
+          )}
+        </div>
       </div>
 
-      {loading ? (
-        <p className="text-sm text-muted-foreground">Chargement des tâches</p>
-      ) : (
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
-          {colonnes.map(colonne => (
-            <div
-              key={colonne.key}
-              className="rounded-xl border bg-background p-3"
-            >
-              <h2 className="mb-3 font-medium">{colonne.label}</h2>
+      {/* Projects */}
+      <div className="flex gap-3 overflow-x-auto">
+        {projects.map(p => (
+          <button
+            key={p.id}
+            onClick={() => setActiveProject(p.id)}
+            className={`px-4 py-2 rounded-lg border ${
+              activeProject === p.id
+                ? "bg-cyan-600 text-white"
+                : "bg-white"
+            }`}
+          >
+            {p.name}
+          </button>
+        ))}
+      </div>
+
+      {/* Kanban */}
+      {activeProject && (
+        <div className="grid md:grid-cols-4 gap-4">
+          {columns.map(col => (
+            <div key={col.key} className="rounded-xl border bg-gray-50 p-3">
+              <h2 className="font-medium mb-3">{col.label}</h2>
 
               <div className="space-y-3">
                 {tasks
-                  .filter(t => t.status === colonne.key)
+                  .filter(
+                    t =>
+                      t.project_id === activeProject &&
+                      t.status === col.key
+                  )
                   .map(task => (
                     <div
                       key={task.id}
-                      className="rounded-lg border bg-card p-3 shadow-sm"
+                      className="bg-white rounded-lg border p-3 shadow-sm"
                     >
                       <p className="font-medium">{task.title}</p>
 
                       {task.description && (
-                        <p className="mt-1 text-sm text-muted-foreground">
+                        <p className="text-sm text-gray-500 mt-1">
                           {task.description}
                         </p>
                       )}
 
-                      <div className="mt-3 flex items-center justify-between text-xs text-muted-foreground">
+                      <div className="flex justify-between mt-3 text-xs text-gray-500">
                         <span className="capitalize">
-                          Priorité {task.priority}
+                          {task.priority}
                         </span>
 
                         {task.due_date && (
                           <span className="flex items-center gap-1">
                             <Calendar size={12} />
-                            Échéance {task.due_date}
+                            {task.due_date}
                           </span>
                         )}
                       </div>
 
-                      <div className="mt-3 flex flex-wrap gap-1">
-                        {colonnes
-                          .filter(c => c.key !== colonne.key)
+                      {task.assignee_id && (
+                        <div className="mt-2 flex items-center gap-1 text-xs">
+                          <User size={12} />
+                          {
+                            users.find(
+                              u => u.id === task.assignee_id
+                            )?.full_name
+                          }
+                        </div>
+                      )}
+
+                      <div className="flex flex-wrap gap-1 mt-3">
+                        {columns
+                          .filter(c => c.key !== col.key)
                           .map(c => (
                             <button
                               key={c.key}
-                              onClick={() => moveTask(task.id, c.key)}
-                              className="rounded bg-muted px-2 py-1 text-xs"
+                              onClick={() =>
+                                moveTask(task.id, c.key)
+                              }
+                              className="px-2 py-1 text-xs rounded bg-gray-100"
                             >
                               {c.label}
                             </button>
@@ -156,55 +216,93 @@ export default function TaskyTab() {
         </div>
       )}
 
-      <Modal
-        open={open}
-        onClose={() => setOpen(false)}
-        title="Créer une tâche"
-      >
-        <div className="space-y-4">
+      {/* Project Modal */}
+      <Modal open={openProject} onClose={() => setOpenProject(false)} title="Créer un projet">
+        <div className="space-y-3">
           <input
-            className="w-full rounded border px-3 py-2"
-            placeholder="Titre de la tâche"
-            value={form.title}
-            onChange={e => setForm({ ...form, title: e.target.value })}
+            className="w-full border rounded px-3 py-2"
+            placeholder="Nom du projet"
+            value={projectForm.name}
+            onChange={e =>
+              setProjectForm({ ...projectForm, name: e.target.value })
+            }
           />
 
           <textarea
-            className="w-full rounded border px-3 py-2"
+            className="w-full border rounded px-3 py-2"
             placeholder="Description"
-            value={form.description}
+            value={projectForm.description}
             onChange={e =>
-              setForm({ ...form, description: e.target.value })
+              setProjectForm({
+                ...projectForm,
+                description: e.target.value
+              })
+            }
+          />
+
+          <button
+            onClick={createProject}
+            className="w-full bg-gray-900 text-white py-2 rounded"
+          >
+            Créer le projet
+          </button>
+        </div>
+      </Modal>
+
+      {/* Task Modal */}
+      <Modal open={openTask} onClose={() => setOpenTask(false)} title="Créer une tâche">
+        <div className="space-y-3">
+          <input
+            className="w-full border rounded px-3 py-2"
+            placeholder="Titre"
+            value={taskForm.title}
+            onChange={e =>
+              setTaskForm({ ...taskForm, title: e.target.value })
+            }
+          />
+
+          <textarea
+            className="w-full border rounded px-3 py-2"
+            placeholder="Description"
+            value={taskForm.description}
+            onChange={e =>
+              setTaskForm({
+                ...taskForm,
+                description: e.target.value
+              })
             }
           />
 
           <select
-            className="w-full rounded border px-3 py-2"
-            value={form.priority}
+            className="w-full border rounded px-3 py-2"
+            value={taskForm.assignee_id}
             onChange={e =>
-              setForm({
-                ...form,
-                priority: e.target.value as any
+              setTaskForm({
+                ...taskForm,
+                assignee_id: e.target.value
               })
             }
           >
-            <option value="low">Priorité basse</option>
-            <option value="medium">Priorité moyenne</option>
-            <option value="high">Priorité élevée</option>
+            <option value="">Assigner à</option>
+            {users.map(u => (
+              <option key={u.id} value={u.id}>
+                {u.full_name}
+              </option>
+            ))}
           </select>
 
           <input
             type="date"
-            className="w-full rounded border px-3 py-2"
-            value={form.due_date}
+            className="w-full border rounded px-3 py-2"
+            value={taskForm.due_date}
             onChange={e =>
-              setForm({ ...form, due_date: e.target.value })
+              setTaskForm({ ...taskForm, due_date: e.target.value })
             }
           />
 
           <button
             onClick={createTask}
-            className="w-full rounded bg-primary py-2 text-white"
+            className="w-full bg-cyan-600 text-white py-2 rounded"
           >
             Créer la tâche
           </button>
