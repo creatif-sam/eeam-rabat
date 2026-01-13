@@ -3,6 +3,18 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
+import {
+  User,
+  Phone,
+  Mail,
+  MapPin,
+  Calendar as CalendarIcon,
+  Briefcase,
+  Flag,
+  Droplet,
+  Users,
+  Home,
+} from "lucide-react";
 
 type MemberRegistrationFormProps = {
   isEdit?: boolean;
@@ -243,8 +255,20 @@ export default function MemberRegistrationForm({ isEdit, initialData, onSuccess 
         </div>
       </div>
 
-      <input name="nom" required placeholder="Nom *" className="w-full border rounded-xl p-3" onChange={handleChange} />
-      <input name="prenom" required placeholder="Prénom *" className="w-full border rounded-xl p-3" onChange={handleChange} />
+      <div>
+        <label className="font-medium" htmlFor="nom">Nom *</label>
+        <div className="relative mt-1">
+          <User className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-4 w-4" />
+          <input id="nom" name="nom" required placeholder="Nom *" className="w-full border rounded-xl p-3 pl-10" onChange={handleChange} />
+        </div>
+      </div>
+      <div>
+        <label className="font-medium" htmlFor="prenom">Prénom *</label>
+        <div className="relative mt-1">
+          <User className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-4 w-4" />
+          <input id="prenom" name="prenom" required placeholder="Prénom *" className="w-full border rounded-xl p-3 pl-10" onChange={handleChange} />
+        </div>
+      </div>
 
       <div>
         <label className="font-medium">Genre *</label>
@@ -267,25 +291,52 @@ export default function MemberRegistrationForm({ isEdit, initialData, onSuccess 
 
       <div>
         <label className="font-medium">Nationalité *</label>
-        <select
-          name="nationalite"
-          value={form.nationalite}
-          onChange={handleChange}
-          required
-          className="w-full border rounded-xl p-3 mt-2"
-        >
-          <option value="">Sélectionnez votre nationalité</option>
-          {countries.map(country => (
-            <option key={country} value={country}>
-              {country}
-            </option>
-          ))}
-        </select>
+        <div className="relative mt-2">
+          <Flag className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-4 w-4" />
+          <select
+            name="nationalite"
+            value={form.nationalite}
+            onChange={handleChange}
+            required
+            className="w-full border rounded-xl p-3 pl-10"
+          >
+            <option value="">Sélectionnez votre nationalité</option>
+            {countries.map(country => (
+              <option key={country} value={country}>
+                {country}
+              </option>
+            ))}
+          </select>
+        </div>
       </div>
-      <input type="date" name="date_naissance" className="w-full border rounded-xl p-3" onChange={handleChange} />
-      <input name="telephone" required placeholder="Téléphone *" className="w-full border rounded-xl p-3" onChange={handleChange} />
-      <input type="email" name="email" placeholder="Email" className="w-full border rounded-xl p-3" onChange={handleChange} />
-      <input name="profession" required placeholder="Occupation professionnelle *" className="w-full border rounded-xl p-3" onChange={handleChange} />
+      <div>
+        <label className="font-medium" htmlFor="date_naissance">Date de naissance *</label>
+        <div className="relative mt-1">
+          <CalendarIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-4 w-4" />
+          <input id="date_naissance" type="date" name="date_naissance" className="w-full border rounded-xl p-3 pl-10" onChange={handleChange} />
+        </div>
+      </div>
+      <div>
+        <label className="font-medium" htmlFor="telephone">Téléphone *</label>
+        <div className="relative mt-1">
+          <Phone className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-4 w-4" />
+          <input id="telephone" name="telephone" required placeholder="Téléphone *" className="w-full border rounded-xl p-3 pl-10" onChange={handleChange} />
+        </div>
+      </div>
+      <div>
+        <label className="font-medium" htmlFor="email">Email</label>
+        <div className="relative mt-1">
+          <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-4 w-4" />
+          <input id="email" type="email" name="email" placeholder="Email" className="w-full border rounded-xl p-3 pl-10" onChange={handleChange} />
+        </div>
+      </div>
+      <div>
+        <label className="font-medium" htmlFor="profession">Occupation professionnelle *</label>
+        <div className="relative mt-1">
+          <Briefcase className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-4 w-4" />
+          <input id="profession" name="profession" required placeholder="Occupation professionnelle *" className="w-full border rounded-xl p-3 pl-10" onChange={handleChange} />
+        </div>
+      </div>
 
       <div>
         <label className="font-medium">Baptisé(e) *</label>
@@ -306,8 +357,20 @@ export default function MemberRegistrationForm({ isEdit, initialData, onSuccess 
         </div>
       </div>
 
-      <input name="date_bapteme" placeholder="Date ou année de baptême" className="w-full border rounded-xl p-3" onChange={handleChange} />
-      <input name="adresse" required placeholder="Adresse / Quartier *" className="w-full border rounded-xl p-3" onChange={handleChange} />
+      <div>
+        <label className="font-medium" htmlFor="date_bapteme">Date ou année de baptême</label>
+        <div className="relative mt-1">
+          <Droplet className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-4 w-4" />
+          <input id="date_bapteme" name="date_bapteme" placeholder="Date ou année de baptême" className="w-full border rounded-xl p-3 pl-10" onChange={handleChange} />
+        </div>
+      </div>
+      <div>
+        <label className="font-medium" htmlFor="adresse">Adresse / Quartier *</label>
+        <div className="relative mt-1">
+          <Home className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-4 w-4" />
+          <input id="adresse" name="adresse" required placeholder="Adresse / Quartier *" className="w-full border rounded-xl p-3 pl-10" onChange={handleChange} />
+        </div>
+      </div>
 
       <div>
         <label className="font-medium">Commissions *</label>
