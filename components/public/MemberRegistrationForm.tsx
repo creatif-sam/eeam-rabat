@@ -68,7 +68,6 @@ export default function MemberRegistrationForm({ isEdit, initialData, onSuccess 
     }
   }, [isEdit, initialData]);
 
-  // ...existing code...
   const countries = [
     "Afghanistan", "Afrique du Sud", "Albanie", "Algérie", "Allemagne", "Andorre", "Angola", "Antigua-et-Barbuda",
     "Arabie saoudite", "Argentine", "Arménie", "Australie", "Autriche", "Azerbaïdjan", "Bahamas", "Bahreïn",
@@ -239,7 +238,7 @@ export default function MemberRegistrationForm({ isEdit, initialData, onSuccess 
     <form onSubmit={handleSubmit} className="space-y-6">
       {/* Paroisse */}
       <div>
-        <label className="font-medium">Paroisse *</label>
+        <label className="font-medium text-gray-900 dark:text-gray-100">Paroisse *</label>
         <div className="mt-2 space-y-2">
           {["Rabat centre ville", "Rabat Annexe J5"].map(p => (
             <label key={p} className="flex items-center gap-2">
@@ -250,6 +249,7 @@ export default function MemberRegistrationForm({ isEdit, initialData, onSuccess 
                 checked={form.paroisse === p}
                 onChange={handleChange}
                 required
+                className="bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-700"
               />
               {p}
             </label>
@@ -258,17 +258,17 @@ export default function MemberRegistrationForm({ isEdit, initialData, onSuccess 
       </div>
 
       <div>
-        <label className="font-medium" htmlFor="nom">Nom *</label>
+        <label className="font-medium text-gray-900 dark:text-gray-100" htmlFor="nom">Nom *</label>
         <div className="relative mt-1">
-          <User className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-4 w-4" />
-          <input id="nom" name="nom" required placeholder="Nom *" className="w-full border rounded-xl p-3 pl-10" onChange={handleChange} />
+          <User className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 h-4 w-4" />
+          <input id="nom" name="nom" required placeholder="Nom *" className="w-full border rounded-xl p-3 pl-10 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-700 placeholder:text-gray-400 dark:placeholder:text-gray-500" onChange={handleChange} />
         </div>
       </div>
       <div>
-        <label className="font-medium" htmlFor="prenom">Prénom *</label>
+        <label className="font-medium text-gray-900 dark:text-gray-100" htmlFor="prenom">Prénom *</label>
         <div className="relative mt-1">
-          <User className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-4 w-4" />
-          <input id="prenom" name="prenom" required placeholder="Prénom *" className="w-full border rounded-xl p-3 pl-10" onChange={handleChange} />
+          <User className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 h-4 w-4" />
+          <input id="prenom" name="prenom" required placeholder="Prénom *" className="w-full border rounded-xl p-3 pl-10 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-700 placeholder:text-gray-400 dark:placeholder:text-gray-500" onChange={handleChange} />
         </div>
       </div>
 
@@ -375,7 +375,7 @@ export default function MemberRegistrationForm({ isEdit, initialData, onSuccess 
       </div>
 
       <div>
-        <label className="font-medium">Commissions *</label>
+        <label className="font-medium text-gray-900 dark:text-gray-100">Commissions *</label>
         <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2">
           {commissionsList.map(c => (
             <label key={c} className="flex items-center gap-2">
@@ -383,6 +383,7 @@ export default function MemberRegistrationForm({ isEdit, initialData, onSuccess 
                 type="checkbox"
                 checked={form.commissions.includes(c)}
                 onChange={() => toggleCommission(c)}
+                className="bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-700"
               />
               {c}
             </label>
@@ -410,7 +411,7 @@ export default function MemberRegistrationForm({ isEdit, initialData, onSuccess 
       </div>
       )}
 
-      {error && <p className="text-destructive text-sm">{error}</p>}
+      {error && <p className="text-red-600 dark:text-red-400 text-sm">{error}</p>}
 
       <button
         type="submit"
