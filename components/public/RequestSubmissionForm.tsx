@@ -83,7 +83,7 @@ export default function RequestSubmissionForm() {
       >
         <option value="">Type de demande</option>
         <option value="prayer">Prière</option>
-        <option value="baptism">Baptême</option>
+        <option value="budget">Budget</option>
         <option value="counseling">Conseil spirituel</option>
         <option value="service">Service</option>
         <option value="other">Autre</option>

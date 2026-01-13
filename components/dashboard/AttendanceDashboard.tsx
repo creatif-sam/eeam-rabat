@@ -23,6 +23,25 @@ type AttendanceRow = {
   service: { name: string };
 };
 
+function Detail({
+  label,
+  value
+}: {
+  label: string;
+  value: string | number;
+}) {
+  return (
+    <div>
+      <p className="text-xs uppercase text-gray-400 tracking-wide">
+        {label}
+      </p>
+      <p className="mt-1 font-medium text-gray-800">
+        {value}
+      </p>
+    </div>
+  );
+}
+
 export default function AttendanceDashboard() {
   const supabase = createClient();
 
@@ -258,26 +277,44 @@ export default function AttendanceDashboard() {
       </div>
 
       {/* View modal */}
-      {viewRow && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-          <div className="bg-white rounded-2xl p-6 w-full max-w-md space-y-3">
-            <h3 className="text-lg font-semibold">Détails</h3>
-            <p>Date {viewRow.attendance_date}</p>
-            <p>Service {viewRow.service.name}</p>
-            <p>Culte {viewRow.culte_total}</p>
-            <p>Hommes {viewRow.hommes}</p>
-            <p>Femmes {viewRow.femmes}</p>
-            <p>Enfants {viewRow.enfants}</p>
-            <p>Nouveaux {viewRow.nouveaux}</p>
-            <button
-              onClick={() => setViewRow(null)}
-              className="mt-4 px-4 py-2 border rounded-lg"
-            >
-              Fermer
-            </button>
-          </div>
+    {viewRow && (
+  <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+    <div className="bg-white w-full max-w-lg rounded-xl shadow-xl border border-gray-200">
+      {/* Header */}
+      <div className="px-6 py-4 border-b">
+        <h3 className="text-lg font-semibold text-gray-800">
+          Détails de l’assiduité
+        </h3>
+        <p className="text-sm text-gray-500">
+          Informations du service enregistré
+        </p>
+      </div>
+
+      {/* Content */}
+      <div className="px-6 py-5 space-y-4 text-sm">
+        <div className="grid grid-cols-2 gap-4">
+          <Detail label="Date" value={viewRow.attendance_date} />
+          <Detail label="Service" value={viewRow.service.name} />
+          <Detail label="Culte total" value={viewRow.culte_total} />
+          <Detail label="Hommes" value={viewRow.hommes} />
+          <Detail label="Femmes" value={viewRow.femmes} />
+          <Detail label="Enfants" value={viewRow.enfants} />
+          <Detail label="Nouveaux" value={viewRow.nouveaux} />
         </div>
-      )}
+      </div>
+
+      {/* Footer */}
+      <div className="px-6 py-4 border-t flex justify-end">
+        <button
+          onClick={() => setViewRow(null)}
+          className="px-5 py-2 rounded-lg border text-sm font-medium text-gray-700 hover:bg-gray-50"
+        >
+          Fermer
+        </button>
+      </div>
+    </div>
+  </div>
+)}
 
       {/* Edit modal */}
       {editRow && (
