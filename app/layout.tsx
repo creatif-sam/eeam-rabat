@@ -1,6 +1,8 @@
 import type { Metadata } from "next"
 import { ThemeProvider } from "next-themes"
 import "./globals.css"
+import CookieBanner from "@/components/CookieBanner"
+import { CookieManager } from "@/components/CookieManager"
 
 const defaultUrl = process.env.VERCEL_URL
   ? `https://${process.env.VERCEL_URL}`
@@ -32,7 +34,9 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
+          <CookieManager />
           {children}
+          <CookieBanner />
         </ThemeProvider>
       </body>
     </html>
