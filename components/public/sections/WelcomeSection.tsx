@@ -31,7 +31,7 @@ export default function WelcomeSection() {
   return (
     <section className="text-center mb-12">
       <h2 className="text-4xl font-bold text-gray-800 mb-3">
-        Bienvenue à l'EEAM RABAT LEAD
+        Bienvenue à l'EEAM-RABAT LEAD
       </h2>
       <div className="relative overflow-hidden">
         <p
