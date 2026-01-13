@@ -13,7 +13,8 @@ import {
   DollarSign,
   UsersRound,
   FileText,
-  MapPin
+  MapPin,
+  ClipboardList
 } from "lucide-react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
@@ -22,6 +23,10 @@ const menuItems = [
   { label: "Accueil", icon: Home, route: "/dashboard" },
   { label: "Baptêmes", icon: Droplet, route: "/dashboard/baptemes" },
   { label: "Événements", icon: Calendar, route: "/dashboard/events" },
+  { label: "Planification", icon: ClipboardList, route: "/dashboard/tasky" },
+
+  { label: "Formulaires", icon: ClipboardList, route: "/dashboard/formulaires" },
+
   { label: "Finance", icon: DollarSign, route: "/dashboard/finances" },
   { label: "Formations", icon: GraduationCap, route: "/dashboard/formations" },
   { label: "Commissions", icon: Users, route: "/dashboard/groupes" },
@@ -40,7 +45,6 @@ export default function Sidebar() {
         sidebarOpen ? "w-72" : "w-20"
       } flex flex-col`}
     >
-      {/* Logo */}
       <div className="h-20 flex items-center justify-between px-6 border-b border-gray-100 bg-gradient-to-r from-rose-600 to-rose-700 shrink-0">
         {sidebarOpen && (
           <span className="text-2xl font-bold text-white tracking-tight">
@@ -55,7 +59,6 @@ export default function Sidebar() {
         </button>
       </div>
 
-      {/* Navigation Scroll Area */}
       <nav className="flex-1 overflow-y-auto p-4 space-y-2">
         {menuItems.map(item => {
           const Icon = item.icon
@@ -88,7 +91,6 @@ export default function Sidebar() {
         })}
       </nav>
 
-      {/* Footer */}
       {sidebarOpen && (
         <div className="p-6 border-t border-gray-100 shrink-0">
           <p className="text-xs text-gray-400 text-center">
