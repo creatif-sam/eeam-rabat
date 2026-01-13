@@ -82,26 +82,26 @@ export default function FinancesTab() {
   return (
     <div className="p-8 space-y-6 bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 min-h-screen">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-800 mb-2">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-2">
             Gestion Financière
           </h1>
-          <p className="text-gray-600">
+          <p className="text-gray-600 text-sm sm:text-base">
             Vue d'ensemble des finances de l'église
           </p>
         </div>
-        <div className="flex gap-3">
+        <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
           <button
             onClick={() => exportCSV(filteredTransactions, selectedPeriod)}
-            className="px-4 py-2 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 flex items-center gap-2 shadow-sm"
+            className="px-4 py-2 bg-white border border-gray-200 rounded-xl hover:bg-gray-50 flex items-center justify-center gap-2 shadow-sm text-sm sm:text-base"
           >
             <Download size={18} />
             Exporter
           </button>
           <button
             onClick={() => setShowCreate(true)}
-            className="px-4 py-2 bg-gradient-to-r from-cyan-500 to-blue-600 text-white rounded-xl flex items-center gap-2 shadow-lg shadow-cyan-500/30"
+            className="px-4 py-2 bg-gradient-to-r from-cyan-500 to-blue-600 text-white rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-cyan-500/30 text-sm sm:text-base"
           >
             <Plus size={18} />
             Nouvelle transaction
@@ -110,26 +110,40 @@ export default function FinancesTab() {
       </div>
 
       {/* Period selector */}
-      <div className="flex gap-2 bg-white p-1.5 rounded-xl shadow-sm w-fit">
-        {["week", "month", "quarter", "year"].map(period => (
-          <button
-            key={period}
-            onClick={() => setSelectedPeriod(period)}
-            className={`px-6 py-2 rounded-lg font-medium transition-all ${
-              selectedPeriod === period
-                ? "bg-gradient-to-r from-cyan-500 to-blue-600 text-white shadow-md"
-                : "text-gray-600 hover:bg-gray-50"
-            }`}
+      <div className="flex flex-col sm:flex-row gap-2">
+        <div className="sm:hidden">
+          <select
+            value={selectedPeriod}
+            onChange={(e) => setSelectedPeriod(e.target.value)}
+            className="px-4 py-2 border border-gray-200 rounded-xl bg-white shadow-sm w-full"
           >
-            {period === "week"
-              ? "Semaine"
-              : period === "month"
-              ? "Mois"
-              : period === "quarter"
-              ? "Trimestre"
-              : "Année"}
-          </button>
-        ))}
+            <option value="week">Semaine</option>
+            <option value="month">Mois</option>
+            <option value="quarter">Trimestre</option>
+            <option value="year">Année</option>
+          </select>
+        </div>
+        <div className="hidden sm:flex gap-2 bg-white p-1.5 rounded-xl shadow-sm w-fit">
+          {["week", "month", "quarter", "year"].map(period => (
+            <button
+              key={period}
+              onClick={() => setSelectedPeriod(period)}
+              className={`px-6 py-2 rounded-lg font-medium transition-all ${
+                selectedPeriod === period
+                  ? "bg-gradient-to-r from-cyan-500 to-blue-600 text-white shadow-md"
+                  : "text-gray-600 hover:bg-gray-50"
+              }`}
+            >
+              {period === "week"
+                ? "Semaine"
+                : period === "month"
+                ? "Mois"
+                : period === "quarter"
+                ? "Trimestre"
+                : "Année"}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Summary cards */}
@@ -161,49 +175,54 @@ export default function FinancesTab() {
       </div>
 
       {/* Budget */}
-      <div className="bg-white rounded-2xl shadow-lg p-6">
-        <h2 className="text-xl font-bold text-gray-800 mb-6 flex items-center gap-2">
-          <PieChart size={24} className="text-cyan-600" />
+      <div className="bg-white rounded-2xl shadow-lg p-4 sm:p-6">
+        <h2 className="text-lg sm:text-xl font-bold text-gray-800 mb-4 sm:mb-6 flex items-center gap-2">
+          <PieChart size={20} className="sm:w-6 sm:h-6 text-cyan-600" />
           Budget par catégorie
         </h2>
 
-        {budgets.map(b => {
-          const percent = Math.round(
-            (b.total_depense / b.montant_alloue) * 100
-          );
+        <div className="space-y-4 sm:space-y-6">
+          {budgets.map(b => {
+            const percent = Math.round(
+              (b.total_depense / b.montant_alloue) * 100
+            );
 
-          return (
-            <div key={b.categorie} className="space-y-2 mb-4">
-              <div className="flex justify-between text-sm">
-                <span className="font-medium">{b.categorie}</span>
-                <span className="text-gray-500">
-                  {formatCurrency(b.total_depense)} /{" "}
-                  {formatCurrency(b.montant_alloue)}
-                </span>
+            return (
+              <div key={b.categorie} className="space-y-2">
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-1 sm:gap-0">
+                  <span className="font-medium text-sm sm:text-base">{b.categorie}</span>
+                  <span className="text-xs sm:text-sm text-gray-500">
+                    {formatCurrency(b.total_depense)} /{" "}
+                    {formatCurrency(b.montant_alloue)}
+                  </span>
+                </div>
+                <div className="w-full bg-gray-100 rounded-full h-2.5 sm:h-3">
+                  <div
+                    className={`h-full rounded-full ${
+                      percent > 90
+                        ? "bg-gradient-to-r from-rose-500 to-red-600"
+                        : "bg-gradient-to-r from-cyan-500 to-blue-600"
+                    }`}
+                    style={{ width: `${percent}%` }}
+                  />
+                </div>
+                <div className="text-xs text-gray-500 text-right">
+                  {percent}% utilisé
+                </div>
               </div>
-              <div className="w-full bg-gray-100 rounded-full h-2.5">
-                <div
-                  className={`h-full rounded-full ${
-                    percent > 90
-                      ? "bg-gradient-to-r from-rose-500 to-red-600"
-                      : "bg-gradient-to-r from-cyan-500 to-blue-600"
-                  }`}
-                  style={{ width: `${percent}%` }}
-                />
-              </div>
-            </div>
-          );
-        })}
+            );
+          })}
+        </div>
       </div>
 
       {/* Transactions */}
-      <div className="bg-white rounded-2xl shadow-lg p-6">
-        <div className="flex justify-between mb-6">
-          <h2 className="text-xl font-bold flex items-center gap-2">
-            <FileText size={24} className="text-cyan-600" />
+      <div className="bg-white rounded-2xl shadow-lg p-4 sm:p-6">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 sm:mb-6 gap-4">
+          <h2 className="text-lg sm:text-xl font-bold flex items-center gap-2">
+            <FileText size={20} className="sm:w-6 sm:h-6 text-cyan-600" />
             Transactions récentes
           </h2>
-          <div className="relative">
+          <div className="relative w-full sm:w-auto">
             <Search
               size={18}
               className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"
@@ -212,46 +231,85 @@ export default function FinancesTab() {
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
               placeholder="Rechercher..."
-              className="pl-10 pr-4 py-2 border border-gray-200 rounded-xl"
+              className="pl-10 pr-4 py-2 border border-gray-200 rounded-xl w-full sm:w-64"
             />
           </div>
         </div>
 
-        <table className="w-full">
-          <thead>
-            <tr className="border-b">
-              <th className="px-4 py-3 text-left">Date</th>
-              <th className="px-4 py-3 text-left">Description</th>
-              <th className="px-4 py-3 text-left">Catégorie</th>
-              <th className="px-4 py-3 text-left">Source</th>
-              <th className="px-4 py-3 text-right">Montant</th>
-              <th className="px-4 py-3 text-center">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredTransactions.map(t => (
-              <tr key={t.id} className="border-b hover:bg-gray-50">
-                <td className="px-4 py-3">
-                  {new Date(t.date_transaction).toLocaleDateString("fr-FR")}
-                </td>
-                <td className="px-4 py-3 font-medium">{t.description}</td>
-                <td className="px-4 py-3">{t.categorie}</td>
-                <td className="px-4 py-3 text-sm text-gray-600">
-                  {t.source || t.vendeur}
-                </td>
-                <td className="px-4 py-3 text-right font-semibold">
-                  {t.type === "revenu" ? "+" : "-"}
-                  {formatCurrency(t.montant)}
-                </td>
-                <td className="px-4 py-3 text-center">
-                  <button onClick={() => setEditing(t)}>
-                    <Eye size={18} className="text-gray-400" />
+        {/* Mobile Cards */}
+        <div className="block sm:hidden space-y-4">
+          {filteredTransactions.map(t => (
+            <div key={t.id} className="border border-gray-200 rounded-xl p-4 hover:bg-gray-50 transition-colors">
+              <div className="flex justify-between items-start mb-3">
+                <div className="flex-1">
+                  <h3 className="font-semibold text-gray-800 text-sm">{t.description}</h3>
+                  <p className="text-xs text-gray-500 mt-1">
+                    {new Date(t.date_transaction).toLocaleDateString("fr-FR")}
+                  </p>
+                </div>
+                <div className="text-right">
+                  <p className={`font-bold text-sm ${
+                    t.type === "revenu" ? "text-green-600" : "text-red-600"
+                  }`}>
+                    {t.type === "revenu" ? "+" : "-"}
+                    {formatCurrency(t.montant)}
+                  </p>
+                  <button
+                    onClick={() => setEditing(t)}
+                    className="mt-2 p-1 hover:bg-gray-100 rounded"
+                  >
+                    <Eye size={16} className="text-gray-400" />
                   </button>
-                </td>
+                </div>
+              </div>
+              <div className="flex justify-between items-center text-xs text-gray-600">
+                <span className="bg-gray-100 px-2 py-1 rounded-full">{t.categorie}</span>
+                {(t.source || t.vendeur) && (
+                  <span className="text-gray-500">{t.source || t.vendeur}</span>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Desktop Table */}
+        <div className="hidden sm:block">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b">
+                <th className="px-4 py-3 text-left">Date</th>
+                <th className="px-4 py-3 text-left">Description</th>
+                <th className="px-4 py-3 text-left">Catégorie</th>
+                <th className="px-4 py-3 text-left">Source</th>
+                <th className="px-4 py-3 text-right">Montant</th>
+                <th className="px-4 py-3 text-center">Actions</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {filteredTransactions.map(t => (
+                <tr key={t.id} className="border-b hover:bg-gray-50">
+                  <td className="px-4 py-3">
+                    {new Date(t.date_transaction).toLocaleDateString("fr-FR")}
+                  </td>
+                  <td className="px-4 py-3 font-medium">{t.description}</td>
+                  <td className="px-4 py-3">{t.categorie}</td>
+                  <td className="px-4 py-3 text-sm text-gray-600">
+                    {t.source || t.vendeur}
+                  </td>
+                  <td className="px-4 py-3 text-right font-semibold">
+                    {t.type === "revenu" ? "+" : "-"}
+                    {formatCurrency(t.montant)}
+                  </td>
+                  <td className="px-4 py-3 text-center">
+                    <button onClick={() => setEditing(t)}>
+                      <Eye size={18} className="text-gray-400" />
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
 
       {showCreate && (

@@ -49,7 +49,7 @@ export default function HomePage() {
           <WelcomeSection />
         </div>
 
-        <div id="responsables">
+        <div id="services">
           <ServicesGrid
             onMember={() => setMemberOpen(true)}
             onVolunteer={() => setVolunteerOpen(true)}
@@ -159,6 +159,7 @@ export default function HomePage() {
         }}
         onLogin={() => setLoginOpen(true)}
         onSignUp={() => setSignUpOpen(true)}
+        onMember={() => setMemberOpen(true)}
       />
     </div>
   );

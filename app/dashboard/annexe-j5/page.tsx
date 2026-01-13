@@ -125,31 +125,31 @@ export default function J5AnnexeTab() {
   }
 
   return (
-    <div className="p-8 space-y-6 bg-slate-50 min-h-screen">
+    <div className="p-4 sm:p-8 space-y-6 bg-slate-50 min-h-screen">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div className="flex items-center gap-4">
           <div
-            className="w-16 h-16 rounded-2xl flex items-center justify-center"
+            className="w-12 h-12 sm:w-16 sm:h-16 rounded-2xl flex items-center justify-center"
             style={{ backgroundColor: "#b92b39" }}
           >
-            <Building2 size={32} className="text-white" />
+            <Building2 size={24} className="sm:w-8 sm:h-8 text-white" />
           </div>
           <div>
-            <h1 className="text-3xl font-bold text-gray-800">
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">
               {annexInfo?.full_name || "Annexe J5"}
             </h1>
-            <p className="text-gray-600">{annexInfo?.location}</p>
+            <p className="text-gray-600 text-sm sm:text-base">{annexInfo?.location}</p>
           </div>
         </div>
 
-        <div className="flex gap-3">
-          <button className="px-4 py-2 bg-white border rounded-xl flex items-center gap-2">
+        <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
+          <button className="px-4 py-2 bg-white border rounded-xl flex items-center justify-center gap-2 text-sm sm:text-base">
             <Download size={18} />
             Exporter
           </button>
           <button
-            className="px-4 py-2 text-white rounded-xl flex items-center gap-2"
+            className="px-4 py-2 text-white rounded-xl flex items-center justify-center gap-2 text-sm sm:text-base"
             style={{ backgroundColor: "#b92b39" }}
           >
             <Plus size={18} />
@@ -159,7 +159,20 @@ export default function J5AnnexeTab() {
       </div>
 
       {/* View selector */}
-      <div className="flex gap-2 bg-white p-1 rounded-xl w-fit">
+      <div className="flex flex-col sm:flex-row gap-2">
+        <div className="sm:hidden">
+          <select
+            value={selectedView}
+            onChange={(e) => setSelectedView(e.target.value)}
+            className="px-4 py-2 border border-gray-200 rounded-xl bg-white shadow-sm w-full"
+          >
+            <option value="overview">Vue d'ensemble</option>
+            <option value="members">Membres</option>
+            <option value="events">Événements</option>
+            <option value="reports">Rapports</option>
+          </select>
+        </div>
+        <div className="hidden sm:flex gap-2 bg-white p-1 rounded-xl w-fit">
         {["overview", "members", "events", "reports"].map(v => (
           <button
             key={v}
@@ -184,6 +197,7 @@ export default function J5AnnexeTab() {
           </button>
         ))}
       </div>
+      </div>
 
       {/* Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-6">
@@ -202,15 +216,15 @@ export default function J5AnnexeTab() {
       {selectedView === "overview" && (
         <>
           {/* Info */}
-          <div className="bg-white rounded-2xl p-6 shadow">
-            <h2 className="text-xl font-bold mb-4">Informations</h2>
-            <div className="grid md:grid-cols-2 gap-6">
+          <div className="bg-white rounded-2xl p-4 sm:p-6 shadow">
+            <h2 className="text-lg sm:text-xl font-bold mb-4">Informations</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
               <InfoRow icon={MapPin} label="Adresse" value={annexInfo?.address} />
               <InfoRow icon={Phone} label="Téléphone" value={annexInfo?.phone} />
               <InfoRow icon={Mail} label="Email" value={annexInfo?.email} />
               <div>
                 <p className="text-sm text-gray-500">Responsables</p>
-                <p className="font-medium">
+                <p className="font-medium text-sm sm:text-base">
                   {annexInfo?.main_pastor}  
                   {annexInfo?.coordinator && ` · ${annexInfo.coordinator}`}
                 </p>
@@ -219,13 +233,13 @@ export default function J5AnnexeTab() {
           </div>
 
           {/* Leaders */}
-          <div className="bg-white rounded-2xl p-6 shadow">
-            <h2 className="text-xl font-bold mb-4">Leadership</h2>
-            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="bg-white rounded-2xl p-4 sm:p-6 shadow">
+            <h2 className="text-lg sm:text-xl font-bold mb-4">Leadership</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               {leaders.map(l => (
-                <div key={l.id} className="border rounded-xl p-4">
-                  <h3 className="font-bold">{l.leader_name}</h3>
-                  <p className="text-sm text-gray-600">{l.leader_phone}</p>
+                <div key={l.id} className="border rounded-xl p-3 sm:p-4">
+                  <h3 className="font-bold text-sm sm:text-base">{l.leader_name}</h3>
+                  <p className="text-xs sm:text-sm text-gray-600">{l.leader_phone}</p>
                   {l.assistant_leaders?.length > 0 && (
                     <p className="text-xs text-gray-500">
                       Assistants  
@@ -238,18 +252,18 @@ export default function J5AnnexeTab() {
           </div>
 
           {/* Groups */}
-          <div className="bg-white rounded-2xl p-6 shadow">
-            <div className="flex justify-between mb-4">
-              <h2 className="text-xl font-bold">Groupes</h2>
-              <span className="text-sm flex items-center gap-1">
+          <div className="bg-white rounded-2xl p-4 sm:p-6 shadow">
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 gap-2">
+              <h2 className="text-lg sm:text-xl font-bold">Groupes</h2>
+              <span className="text-sm flex items-center gap-1 text-gray-600">
                 Voir tous <ChevronRight size={14} />
               </span>
             </div>
-            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               {groups.map(g => (
-                <div key={g.id} className="border rounded-xl p-4">
-                  <h3 className="font-bold">{g.name}</h3>
-                  <p className="text-sm text-gray-600">
+                <div key={g.id} className="border rounded-xl p-3 sm:p-4">
+                  <h3 className="font-bold text-sm sm:text-base">{g.name}</h3>
+                  <p className="text-xs sm:text-sm text-gray-600">
                     Responsable {g.leader_name}
                   </p>
                 </div>
@@ -258,13 +272,13 @@ export default function J5AnnexeTab() {
           </div>
 
           {/* Events */}
-          <div className="bg-white rounded-2xl p-6 shadow">
-            <h2 className="text-xl font-bold mb-4">Événements à venir</h2>
-            <div className="space-y-3">
+          <div className="bg-white rounded-2xl p-4 sm:p-6 shadow">
+            <h2 className="text-lg sm:text-xl font-bold mb-4">Événements à venir</h2>
+            <div className="space-y-3 sm:space-y-4">
               {events.map(e => (
-                <div key={e.id} className="border rounded-xl p-4">
-                  <h3 className="font-semibold">{e.title}</h3>
-                  <p className="text-sm text-gray-600">
+                <div key={e.id} className="border rounded-xl p-3 sm:p-4">
+                  <h3 className="font-semibold text-sm sm:text-base">{e.title}</h3>
+                  <p className="text-xs sm:text-sm text-gray-600">
                     {new Date(e.event_date).toLocaleDateString("fr-FR")}  
                     {e.start_time}
                   </p>
@@ -277,19 +291,19 @@ export default function J5AnnexeTab() {
           </div>
 
           {/* Reports */}
-          <div className="bg-white rounded-2xl p-6 shadow">
-            <h2 className="text-xl font-bold mb-4">Rapports récents</h2>
-            <div className="space-y-3">
+          <div className="bg-white rounded-2xl p-4 sm:p-6 shadow">
+            <h2 className="text-lg sm:text-xl font-bold mb-4">Rapports récents</h2>
+            <div className="space-y-3 sm:space-y-4">
               {reports.map(r => (
-                <div key={r.id} className="flex justify-between items-center border rounded-xl p-4">
-                  <div>
-                    <h3 className="font-semibold">{r.title}</h3>
-                    <p className="text-sm text-gray-600">
+                <div key={r.id} className="flex flex-col sm:flex-row sm:justify-between sm:items-center border rounded-xl p-3 sm:p-4 gap-2">
+                  <div className="flex-1">
+                    <h3 className="font-semibold text-sm sm:text-base">{r.title}</h3>
+                    <p className="text-xs sm:text-sm text-gray-600">
                       {new Date(r.report_date).toLocaleDateString("fr-FR")}  
                       {r.file_size}
                     </p>
                   </div>
-                  <FileText />
+                  <FileText size={20} className="text-gray-400 self-end sm:self-center" />
                 </div>
               ))}
             </div>
@@ -302,10 +316,10 @@ export default function J5AnnexeTab() {
 
 function Stat({ icon: Icon, label, value }: any) {
   return (
-    <div className="bg-white rounded-2xl p-6 shadow">
-      <Icon size={24} style={{ color: "#0CC0DF" }} />
-      <p className="text-sm text-gray-600">{label}</p>
-      <p className="text-2xl font-bold">{value}</p>
+    <div className="bg-white rounded-2xl p-4 sm:p-6 shadow">
+      <Icon size={20} className="sm:w-6 sm:h-6" style={{ color: "#0CC0DF" }} />
+      <p className="text-xs sm:text-sm text-gray-600 mt-2">{label}</p>
+      <p className="text-xl sm:text-2xl font-bold mt-1">{value}</p>
     </div>
   );
 }
@@ -313,10 +327,10 @@ function Stat({ icon: Icon, label, value }: any) {
 function InfoRow({ icon: Icon, label, value }: any) {
   return (
     <div className="flex items-start gap-3">
-      <Icon size={18} className="text-gray-400" />
-      <div>
-        <p className="text-sm text-gray-500">{label}</p>
-        <p className="font-medium">{value}</p>
+      <Icon size={16} className="sm:w-5 sm:h-5 text-gray-400 mt-0.5" />
+      <div className="flex-1 min-w-0">
+        <p className="text-xs sm:text-sm text-gray-500">{label}</p>
+        <p className="font-medium text-sm sm:text-base break-words">{value}</p>
       </div>
     </div>
   );

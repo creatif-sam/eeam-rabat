@@ -7,20 +7,25 @@ interface MobileNavbarProps {
   onNavigate?: (section: string) => void;
   onLogin?: () => void;
   onSignUp?: () => void;
+  onMember?: () => void;
 }
 
-export default function MobileNavbar({ onNavigate, onLogin, onSignUp }: MobileNavbarProps) {
+export default function MobileNavbar({ onNavigate, onLogin, onSignUp, onMember }: MobileNavbarProps) {
   const [isExpanded, setIsExpanded] = useState(false);
 
   const navItems = [
     { id: "home", label: "Accueil", icon: Home, color: "text-blue-600" },
-    { id: "responsables", label: "Responsables", icon: Users, color: "text-green-600" },
+    { id: "enregistrement", label: "Enregistrement", icon: Users, color: "text-green-600", action: "modal" },
     { id: "calendar", label: "Calendrier", icon: Calendar, color: "text-purple-600" },
     { id: "events", label: "Événements", icon: Clock, color: "text-orange-600" }
   ];
 
   const handleNavigate = (sectionId: string) => {
-    if (onNavigate) {
+    const item = navItems.find(item => item.id === sectionId);
+    
+    if (item?.action === "modal" && sectionId === "enregistrement") {
+      if (onMember) onMember();
+    } else if (onNavigate) {
       onNavigate(sectionId);
     } else {
       // Default scroll behavior
