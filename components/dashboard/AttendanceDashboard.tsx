@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { Download, CalendarDays } from "lucide-react";
+import { Download, CalendarDays, Eye, Edit } from "lucide-react";
 import {
   LineChart,
   Line,
@@ -27,7 +27,9 @@ export default function AttendanceDashboard() {
   const supabase = createClient();
 
   const [data, setData] = useState<AttendanceRow[]>([]);
-  const [selectedMonth, setSelectedMonth] = useState<string>("");
+  const [selectedMonth, setSelectedMonth] = useState("");
+  const [viewRow, setViewRow] = useState<AttendanceRow | null>(null);
+  const [editRow, setEditRow] = useState<AttendanceRow | null>(null);
 
   useEffect(() => {
     loadData();
@@ -65,7 +67,6 @@ export default function AttendanceDashboard() {
 
   const averages = useMemo(() => {
     const map: Record<string, { sum: number; count: number }> = {};
-
     filteredData.forEach(r => {
       const key = r.service.name;
       if (!map[key]) map[key] = { sum: 0, count: 0 };
@@ -77,25 +78,21 @@ export default function AttendanceDashboard() {
     Object.keys(map).forEach(k => {
       result[k] = Math.round(map[k].sum / map[k].count);
     });
-
     return result;
   }, [filteredData]);
 
   const chartData = useMemo(() => {
     const grouped: Record<string, any> = {};
-
     filteredData.forEach(r => {
-      const date = r.attendance_date;
-      if (!grouped[date]) grouped[date] = { date };
-      grouped[date][r.service.name] = r.culte_total;
+      if (!grouped[r.attendance_date]) {
+        grouped[r.attendance_date] = { date: r.attendance_date };
+      }
+      grouped[r.attendance_date][r.service.name] = r.culte_total;
     });
-
     return Object.values(grouped);
   }, [filteredData]);
 
   const exportCSV = () => {
-    if (!filteredData.length) return;
-
     const headers = [
       "Date",
       "Service",
@@ -123,7 +120,7 @@ export default function AttendanceDashboard() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = "assiduite_filtree.csv";
+    a.download = "assiduite.csv";
     a.click();
   };
 
@@ -173,7 +170,7 @@ export default function AttendanceDashboard() {
         ))}
       </div>
 
-      {/* Line chart */}
+      {/* Chart */}
       <div className="bg-white border rounded-2xl p-6">
         <div className="flex items-center gap-2 mb-4 font-semibold text-gray-800">
           <CalendarDays size={18} />
@@ -200,7 +197,7 @@ export default function AttendanceDashboard() {
         </div>
       </div>
 
-      {/* History table */}
+      {/* Table with actions */}
       <div className="bg-white border rounded-2xl overflow-hidden">
         <div className="px-6 py-4 border-b font-semibold text-gray-800">
           Historique détaillé
@@ -216,8 +213,10 @@ export default function AttendanceDashboard() {
               <th className="px-4 py-3 text-center">Femmes</th>
               <th className="px-4 py-3 text-center">Enfants</th>
               <th className="px-4 py-3 text-center">Nouveaux</th>
+              <th className="px-4 py-3 text-right">Actions</th>
             </tr>
           </thead>
+
           <tbody>
             {filteredData.map(row => (
               <tr
@@ -227,29 +226,113 @@ export default function AttendanceDashboard() {
                 <td className="px-4 py-3 font-medium">
                   {new Date(row.attendance_date).toLocaleDateString()}
                 </td>
-                <td className="px-4 py-3">
-                  {row.service.name}
-                </td>
-                <td className="px-4 py-3 text-center">
-                  {row.culte_total}
-                </td>
-                <td className="px-4 py-3 text-center">
-                  {row.hommes}
-                </td>
-                <td className="px-4 py-3 text-center">
-                  {row.femmes}
-                </td>
-                <td className="px-4 py-3 text-center">
-                  {row.enfants}
-                </td>
-                <td className="px-4 py-3 text-center">
-                  {row.nouveaux}
+                <td className="px-4 py-3">{row.service.name}</td>
+                <td className="px-4 py-3 text-center">{row.culte_total}</td>
+                <td className="px-4 py-3 text-center">{row.hommes}</td>
+                <td className="px-4 py-3 text-center">{row.femmes}</td>
+                <td className="px-4 py-3 text-center">{row.enfants}</td>
+                <td className="px-4 py-3 text-center">{row.nouveaux}</td>
+                <td className="px-4 py-3 text-right">
+                  <div className="flex justify-end gap-3">
+                    <button
+                      onClick={() => setViewRow(row)}
+                      className="p-2 rounded-lg border hover:bg-gray-100"
+                      title="Voir"
+                    >
+                      <Eye size={16} />
+                    </button>
+
+                    <button
+                      onClick={() => setEditRow(row)}
+                      className="p-2 rounded-lg border hover:bg-gray-100"
+                      title="Modifier"
+                    >
+                      <Edit size={16} />
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
+
+      {/* View modal */}
+      {viewRow && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+          <div className="bg-white rounded-2xl p-6 w-full max-w-md space-y-3">
+            <h3 className="text-lg font-semibold">Détails</h3>
+            <p>Date {viewRow.attendance_date}</p>
+            <p>Service {viewRow.service.name}</p>
+            <p>Culte {viewRow.culte_total}</p>
+            <p>Hommes {viewRow.hommes}</p>
+            <p>Femmes {viewRow.femmes}</p>
+            <p>Enfants {viewRow.enfants}</p>
+            <p>Nouveaux {viewRow.nouveaux}</p>
+            <button
+              onClick={() => setViewRow(null)}
+              className="mt-4 px-4 py-2 border rounded-lg"
+            >
+              Fermer
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Edit modal */}
+      {editRow && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+          <div className="bg-white rounded-2xl p-6 w-full max-w-md space-y-4">
+            <h3 className="text-lg font-semibold">Modifier</h3>
+
+            {(["culte_total","hommes","femmes","enfants","nouveaux"] as const).map(
+              field => (
+                <input
+                  key={field}
+                  type="number"
+                  value={(editRow as any)[field]}
+                  onChange={e =>
+                    setEditRow({
+                      ...editRow,
+                      [field]: Number(e.target.value)
+                    })
+                  }
+                  className="w-full px-4 py-2 border rounded-lg"
+                />
+              )
+            )}
+
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setEditRow(null)}
+                className="px-4 py-2 border rounded-lg"
+              >
+                Annuler
+              </button>
+              <button
+                onClick={async () => {
+                  await supabase
+                    .from("attendance_records")
+                    .update({
+                      culte_total: editRow.culte_total,
+                      hommes: editRow.hommes,
+                      femmes: editRow.femmes,
+                      enfants: editRow.enfants,
+                      nouveaux: editRow.nouveaux
+                    })
+                    .eq("attendance_date", editRow.attendance_date);
+
+                  setEditRow(null);
+                  loadData();
+                }}
+                className="px-4 py-2 bg-cyan-600 text-white rounded-lg"
+              >
+                Enregistrer
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
