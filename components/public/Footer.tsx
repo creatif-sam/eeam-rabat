@@ -130,7 +130,7 @@ export default function Footer() {
           <div className="border-t border-gray-700/50 mt-12 pt-8">
             <div className="flex flex-col lg:flex-row justify-between items-center gap-6">
               <p className="text-gray-400 text-sm text-center lg:text-left">
-                © {currentYear} Église Évangélique Au Maroc. Tous droits réservés.
+                © {currentYear} Église Évangélique Au Maroc-Paroisse de Rabat. Tous droits réservés.
               </p>
 
               <div className="flex flex-col sm:flex-row items-center gap-4 text-sm text-gray-400">
@@ -141,7 +141,7 @@ export default function Footer() {
                 <div className="hidden sm:block text-gray-600">•</div>
                 <div className="flex items-center gap-2">
                   <Heart size={14} className="text-red-400 fill-current" />
-                  <span>Fait avec ❤️ à Rabat</span>
+                  <span>Fait avec ❤️</span>
                 </div>
               </div>
             </div>

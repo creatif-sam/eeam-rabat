@@ -40,6 +40,16 @@ export default async function DashboardHome() {
     niveau: formation.niveau
   })) || []
 
+  // Fetch the first upcoming event
+  const { data: events } = await supabase
+    .from("events")
+    .select("*")
+    .gt("event_date", new Date().toISOString())
+    .order("event_date", { ascending: true })
+    .limit(1)
+
+  const upcomingEvent = events && events.length > 0 ? events[0] : null;
+
   return (
     <>
       {/* Alert placeholder - only show if no avatar */}
@@ -86,10 +96,10 @@ export default async function DashboardHome() {
       </div>
 
       {/* Featured Content */}
-      <div>
+      <div className="mt-8">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 md:mb-6 gap-3">
           <h2 className="text-xl md:text-2xl font-bold text-gray-800">
-            Formations Leadership
+            Formations A Venir
           </h2>
           <button className="text-cyan-600 hover:text-cyan-700 font-medium flex items-center gap-2 justify-center sm:justify-start text-sm md:text-base">
             Voir tout <ChevronRight size={16} />
@@ -151,7 +161,7 @@ export default async function DashboardHome() {
         </div>
       </div>
 
-      {/* Upcoming Event */}
+      {/* Upcoming Event (Dynamic) */}
       <div className="relative overflow-hidden bg-gradient-to-br from-rose-50 to-pink-50 rounded-2xl p-4 md:p-8 border border-rose-100 shadow-sm">
         <div className="flex flex-col md:flex-row items-start gap-4 md:gap-6">
           <div className="w-16 h-16 md:w-20 md:h-20 rounded-2xl bg-gradient-to-br from-rose-500 to-pink-600 flex items-center justify-center shadow-lg flex-shrink-0">
@@ -161,27 +171,40 @@ export default async function DashboardHome() {
             <span className="inline-block px-3 py-1 bg-rose-100 text-rose-700 rounded-full text-xs font-semibold mb-2">
               Prochain événement
             </span>
-            <h3 className="text-xl md:text-2xl font-bold text-gray-800 mb-2">
-              Cours de Discipulat avec Jonathan Santos
-            </h3>
-            <div className="flex flex-col sm:flex-row sm:flex-wrap items-start sm:items-center gap-2 md:gap-4 text-gray-600 mb-3 md:mb-4">
-              <span className="flex items-center gap-2 text-sm">
-                <Clock size={14} className="text-rose-500" />
-                <span className="font-medium">
-                  Dans 5 jours, 21h
-                </span>
-              </span>
-              <span className="flex items-center gap-2 text-sm">
-                <MapPin size={14} className="text-rose-500" />
-                <span>En visioconférence</span>
-              </span>
-            </div>
-            <p className="text-gray-700 mb-4 text-sm md:text-base">
-              Janvier 2026 à 20h. Jeudi
-            </p>
-            <button className="w-full sm:w-auto px-4 py-2 md:px-6 md:py-3 bg-gradient-to-r from-rose-500 to-pink-600 text-white rounded-xl font-semibold shadow-lg hover:from-rose-600 hover:to-pink-700 transition-all text-sm md:text-base">
-              S'inscrire maintenant
-            </button>
+            {upcomingEvent ? (
+              <>
+                <h3 className="text-xl md:text-2xl font-bold text-gray-800 mb-2">
+                  {upcomingEvent.title}
+                </h3>
+                <div className="flex flex-col sm:flex-row sm:flex-wrap items-start sm:items-center gap-2 md:gap-4 text-gray-600 mb-3 md:mb-4">
+                  <span className="flex items-center gap-2 text-sm">
+                    <Clock size={14} className="text-rose-500" />
+                    <span className="font-medium">
+                      {upcomingEvent.start_time} - {upcomingEvent.end_time}
+                    </span>
+                  </span>
+                  <span className="flex items-center gap-2 text-sm">
+                    <MapPin size={14} className="text-rose-500" />
+                    <span>{upcomingEvent.location}</span>
+                  </span>
+                </div>
+                <p className="text-gray-700 mb-4 text-sm md:text-base">
+                  {new Date(upcomingEvent.event_date).toLocaleString('fr-FR', { month: 'long', year: 'numeric', day: 'numeric', weekday: 'long' })}
+                </p>
+                <button className="w-full sm:w-auto px-4 py-2 md:px-6 md:py-3 bg-gradient-to-r from-rose-500 to-pink-600 text-white rounded-xl font-semibold shadow-lg hover:from-rose-600 hover:to-pink-700 transition-all text-sm md:text-base">
+                  S'inscrire maintenant
+                </button>
+              </>
+            ) : (
+              <>
+                <h3 className="text-xl md:text-2xl font-bold text-gray-800 mb-2">
+                  Aucun événement à venir
+                </h3>
+                <p className="text-gray-700 mb-4 text-sm md:text-base">
+                  Les prochains événements s'afficheront ici.
+                </p>
+              </>
+            )}
           </div>
         </div>
       </div>

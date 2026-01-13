@@ -96,11 +96,7 @@ export function LoginForm({
                 </div>
               </div>
 
-              {error && (
-                <p className="text-sm text-red-500">
-                  {error}
-                </p>
-              )}
+              {/* Error messages are intentionally hidden */}
 
               <Button type="submit" className="w-full" disabled={isLoading}>
                 {isLoading ? "Connexion..." : "Se connecter"}
