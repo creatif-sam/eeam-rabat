@@ -1,4 +1,5 @@
 import { createSupabaseServerClient } from "@/lib/supabase/server"
+import ProfileForm from "./ProfileForm"
 
 export default async function ProfilePage() {
   const supabase = await createSupabaseServerClient()
@@ -7,50 +8,29 @@ export default async function ProfilePage() {
     data: { user }
   } = await supabase.auth.getUser()
 
-  if (!user) {
-    return null
-  }
+  if (!user) return null
 
   const { data: profile } = await supabase
     .from("profiles")
     .select("*")
     .eq("id", user.id)
-    .single()
+    .maybeSingle()
 
-  return (
-    <form
-      action={async (formData) => {
-        "use server"
+  let safeProfile = profile
 
-        const supabase = await createSupabaseServerClient()
+  if (!safeProfile) {
+    const { data: created } = await supabase
+      .from("profiles")
+      .insert({
+        id: user.id,
+        full_name: user.user_metadata?.full_name ?? "",
+        role: "membre_cp"
+      })
+      .select()
+      .single()
 
-        await supabase
-          .from("profiles")
-          .update({
-            full_name: formData.get("full_name"),
-            phone: formData.get("phone")
-          })
-          .eq("id", user.id)
-      }}
-      className="max-w-xl space-y-6"
-    >
-      <h1 className="text-2xl font-bold">Mon profil</h1>
+    safeProfile = created
+  }
 
-      <input
-        name="full_name"
-        defaultValue={profile.full_name}
-        className="w-full border p-3 rounded"
-      />
-
-      <input
-        name="phone"
-        defaultValue={profile.phone ?? ""}
-        className="w-full border p-3 rounded"
-      />
-
-      <button className="bg-cyan-600 text-white px-6 py-3 rounded">
-        Enregistrer
-      </button>
-    </form>
-  )
+  return <ProfileForm profile={safeProfile} />
 }

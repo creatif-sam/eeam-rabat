@@ -1,46 +1,67 @@
 import { Calendar, ChevronRight, Clock, MapPin, Play } from "lucide-react"
+import { createSupabaseServerClient } from "@/lib/supabase/server"
 
-const featuredContent = [
-  {
-    title: "Formation Leadership",
-    description: "Développer les compétences de direction",
-    image: "https://images.unsplash.com/photo-1552664730-d307ca884978?w=800&q=80",
-    duration: "6 sessions",
-    type: "Formation",
-    color: "from-purple-600 to-blue-600"
-  },
-  {
-    title: "Gestion d'équipe",
-    description: "Principes de management spirituel",
-    image: "https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=800&q=80",
-    duration: "4 modules",
-    type: "Formation",
-    color: "from-rose-600 to-orange-600"
-  }
-]
+export default async function DashboardHome() {
+  const supabase = await createSupabaseServerClient()
 
-export default function DashboardHome() {
+  const {
+    data: { user }
+  } = await supabase.auth.getUser()
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("avatar_url")
+    .eq("id", user?.id)
+    .maybeSingle()
+
+  const hasAvatar = profile?.avatar_url
+
+  // Fetch formations data
+  const { data: formations } = await supabase
+    .from("formations")
+    .select("*")
+    .eq("statut", "en_cours")
+    .order("date_debut", { ascending: true })
+    .limit(2)
+
+  // Create featured content from formations data
+  const featuredContent = formations?.map(formation => ({
+    title: formation.titre,
+    description: formation.description,
+    image: formation.couleur ? 
+      `https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=800&q=80` : // Default image for formations
+      "https://images.unsplash.com/photo-1552664730-d307ca884978?w=800&q=80",
+    duration: `${formation.sessions_total} sessions`,
+    type: "Formation",
+    color: formation.couleur || "from-purple-600 to-blue-600",
+    id: formation.id,
+    statut: formation.statut,
+    niveau: formation.niveau
+  })) || []
+
   return (
     <>
-      {/* Alert placeholder */}
-      <div className="relative overflow-hidden bg-gradient-to-r from-amber-50 to-orange-50 border-l-4 border-amber-400 rounded-2xl p-6 shadow-sm">
-        <div className="flex items-start gap-4">
-          <div className="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center">
-            <span className="text-xl">⚠️</span>
-          </div>
-          <div>
-            <h3 className="font-semibold text-amber-900 mb-1">
-              Photo de profil manquante
-            </h3>
-            <p className="text-amber-800 mb-3">
-              Ajoute une photo pour personnaliser ton expérience
-            </p>
-            <button className="px-5 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition-colors font-medium">
-              Télécharger maintenant
-            </button>
+      {/* Alert placeholder - only show if no avatar */}
+      {!hasAvatar && (
+        <div className="relative overflow-hidden bg-gradient-to-r from-amber-50 to-orange-50 border-l-4 border-amber-400 rounded-2xl p-6 shadow-sm">
+          <div className="flex items-start gap-4">
+            <div className="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center">
+              <span className="text-xl">⚠️</span>
+            </div>
+            <div>
+              <h3 className="font-semibold text-amber-900 mb-1">
+                Photo de profil manquante
+              </h3>
+              <p className="text-amber-800 mb-3">
+                Ajoute une photo pour personnaliser ton expérience
+              </p>
+              <a href="/dashboard/profile" className="px-5 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition-colors font-medium inline-block">
+                Télécharger maintenant
+              </a>
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* Welcome Section */}
       <div className="relative overflow-hidden bg-gradient-to-br from-cyan-600 via-blue-600 to-indigo-700 rounded-3xl p-10 shadow-2xl">
@@ -71,10 +92,11 @@ export default function DashboardHome() {
         </div>
 
         <div className="grid md:grid-cols-2 gap-6">
-          {featuredContent.map((card, i) => (
-            <div
-              key={i}
-              className="group relative overflow-hidden bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-1"
+          {featuredContent.length > 0 ? featuredContent.map((card, i) => (
+            <a
+              key={card.id || i}
+              href="/dashboard/formations"
+              className="group relative overflow-hidden bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 block"
             >
               <div className="relative h-56 overflow-hidden">
                 <img
@@ -106,13 +128,21 @@ export default function DashboardHome() {
                   <span className="text-sm text-gray-500 flex items-center gap-1">
                     <Clock size={14} /> {card.duration}
                   </span>
-                  <button className="text-cyan-600 font-semibold flex items-center gap-1">
-                    Commencer <ChevronRight size={16} />
-                  </button>
+                  <span className="text-cyan-600 font-semibold flex items-center gap-1">
+                    Voir détails <ChevronRight size={16} />
+                  </span>
                 </div>
               </div>
+            </a>
+          )) : (
+            <div className="col-span-2 text-center py-12">
+              <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Calendar size={24} className="text-gray-400" />
+              </div>
+              <h3 className="text-lg font-semibold text-gray-600 mb-2">Aucune formation active</h3>
+              <p className="text-gray-500">Les formations disponibles apparaîtront ici.</p>
             </div>
-          ))}
+          )}
         </div>
       </div>
 

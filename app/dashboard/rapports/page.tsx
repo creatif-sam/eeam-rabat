@@ -135,13 +135,16 @@ export default function ReportsTab() {
   const loadGroups = async () => {
     const { data } = await supabase
       .from("group_join_requests")
-      .select("group:groupes_commissions(name)")
+      .select("groupes_commissions(name)")
       .eq("processed", true);
 
     const grouped: Record<string, number> = {};
 
     data?.forEach(r => {
-      grouped[r.group.name] = (grouped[r.group.name] || 0) + 1;
+      if (r.groupes_commissions && r.groupes_commissions.length > 0) {
+        const groupName = r.groupes_commissions[0].name;
+        grouped[groupName] = (grouped[groupName] || 0) + 1;
+      }
     });
 
     setGroupDistribution(
