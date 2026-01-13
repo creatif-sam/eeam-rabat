@@ -1,5 +1,6 @@
-import { Calendar, ChevronRight, Clock, MapPin, Play } from "lucide-react"
+import { Calendar, ChevronRight, Clock, MapPin, Play, Settings, Edit } from "lucide-react"
 import { createSupabaseServerClient } from "@/lib/supabase/server"
+import WelcomeMessageEditor from "@/components/WelcomeMessageEditor"
 
 export default async function DashboardHome() {
   const supabase = await createSupabaseServerClient()
@@ -68,6 +69,10 @@ export default async function DashboardHome() {
         <div className="absolute top-0 right-0 w-64 h-64 md:w-96 md:h-96 bg-white/10 rounded-full blur-3xl"></div>
         <div className="absolute bottom-0 left-0 w-64 h-64 md:w-96 md:h-96 bg-blue-400/20 rounded-full blur-3xl"></div>
         <div className="relative">
+          <div className="flex justify-between items-start mb-4">
+            <div></div>
+            <WelcomeMessageEditor />
+          </div>
           <p className="text-cyan-100 font-medium mb-2 text-sm md:text-base">
             Bon retour parmi nous
           </p>
