@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Lock } from "lucide-react";
 import PrayerRequestForm from "@/components/public/PrayerRequests";
 
 type ServicesGridProps = {
@@ -92,8 +93,13 @@ export default function ServicesGrid({
         {/* Soumettre une Demande */}
         <div
           onClick={onRequest}
-          className="bg-white rounded-2xl p-8 shadow-lg border border-gray-100 hover:shadow-2xl transition-all cursor-pointer group"
+          className="relative bg-white rounded-2xl p-8 shadow-lg border border-gray-100 hover:shadow-2xl transition-all cursor-pointer group"
         >
+          <div className="absolute top-4 right-4 flex items-center gap-1 bg-amber-100 text-amber-700 text-xs px-3 py-1 rounded-full">
+            <Lock size={12} />
+            Réservé
+          </div>
+
           <div className="w-16 h-16 bg-gradient-to-br from-amber-500 to-orange-600 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
             <i className="fa-solid fa-file-pen text-2xl text-white"></i>
           </div>
@@ -101,7 +107,7 @@ export default function ServicesGrid({
             Soumettre une Demande
           </h3>
           <p className="text-gray-600 text-sm">
-            Soumettre une demande de votre commission ou mouvements
+            Réservé aux responsables de commissions et mouvements
           </p>
         </div>
 
@@ -124,8 +130,13 @@ export default function ServicesGrid({
         {/* Assiduité */}
         <div
           onClick={onAttendance}
-          className="bg-white rounded-2xl p-8 shadow-lg border border-gray-100 hover:shadow-2xl transition-all cursor-pointer group"
+          className="relative bg-white rounded-2xl p-8 shadow-lg border border-gray-100 hover:shadow-2xl transition-all cursor-pointer group"
         >
+          <div className="absolute top-4 right-4 flex items-center gap-1 bg-slate-100 text-slate-700 text-xs px-3 py-1 rounded-full">
+            <Lock size={12} />
+            Réservé
+          </div>
+
           <div className="w-16 h-16 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
             <i className="fa-solid fa-clipboard-user text-2xl text-white"></i>
           </div>
@@ -133,8 +144,7 @@ export default function ServicesGrid({
             Saisir l’Assiduité
           </h3>
           <p className="text-gray-600 text-sm">
-            Enregistrez les présences du culte  
-            Accès leaders
+            Réservé aux responsables de commissions
           </p>
         </div>
       </div>

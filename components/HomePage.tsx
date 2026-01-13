@@ -94,7 +94,7 @@ export default function HomePage() {
         open={requestOpen}
         onClose={() => setRequestOpen(false)}
         title="Soumettre une Demande"
-        subtitle="Prière, baptême, accompagnement"
+        subtitle="Budget, prière, matériel"
         headerClass="bg-gradient-to-r from-purple-500 to-violet-600"
       >
         <RequestSubmissionForm />

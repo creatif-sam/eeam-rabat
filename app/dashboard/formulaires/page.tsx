@@ -13,6 +13,9 @@ import {
 import PastoralCounsellingList from "@/components/dashboard/PastoralCounsellingList";
 import GroupRequestsDashboard from "@/components/dashboard/GroupRequestsDashboard";
 import AttendanceDashboard from "@/components/dashboard/AttendanceDashboard";
+import PrayerRequestsDashboard from "@/components/dashboard/PrayerRequestsDashboard";
+import VolunteerRequestsDashboard from "@/components/dashboard/VolunteerRequestsDashboard";
+import CommissionRequestsDashboard from "@/components/dashboard/CommissionRequestsDashboard";
 
 type Tab =
   | "attendance"
@@ -23,21 +26,23 @@ type Tab =
   | "request";
 
 export default function FormulairesPage() {
-  const [activeTab, setActiveTab] = useState<Tab>("pastoral");
+  const [activeTab, setActiveTab] = useState<Tab>("attendance");
 
   const tabs = [
-    { key: "attendance", label: "Assiduité", icon: CalendarCheck },
-    { key: "prayer", label: "Demande de prière", icon: HandHeart },
+    { key: "attendance", label: "Assiduité aux Cultes", icon: CalendarCheck },
     { key: "volunteer", label: "Devenir Bénévole", icon: HeartHandshake },
     { key: "pastoral", label: "Entretiens Pastoraux", icon: ClipboardList },
     { key: "group", label: "Rejoindre une Commission", icon: Users },
-    { key: "request", label: "Soumettre une Demande", icon: FileText }
+    { key: "prayer", label: "Sujets de prières", icon: HandHeart },
+    { key: "request", label: "Requêtes de responsables", icon: FileText }
   ] as const;
 
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-2xl font-bold text-gray-800">Formulaires</h1>
+        <h1 className="text-2xl font-bold text-gray-800">
+          Formulaires
+        </h1>
         <p className="text-gray-600 text-sm">
           Consultation et traitement des demandes
         </p>
@@ -66,17 +71,12 @@ export default function FormulairesPage() {
       </div>
 
       <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
+        {activeTab === "attendance" && <AttendanceDashboard />}
+        {activeTab === "volunteer" && <VolunteerRequestsDashboard />}
         {activeTab === "pastoral" && <PastoralCounsellingList />}
         {activeTab === "group" && <GroupRequestsDashboard />}
-        {activeTab === "attendance" && <AttendanceDashboard />}
-
-        {activeTab !== "pastoral" &&
-          activeTab !== "group" &&
-          activeTab !== "attendance" && (
-            <div className="text-center py-20 text-gray-500">
-              Cette section sera activée prochainement
-            </div>
-          )}
+        {activeTab === "prayer" && <PrayerRequestsDashboard />}
+        {activeTab === "request" && <CommissionRequestsDashboard />}
       </div>
     </div>
   );
