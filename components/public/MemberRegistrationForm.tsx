@@ -44,7 +44,6 @@ export default function MemberRegistrationForm({ isEdit, initialData, onSuccess 
 
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
-      <div className="text-center py-10 bg-white text-gray-900 rounded-xl shadow-md">
 
   useEffect(() => {
     if (isEdit && initialData) {
