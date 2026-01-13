@@ -1,7 +1,9 @@
 import Header from "@/components/dashboard/Header";
 import Sidebar from "@/components/dashboard/Sidebar";
+import { SidebarProvider } from "@/components/dashboard/SidebarContext";
 import { Suspense } from "react";
 import AuthCheck from "./AuthCheck";
+import DashboardContent from "./DashboardContent";
 
 export default function DashboardLayout({
   children
@@ -10,17 +12,15 @@ export default function DashboardLayout({
 }) {
   return (
     <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading...</div>}>
-      <AuthCheckWrapper>
-        {({ user }) => (
-          <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
-            <Sidebar />
-            <div className="md:ml-20">
-              <Header user={user} />
-              <main className="p-4 md:p-8">{children}</main>
-            </div>
-          </div>
-        )}
-      </AuthCheckWrapper>
+      <SidebarProvider>
+        <AuthCheckWrapper>
+          {({ user }) => (
+            <DashboardContent user={user}>
+              {children}
+            </DashboardContent>
+          )}
+        </AuthCheckWrapper>
+      </SidebarProvider>
     </Suspense>
   );
 }
