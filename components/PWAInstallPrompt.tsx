@@ -19,21 +19,33 @@ export default function PWAInstallPrompt() {
       setShowPrompt(true);
     };
 
-    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    try {
+      window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    } catch (error) {
+      console.warn("Failed to add beforeinstallprompt listener:", error);
+    }
 
     return () => {
-      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+      try {
+        window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+      } catch (error) {
+        console.warn("Failed to remove beforeinstallprompt listener:", error);
+      }
     };
   }, []);
 
   const handleInstall = async () => {
     if (!deferredPrompt) return;
 
-    deferredPrompt.prompt();
-    const { outcome } = await deferredPrompt.userChoice;
+    try {
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
 
-    if (outcome === 'accepted') {
-      console.log('User accepted the install prompt');
+      if (outcome === 'accepted') {
+        console.log('User accepted the install prompt');
+      }
+    } catch (error) {
+      console.warn("Failed to show install prompt:", error);
     }
 
     setDeferredPrompt(null);
@@ -43,18 +55,26 @@ export default function PWAInstallPrompt() {
   const handleDismiss = () => {
     setShowPrompt(false);
     // Remember user's choice for 30 days
-    localStorage.setItem('pwa-install-dismissed', Date.now().toString());
+    try {
+      localStorage.setItem('pwa-install-dismissed', Date.now().toString());
+    } catch (error) {
+      console.warn("Failed to save PWA install dismissal:", error);
+    }
   };
 
   // Don't show if dismissed recently
   useEffect(() => {
-    const dismissed = localStorage.getItem('pwa-install-dismissed');
-    if (dismissed) {
-      const dismissedTime = parseInt(dismissed);
-      const thirtyDays = 30 * 24 * 60 * 60 * 1000;
-      if (Date.now() - dismissedTime < thirtyDays) {
-        setShowPrompt(false);
+    try {
+      const dismissed = localStorage.getItem('pwa-install-dismissed');
+      if (dismissed) {
+        const dismissedTime = parseInt(dismissed);
+        const thirtyDays = 30 * 24 * 60 * 60 * 1000;
+        if (Date.now() - dismissedTime < thirtyDays) {
+          setShowPrompt(false);
+        }
       }
+    } catch (error) {
+      console.warn("Failed to check PWA install dismissal:", error);
     }
   }, []);
 

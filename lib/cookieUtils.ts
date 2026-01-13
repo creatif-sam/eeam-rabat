@@ -32,69 +32,82 @@ export const cookieUtils = {
   set: (name: string, value: string, options: any = {}) => {
     if (typeof window === "undefined") return;
 
-    const defaultOptions = {
-      path: "/",
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax" as const,
-      ...options,
-    };
+    try {
+      const defaultOptions = {
+        path: "/",
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax" as const,
+        ...options,
+      };
 
-    let cookieString = `${name}=${encodeURIComponent(value)}`;
+      let cookieString = `${name}=${encodeURIComponent(value)}`;
 
-    if (defaultOptions.expires) {
-      cookieString += `; expires=${defaultOptions.expires.toUTCString()}`;
+      if (defaultOptions.expires) {
+        cookieString += `; expires=${defaultOptions.expires.toUTCString()}`;
+      }
+
+      if (defaultOptions.maxAge) {
+        cookieString += `; max-age=${defaultOptions.maxAge}`;
+      }
+
+      if (defaultOptions.path) {
+        cookieString += `; path=${defaultOptions.path}`;
+      }
+
+      if (defaultOptions.domain) {
+        cookieString += `; domain=${defaultOptions.domain}`;
+      }
+
+      if (defaultOptions.secure) {
+        cookieString += "; secure";
+      }
+
+      if (defaultOptions.sameSite) {
+        cookieString += `; samesite=${defaultOptions.sameSite}`;
+      }
+
+      document.cookie = cookieString;
+    } catch (error) {
+      console.warn("Failed to set cookie:", name, error);
     }
-
-    if (defaultOptions.maxAge) {
-      cookieString += `; max-age=${defaultOptions.maxAge}`;
-    }
-
-    if (defaultOptions.path) {
-      cookieString += `; path=${defaultOptions.path}`;
-    }
-
-    if (defaultOptions.domain) {
-      cookieString += `; domain=${defaultOptions.domain}`;
-    }
-
-    if (defaultOptions.secure) {
-      cookieString += "; secure";
-    }
-
-    if (defaultOptions.sameSite) {
-      cookieString += `; samesite=${defaultOptions.sameSite}`;
-    }
-
-    document.cookie = cookieString;
   },
 
   // Get a cookie
   get: (name: string): string | null => {
     if (typeof window === "undefined") return null;
 
-    const nameEQ = name + "=";
-    const ca = document.cookie.split(";");
+    try {
+      const nameEQ = name + "=";
+      const ca = document.cookie.split(";");
 
-    for (let i = 0; i < ca.length; i++) {
-      let c = ca[i];
-      while (c.charAt(0) === " ") c = c.substring(1, c.length);
-      if (c.indexOf(nameEQ) === 0) {
-        return decodeURIComponent(c.substring(nameEQ.length, c.length));
+      for (let i = 0; i < ca.length; i++) {
+        let c = ca[i];
+        while (c.charAt(0) === " ") c = c.substring(1, c.length);
+        if (c.indexOf(nameEQ) === 0) {
+          return decodeURIComponent(c.substring(nameEQ.length, c.length));
+        }
       }
+      return null;
+    } catch (error) {
+      console.warn("Failed to get cookie:", name, error);
+      return null;
     }
-    return null;
   },
 
   // Remove a cookie
   remove: (name: string, options: any = {}) => {
     if (typeof window === "undefined") return;
 
-    const defaultOptions = {
-      path: "/",
-      ...options,
-    };
+    try {
+      const defaultOptions = {
+        path: "/",
+        ...options,
+      };
 
-    cookieUtils.set(name, "", { ...defaultOptions, maxAge: -1 });
+      cookieUtils.set(name, "", { ...defaultOptions, maxAge: -1 });
+    } catch (error) {
+      console.warn("Failed to remove cookie:", name, error);
+    }
   },
 
   // Check if cookies are enabled
@@ -107,6 +120,7 @@ export const cookieUtils = {
       document.cookie = "testcookie=; expires=Thu, 01 Jan 1970 00:00:00 GMT";
       return result;
     } catch (e) {
+      console.warn("Cookie test failed:", e);
       return false;
     }
   },
@@ -116,14 +130,18 @@ export const cookieUtils = {
 export const cookieConsent = {
   // Save consent
   save: (settings: CookieSettings) => {
-    const consent: CookieConsent = {
-      accepted: true,
-      settings: { ...settings, necessary: true }, // Necessary cookies are always enabled
-      timestamp: Date.now(),
-    };
+    try {
+      const consent: CookieConsent = {
+        accepted: true,
+        settings: { ...settings, necessary: true }, // Necessary cookies are always enabled
+        timestamp: Date.now(),
+      };
 
-    localStorage.setItem(COOKIE_CONSENT_KEY, JSON.stringify(consent));
-    localStorage.setItem(COOKIE_SETTINGS_KEY, JSON.stringify(settings));
+      localStorage.setItem(COOKIE_CONSENT_KEY, JSON.stringify(consent));
+      localStorage.setItem(COOKIE_SETTINGS_KEY, JSON.stringify(settings));
+    } catch (error) {
+      console.warn("Failed to save cookie consent:", error);
+    }
   },
 
   // Get consent
@@ -133,7 +151,8 @@ export const cookieConsent = {
     try {
       const consentStr = localStorage.getItem(COOKIE_CONSENT_KEY);
       return consentStr ? JSON.parse(consentStr) : null;
-    } catch {
+    } catch (error) {
+      console.warn("Failed to get cookie consent:", error);
       return null;
     }
   },
@@ -145,21 +164,31 @@ export const cookieConsent = {
     try {
       const settingsStr = localStorage.getItem(COOKIE_SETTINGS_KEY);
       return settingsStr ? JSON.parse(settingsStr) : DEFAULT_COOKIE_SETTINGS;
-    } catch {
+    } catch (error) {
+      console.warn("Failed to get cookie settings:", error);
       return DEFAULT_COOKIE_SETTINGS;
     }
   },
 
   // Check if consent is given
   isAccepted: (): boolean => {
-    const consent = cookieConsent.get();
-    return consent?.accepted || false;
+    try {
+      const consent = cookieConsent.get();
+      return consent?.accepted || false;
+    } catch (error) {
+      console.warn("Failed to check cookie consent:", error);
+      return false;
+    }
   },
 
   // Clear consent
   clear: () => {
-    localStorage.removeItem(COOKIE_CONSENT_KEY);
-    localStorage.removeItem(COOKIE_SETTINGS_KEY);
+    try {
+      localStorage.removeItem(COOKIE_CONSENT_KEY);
+      localStorage.removeItem(COOKIE_SETTINGS_KEY);
+    } catch (error) {
+      console.warn("Failed to clear cookie consent:", error);
+    }
   },
 };
 
@@ -238,31 +267,39 @@ export const analyticsCookies = {
   enable: () => {
     if (typeof window === "undefined") return;
 
-    // Load Google Analytics script
-    const script = document.createElement("script");
-    script.async = true;
-    script.src = `https://www.googletagmanager.com/gtag/js?id=GA_MEASUREMENT_ID`;
-    document.head.appendChild(script);
+    try {
+      // Load Google Analytics script
+      const script = document.createElement("script");
+      script.async = true;
+      script.src = `https://www.googletagmanager.com/gtag/js?id=GA_MEASUREMENT_ID`;
+      document.head.appendChild(script);
 
-    // Initialize gtag
-    window.dataLayer = window.dataLayer || [];
-    function gtag(...args: any[]) {
-      window.dataLayer.push(args);
+      // Initialize gtag
+      window.dataLayer = window.dataLayer || [];
+      function gtag(...args: any[]) {
+        window.dataLayer.push(args);
+      }
+      gtag("js", new Date());
+      gtag("config", "GA_MEASUREMENT_ID");
+    } catch (error) {
+      console.warn("Failed to enable analytics cookies:", error);
     }
-    gtag("js", new Date());
-    gtag("config", "GA_MEASUREMENT_ID");
   },
 
   // Disable Google Analytics
   disable: () => {
     if (typeof window === "undefined") return;
 
-    // Remove gtag script
-    const scripts = document.querySelectorAll('script[src*="googletagmanager"]');
-    scripts.forEach(script => script.remove());
+    try {
+      // Remove gtag script
+      const scripts = document.querySelectorAll('script[src*="googletagmanager"]');
+      scripts.forEach(script => script.remove());
 
-    // Clear dataLayer
-    window.dataLayer = [];
+      // Clear dataLayer
+      window.dataLayer = [];
+    } catch (error) {
+      console.warn("Failed to disable analytics cookies:", error);
+    }
   },
 };
 
