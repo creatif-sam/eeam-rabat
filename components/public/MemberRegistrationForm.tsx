@@ -54,19 +54,28 @@ export default function MemberRegistrationForm({ isEdit, initialData, onSuccess 
         genre: initialData.genre || "",
         nationalite: initialData.nationalite || "",
         date_naissance: initialData.date_naissance || "",
-  return (
-    <div className="bg-white text-gray-900 rounded-xl shadow-md p-6 md:p-10 max-w-2xl mx-auto">
-      <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Paroisse */}
-        // ...existing code...
-      </form>
-    </div>
-  );
+        telephone: initialData.telephone || "",
+        email: initialData.email || "",
+        profession: initialData.profession || "",
+        baptise: initialData.baptise || "",
+        date_bapteme: initialData.date_bapteme || "",
+        adresse: initialData.adresse || "",
         commissions: initialData.commissions || [],
         consent: initialData.consent || false
       });
     }
   }, [isEdit, initialData]);
+
+  // ...existing code...
+
+  return (
+    <div className="bg-white text-gray-900 rounded-xl shadow-md p-6 md:p-10 max-w-2xl mx-auto">
+      <form onSubmit={handleSubmit} className="space-y-6">
+        {/* Paroisse */}
+        {/* ...existing code... */}
+      </form>
+    </div>
+  );
 
   const countries = [
     "Afghanistan", "Afrique du Sud", "Albanie", "Algérie", "Allemagne", "Andorre", "Angola", "Antigua-et-Barbuda",
