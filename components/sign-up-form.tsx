@@ -15,6 +15,7 @@ import { Label } from "@/components/ui/label"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
+import { Mail, Lock, Eye, EyeOff } from "lucide-react"
 
 export function SignUpForm({
   className,
@@ -25,6 +26,8 @@ export function SignUpForm({
   const [repeatPassword, setRepeatPassword] = useState("")
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
+  const [showRepeatPassword, setShowRepeatPassword] = useState(false)
   const router = useRouter()
 
   const handleSignUp = async (e: React.FormEvent) => {
@@ -82,40 +85,66 @@ export function SignUpForm({
             <div className="flex flex-col gap-6">
               <div className="grid gap-2">
                 <Label htmlFor="email">Adresse email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="exemple@email.com"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                />
+                <div className="relative">
+                  <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="exemple@email.com"
+                    required
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="pl-10"
+                  />
+                </div>
               </div>
 
               <div className="grid gap-2">
                 <Label htmlFor="password">
                   Mot de passe
                 </Label>
-                <Input
-                  id="password"
-                  type="password"
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                />
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                  <Input
+                    id="password"
+                    type={showPassword ? "text" : "password"}
+                    required
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="pl-10 pr-10"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  >
+                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
               </div>
 
               <div className="grid gap-2">
                 <Label htmlFor="repeat-password">
                   Confirmer le mot de passe
                 </Label>
-                <Input
-                  id="repeat-password"
-                  type="password"
-                  required
-                  value={repeatPassword}
-                  onChange={(e) => setRepeatPassword(e.target.value)}
-                />
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                  <Input
+                    id="repeat-password"
+                    type={showRepeatPassword ? "text" : "password"}
+                    required
+                    value={repeatPassword}
+                    onChange={(e) => setRepeatPassword(e.target.value)}
+                    className="pl-10 pr-10"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowRepeatPassword(!showRepeatPassword)}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  >
+                    {showRepeatPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
               </div>
 
               {error && (

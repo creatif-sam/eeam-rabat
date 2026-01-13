@@ -70,10 +70,10 @@ export default function PWAInstallPrompt() {
 
           <div className="flex-1 min-w-0">
             <h3 className="font-semibold text-card-foreground">
-              Installer EEAM Rabat
+              Installer L'Intranet EEAM Rabat
             </h3>
             <p className="text-sm text-muted-foreground mt-1">
-              Installez notre application pour un accès rapide et hors ligne.
+              Installez notre application pour un accès rapide et fluide.
             </p>
 
             <div className="flex gap-2 mt-3">

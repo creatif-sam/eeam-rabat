@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Lock } from "lucide-react";
+import { Lock, User, Heart, Users, HandHeart, FilePen, UserCheck, ClipboardList } from "lucide-react";
 import PrayerRequestForm from "@/components/public/PrayerRequests";
 
 type ServicesGridProps = {
@@ -32,7 +32,7 @@ export default function ServicesGrid({
           className="bg-white rounded-2xl p-8 shadow-lg border border-gray-100 hover:shadow-2xl transition-all cursor-pointer group"
         >
           <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-            <i className="fa-solid fa-user text-2xl text-white"></i>
+            <User className="text-2xl text-white" />
           </div>
           <h3 className="text-xl font-bold text-gray-800 mb-2">
             Inscription Membre
@@ -48,7 +48,7 @@ export default function ServicesGrid({
           className="bg-white rounded-2xl p-8 shadow-lg border border-gray-100 hover:shadow-2xl transition-all cursor-pointer group"
         >
           <div className="w-16 h-16 bg-gradient-to-br from-green-500 to-emerald-600 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-            <i className="fa-solid fa-hand-holding-heart text-2xl text-white"></i>
+            <HandHeart className="text-2xl text-white" />
           </div>
           <h3 className="text-xl font-bold text-gray-800 mb-2">
             Devenir Bénévole
@@ -64,7 +64,7 @@ export default function ServicesGrid({
           className="bg-white rounded-2xl p-8 shadow-lg border border-gray-100 hover:shadow-2xl transition-all cursor-pointer group"
         >
           <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-violet-600 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-            <i className="fa-solid fa-users text-2xl text-white"></i>
+            <Users className="text-2xl text-white" />
           </div>
           <h3 className="text-xl font-bold text-gray-800 mb-2">
             Rejoindre une Commission
@@ -80,7 +80,7 @@ export default function ServicesGrid({
           className="bg-white rounded-2xl p-8 shadow-lg border border-gray-100 hover:shadow-2xl transition-all cursor-pointer group"
         >
           <div className="w-16 h-16 bg-gradient-to-br from-rose-500 to-pink-600 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-            <i className="fa-solid fa-hands-praying text-2xl text-white"></i>
+            <HandHeart className="text-2xl text-white" />
           </div>
           <h3 className="text-xl font-bold text-gray-800 mb-2">
             Demande de prière
@@ -101,7 +101,7 @@ export default function ServicesGrid({
           </div>
 
           <div className="w-16 h-16 bg-gradient-to-br from-amber-500 to-orange-600 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-            <i className="fa-solid fa-file-pen text-2xl text-white"></i>
+            <FilePen className="text-2xl text-white" />
           </div>
           <h3 className="text-xl font-bold text-gray-800 mb-2">
             Soumettre une Demande
@@ -117,7 +117,7 @@ export default function ServicesGrid({
           className="bg-white rounded-2xl p-8 shadow-lg border border-gray-100 hover:shadow-2xl transition-all cursor-pointer group"
         >
           <div className="w-16 h-16 bg-gradient-to-br from-rose-500 to-pink-600 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-            <i className="fa-solid fa-user-group text-2xl text-white"></i>
+            <UserCheck className="text-2xl text-white" />
           </div>
           <h3 className="text-xl font-bold text-gray-800 mb-2">
             Entretien Pastoral
@@ -138,7 +138,7 @@ export default function ServicesGrid({
           </div>
 
           <div className="w-16 h-16 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-            <i className="fa-solid fa-clipboard-user text-2xl text-white"></i>
+            <ClipboardList className="text-2xl text-white" />
           </div>
           <h3 className="text-xl font-bold text-gray-800 mb-2">
             Saisir l’Assiduité

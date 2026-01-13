@@ -171,7 +171,7 @@ export default function CookieSettingsModal({ isOpen, onClose }: CookieSettingsM
           <div className="flex flex-col sm:flex-row gap-3 ml-auto">
             <button
               onClick={onClose}
-              className="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium order-2 sm:order-1"
+              className="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 active:bg-gray-100 transition-colors text-sm font-medium order-2 sm:order-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               Fermer
             </button>
@@ -179,7 +179,7 @@ export default function CookieSettingsModal({ isOpen, onClose }: CookieSettingsM
             <div className="flex gap-3 order-1 sm:order-2">
               <button
                 onClick={handleReset}
-                className="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium"
+                className="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 active:bg-gray-100 transition-colors text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <RotateCcw className="w-4 h-4 inline mr-2" />
                 Réinitialiser
@@ -188,9 +188,9 @@ export default function CookieSettingsModal({ isOpen, onClose }: CookieSettingsM
               <button
                 onClick={handleSave}
                 disabled={!hasChanges}
-                className={`px-4 py-2 rounded-lg transition-colors text-sm font-medium ${
+                className={`px-4 py-2 rounded-lg transition-colors text-sm font-medium focus:outline-none focus:ring-2 ${
                   hasChanges
-                    ? "bg-blue-600 text-white hover:bg-blue-700"
+                    ? "bg-blue-600 text-white hover:bg-blue-700 active:bg-blue-800 focus:ring-blue-500"
                     : "bg-gray-300 text-gray-500 cursor-not-allowed"
                 }`}
               >
