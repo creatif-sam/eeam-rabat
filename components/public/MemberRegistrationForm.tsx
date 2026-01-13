@@ -67,16 +67,6 @@ export default function MemberRegistrationForm({ isEdit, initialData, onSuccess 
   }, [isEdit, initialData]);
 
   // ...existing code...
-
-  return (
-    <div className="bg-white text-gray-900 rounded-xl shadow-md p-6 md:p-10 max-w-2xl mx-auto">
-      <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Paroisse */}
-        {/* ...existing code... */}
-      </form>
-    </div>
-  );
-
   const countries = [
     "Afghanistan", "Afrique du Sud", "Albanie", "Algérie", "Allemagne", "Andorre", "Angola", "Antigua-et-Barbuda",
     "Arabie saoudite", "Argentine", "Arménie", "Australie", "Autriche", "Azerbaïdjan", "Bahamas", "Bahreïn",
