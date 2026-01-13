@@ -140,20 +140,20 @@ export default function BaptemesTab() {
   if (loading) return <p>Chargement...</p>;
 
   return (
-    <div className="p-8 space-y-6 bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 min-h-screen">
+    <div className="p-4 md:p-8 space-y-4 md:space-y-6 bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 min-h-screen">
       {/* Header */}
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-800 mb-2">
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-800 mb-2">
             Gestion des Baptêmes
           </h1>
-          <p className="text-gray-600">
+          <p className="text-gray-600 text-sm md:text-base">
             Suivi des candidats et cérémonies de baptême
           </p>
         </div>
         <button
           onClick={() => setShowCreate(true)}
-          className="px-4 py-2 bg-gradient-to-r from-cyan-500 to-blue-600 text-white rounded-xl flex items-center gap-2 shadow-lg shadow-cyan-500/30"
+          className="px-4 py-2 md:px-4 md:py-2 bg-gradient-to-r from-cyan-500 to-blue-600 text-white rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-cyan-500/30 text-sm md:text-base"
         >
           <Plus size={18} />
           Nouvelle demande
@@ -161,7 +161,7 @@ export default function BaptemesTab() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 md:gap-6">
         <StatCard icon={<Droplet />} label="Total baptêmes" value={stats.total} color="blue" />
         <StatCard icon={<CheckCircle />} label="Cette année" value={stats.thisYear} color="green" />
         <StatCard icon={<Calendar />} label="À venir" value={stats.upcoming} color="cyan" />
@@ -186,16 +186,16 @@ export default function BaptemesTab() {
         placeholder="Rechercher un candidat"
         value={search}
         onChange={e => setSearch(e.target.value)}
-        className="pl-4 pr-4 py-2 border border-gray-200 rounded-xl w-64"
+        className="pl-4 pr-4 py-2 border border-gray-200 rounded-xl w-full md:w-64"
       />
 
       {/* List */}
-      <div className="grid md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
         {filtered.map(b => (
           <div
             key={b.id}
             onClick={() => setSelected(b)}
-            className="bg-white p-6 rounded-xl shadow hover:shadow-md cursor-pointer relative"
+            className="bg-white p-4 md:p-6 rounded-xl shadow hover:shadow-md cursor-pointer relative"
           >
             <button
               onClick={e => {
@@ -217,39 +217,39 @@ export default function BaptemesTab() {
       {/* Detail Modal */}
       {selected && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-2xl max-w-2xl w-full p-6 space-y-4">
-            <div className="flex justify-between">
-              <h2 className="text-2xl font-bold">{selected.full_name}</h2>
-              <button onClick={() => setSelected(null)}>✕</button>
+          <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-4 md:p-6 space-y-4">
+            <div className="flex justify-between items-start">
+              <h2 className="text-xl md:text-2xl font-bold">{selected.full_name}</h2>
+              <button onClick={() => setSelected(null)} className="text-gray-400 hover:text-gray-600 text-xl">✕</button>
             </div>
 
-            <div className="space-y-2">
-              <p className="flex items-center gap-2">
+            <div className="space-y-3">
+              <p className="flex items-center gap-2 text-sm md:text-base">
                 <Mail size={16} /> {selected.email}
               </p>
               {selected.phone && (
-                <p className="flex items-center gap-2">
+                <p className="flex items-center gap-2 text-sm md:text-base">
                   <Phone size={16} /> {selected.phone}
                 </p>
               )}
-              <p className="flex items-center gap-2">
+              <p className="flex items-center gap-2 text-sm md:text-base">
                 <User size={16} /> Créé par {selected.creator_email}
               </p>
             </div>
 
             {selected.temoignage && (
-              <div className="bg-gray-50 p-4 rounded-xl italic">
+              <div className="bg-gray-50 p-3 md:p-4 rounded-xl italic text-sm md:text-base">
                 "{selected.temoignage}"
               </div>
             )}
 
-            <div className="flex gap-3 pt-4">
+            <div className="flex flex-col sm:flex-row gap-3 pt-4">
               <button
                 onClick={() => {
                   setSelected(null);
                   setEditing(selected);
                 }}
-                className="flex-1 bg-gray-100 text-gray-700 py-2 rounded-xl flex items-center justify-center gap-2"
+                className="flex-1 bg-gray-100 text-gray-700 py-3 rounded-xl flex items-center justify-center gap-2 text-sm md:text-base font-medium"
               >
                 <Edit size={16} />
                 Modifier
@@ -259,14 +259,14 @@ export default function BaptemesTab() {
                 <>
                   <button
                     onClick={() => approuver(selected.id)}
-                    className="flex-1 bg-green-500 text-white py-2 rounded-xl flex items-center justify-center gap-2"
+                    className="flex-1 bg-green-500 text-white py-3 rounded-xl flex items-center justify-center gap-2 text-sm md:text-base font-medium"
                   >
                     <CheckCircle size={16} />
                     Approuver
                   </button>
                   <button
                     onClick={() => rejeter(selected.id)}
-                    className="flex-1 bg-red-500 text-white py-2 rounded-xl flex items-center justify-center gap-2"
+                    className="flex-1 bg-red-500 text-white py-3 rounded-xl flex items-center justify-center gap-2 text-sm md:text-base font-medium"
                   >
                     <XCircle size={16} />
                     Rejeter
@@ -281,60 +281,62 @@ export default function BaptemesTab() {
       {/* Create Modal */}
       {showCreate && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-2xl max-w-xl w-full p-6 space-y-4">
-            <div className="flex justify-between">
-              <h2 className="text-2xl font-bold">Nouvelle demande</h2>
-              <button onClick={() => setShowCreate(false)}>✕</button>
+          <div className="bg-white rounded-2xl max-w-xl w-full max-h-[90vh] overflow-y-auto p-4 md:p-6 space-y-4">
+            <div className="flex justify-between items-start">
+              <h2 className="text-xl md:text-2xl font-bold">Nouvelle demande</h2>
+              <button onClick={() => setShowCreate(false)} className="text-gray-400 hover:text-gray-600 text-xl">✕</button>
             </div>
 
-            <input
-              placeholder="Nom complet"
-              value={createForm.full_name}
-              onChange={e =>
-                setCreateForm({ ...createForm, full_name: e.target.value })
-              }
-              className="w-full border p-3 rounded-xl"
-            />
+            <div className="space-y-4">
+              <input
+                placeholder="Nom complet"
+                value={createForm.full_name}
+                onChange={e =>
+                  setCreateForm({ ...createForm, full_name: e.target.value })
+                }
+                className="w-full border p-3 rounded-xl text-sm md:text-base"
+              />
 
-            <input
-              placeholder="Email"
-              value={createForm.email}
-              onChange={e =>
-                setCreateForm({ ...createForm, email: e.target.value })
-              }
-              className="w-full border p-3 rounded-xl"
-            />
+              <input
+                placeholder="Email"
+                value={createForm.email}
+                onChange={e =>
+                  setCreateForm({ ...createForm, email: e.target.value })
+                }
+                className="w-full border p-3 rounded-xl text-sm md:text-base"
+              />
 
-            <input
-              placeholder="Téléphone"
-              value={createForm.phone}
-              onChange={e =>
-                setCreateForm({ ...createForm, phone: e.target.value })
-              }
-              className="w-full border p-3 rounded-xl"
-            />
+              <input
+                placeholder="Téléphone"
+                value={createForm.phone}
+                onChange={e =>
+                  setCreateForm({ ...createForm, phone: e.target.value })
+                }
+                className="w-full border p-3 rounded-xl text-sm md:text-base"
+              />
 
-            <textarea
-              placeholder="Témoignage"
-              value={createForm.temoignage}
-              onChange={e =>
-                setCreateForm({ ...createForm, temoignage: e.target.value })
-              }
-              className="w-full border p-3 rounded-xl"
-              rows={4}
-            />
+              <textarea
+                placeholder="Témoignage"
+                value={createForm.temoignage}
+                onChange={e =>
+                  setCreateForm({ ...createForm, temoignage: e.target.value })
+                }
+                className="w-full border p-3 rounded-xl text-sm md:text-base"
+                rows={4}
+              />
+            </div>
 
-            <div className="flex gap-3 pt-4">
+            <div className="flex flex-col sm:flex-row gap-3 pt-4">
               <button
                 onClick={() => setShowCreate(false)}
-                className="flex-1 px-4 py-3 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 font-medium"
+                className="flex-1 px-4 py-3 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 font-medium text-sm md:text-base"
               >
                 Annuler
               </button>
 
               <button
                 onClick={submitCreate}
-                className="flex-1 px-4 py-3 bg-gradient-to-r from-cyan-500 to-blue-600 text-white rounded-xl hover:from-cyan-600 hover:to-blue-700 font-semibold shadow-lg shadow-cyan-500/30"
+                className="flex-1 px-4 py-3 bg-gradient-to-r from-cyan-500 to-blue-600 text-white rounded-xl hover:from-cyan-600 hover:to-blue-700 font-semibold shadow-lg shadow-cyan-500/30 text-sm md:text-base"
               >
                 Créer la demande
               </button>
@@ -375,12 +377,12 @@ function StatCard({
   };
 
   return (
-    <div className={`bg-gradient-to-br ${colors[color]} rounded-2xl p-6 border shadow-sm`}>
-      <div className={`w-12 h-12 ${colors[color].split(" ")[2]} rounded-xl flex items-center justify-center mb-4 text-white`}>
+    <div className={`bg-gradient-to-br ${colors[color]} rounded-2xl p-4 md:p-6 border shadow-sm`}>
+      <div className={`w-10 h-10 md:w-12 md:h-12 ${colors[color].split(" ")[2]} rounded-xl flex items-center justify-center mb-3 md:mb-4 text-white`}>
         {icon}
       </div>
-      <p className="text-gray-600 text-sm mb-1">{label}</p>
-      <p className="text-3xl font-bold text-gray-800">{value}</p>
+      <p className="text-gray-600 text-xs md:text-sm mb-1">{label}</p>
+      <p className="text-2xl md:text-3xl font-bold text-gray-800">{value}</p>
     </div>
   );
 }

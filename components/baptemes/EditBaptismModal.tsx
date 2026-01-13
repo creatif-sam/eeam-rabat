@@ -64,9 +64,9 @@ export default function EditBaptismModal({
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-2xl max-w-xl w-full p-6 space-y-4">
-        <div className="flex justify-between items-center">
-          <h2 className="text-2xl font-bold text-gray-800">
+      <div className="bg-white rounded-2xl max-w-xl w-full max-h-[90vh] overflow-y-auto p-4 md:p-6 space-y-4">
+        <div className="flex justify-between items-start">
+          <h2 className="text-xl md:text-2xl font-bold text-gray-800">
             Modifier la demande
           </h2>
           <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
@@ -74,56 +74,58 @@ export default function EditBaptismModal({
           </button>
         </div>
 
-        <input
-          name="full_name"
-          value={form.full_name}
-          onChange={updateField}
-          placeholder="Nom complet"
-          className="w-full border p-3 rounded-xl"
-        />
+        <div className="space-y-4">
+          <input
+            name="full_name"
+            value={form.full_name}
+            onChange={updateField}
+            placeholder="Nom complet"
+            className="w-full border p-3 rounded-xl text-sm md:text-base"
+          />
 
-        <input
-          name="email"
-          value={form.email}
-          onChange={updateField}
-          placeholder="Email"
-          className="w-full border p-3 rounded-xl"
-        />
+          <input
+            name="email"
+            value={form.email}
+            onChange={updateField}
+            placeholder="Email"
+            className="w-full border p-3 rounded-xl text-sm md:text-base"
+          />
 
-        <input
-          name="phone"
-          value={form.phone}
-          onChange={updateField}
-          placeholder="Téléphone"
-          className="w-full border p-3 rounded-xl"
-        />
+          <input
+            name="phone"
+            value={form.phone}
+            onChange={updateField}
+            placeholder="Téléphone"
+            className="w-full border p-3 rounded-xl text-sm md:text-base"
+          />
 
-        <textarea
-          name="temoignage"
-          value={form.temoignage}
-          onChange={updateField}
-          placeholder="Témoignage"
-          rows={4}
-          className="w-full border p-3 rounded-xl"
-        />
+          <textarea
+            name="temoignage"
+            value={form.temoignage}
+            onChange={updateField}
+            placeholder="Témoignage"
+            rows={4}
+            className="w-full border p-3 rounded-xl text-sm md:text-base"
+          />
 
-        <select
-          name="statut"
-          value={form.statut}
-          onChange={updateField}
-          className="w-full border p-3 rounded-xl"
-        >
-          <option value="en_attente">En attente</option>
-          <option value="en_preparation">En préparation</option>
-          <option value="approuve">Approuvé</option>
-          <option value="baptise">Baptisé</option>
-          <option value="rejete">Rejeté</option>
-        </select>
+          <select
+            name="statut"
+            value={form.statut}
+            onChange={updateField}
+            className="w-full border p-3 rounded-xl text-sm md:text-base"
+          >
+            <option value="en_attente">En attente</option>
+            <option value="en_preparation">En préparation</option>
+            <option value="approuve">Approuvé</option>
+            <option value="baptise">Baptisé</option>
+            <option value="rejete">Rejeté</option>
+          </select>
+        </div>
 
-        <div className="flex gap-3 pt-4">
+        <div className="flex flex-col sm:flex-row gap-3 pt-4">
           <button
             onClick={onClose}
-            className="flex-1 bg-gray-100 text-gray-700 py-3 rounded-xl font-medium hover:bg-gray-200"
+            className="flex-1 bg-gray-100 text-gray-700 py-3 rounded-xl font-medium hover:bg-gray-200 text-sm md:text-base"
           >
             Annuler
           </button>
@@ -131,7 +133,7 @@ export default function EditBaptismModal({
           <button
             onClick={save}
             disabled={saving}
-            className="flex-1 bg-gradient-to-r from-cyan-500 to-blue-600 text-white py-3 rounded-xl font-semibold shadow-lg shadow-cyan-500/30"
+            className="flex-1 bg-gradient-to-r from-cyan-500 to-blue-600 text-white py-3 rounded-xl font-semibold shadow-lg shadow-cyan-500/30 text-sm md:text-base"
           >
             {saving ? "Enregistrement..." : "Enregistrer"}
           </button>
