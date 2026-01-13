@@ -356,7 +356,7 @@ function SummaryCard({
         {icon}
       </div>
       <p className="text-gray-600 text-sm">{label}</p>
-      <p className="text-3xl font-bold text-gray-800">{value}</p>
+      <p className="text-2xl font-bold text-gray-800">{value}</p>
     </div>
   );
 }

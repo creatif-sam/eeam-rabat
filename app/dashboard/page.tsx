@@ -109,7 +109,7 @@ export default async function DashboardHome() {
                   alt={card.title}
                   className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                 />
-                <div className={`absolute inset-0 bg-gradient-to-t ${card.color} opacity-60`} />
+                <div className={`absolute inset-0 bg-gradient-to-t ${i < 2 ? 'from-red-600 to-rose-600' : card.color} opacity-60`} />
                 <div className="absolute top-4 left-4">
                   <span className="px-3 py-1 bg-white/90 rounded-full text-sm font-semibold text-gray-800">
                     {card.type}
