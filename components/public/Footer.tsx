@@ -43,7 +43,7 @@ export default function Footer() {
               </div>
 
               <p className="text-gray-300 mb-6 leading-relaxed">
-                L'excellence pour la gloire de Dieu.
+                Technologie pour la gloire de Dieu.
                 <br />
                 <span className="text-cyan-400 italic">"1 Corinthiens 10:31"</span>
               </p>
