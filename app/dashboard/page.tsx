@@ -84,7 +84,7 @@ export default async function DashboardHome() {
             <WelcomeMessageEditor />
           </div>
           <p className="text-cyan-100 font-medium mb-2 text-sm md:text-base">
-            Bon retour parmi nous
+            Bon retour parmi nous {user && profile?.user_metadata?.full_name ? profile.user_metadata.full_name : "Leader"}!
           </p>
           <h1 className="text-2xl md:text-4xl font-bold text-white mb-3 md:mb-4">
             Espace Leadership

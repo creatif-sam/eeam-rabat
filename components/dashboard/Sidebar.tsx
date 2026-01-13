@@ -24,7 +24,7 @@ const menuItems = [
   { label: "Accueil", icon: Home, route: "/dashboard" },
   { label: "Baptêmes", icon: Droplet, route: "/dashboard/baptemes" },
   { label: "Événements", icon: Calendar, route: "/dashboard/events" },
-  { label: "Planification", icon: ClipboardList, route: "/dashboard/tasky" },
+  { label: "Planify", icon: ClipboardList, route: "/dashboard/tasky" },
 
   { label: "Formulaires", icon: ClipboardList, route: "/dashboard/formulaires" },
 

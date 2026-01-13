@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { Calendar, User, FolderKanban } from "lucide-react";
+import { useEffect, useState, useRef } from "react";
+import { Calendar, FolderKanban, User } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import Modal from "@/components/dashboard/Modal";
 
@@ -10,7 +10,7 @@ type Status = "backlog" | "in_progress" | "review" | "done";
 const columns: { key: Status; label: string }[] = [
   { key: "backlog", label: "À faire" },
   { key: "in_progress", label: "En cours" },
-  { key: "review", label: "En révision" },
+  { key: "review", label: "En révision/Bloqué" },
   { key: "done", label: "Terminé" }
 ];
 
@@ -30,6 +30,18 @@ function initials(name?: string) {
     .toUpperCase();
 }
 
+function renderMentions(text: string) {
+  return text.split(/(@[A-Za-zÀ-ÿ ]+)/g).map((part, i) =>
+    part.startsWith("@") ? (
+      <span key={i} className="bg-cyan-100 text-cyan-700 px-1 rounded">
+        {part}
+      </span>
+    ) : (
+      <span key={i}>{part}</span>
+    )
+  );
+}
+
 export default function TaskyTab() {
   const supabase = createClient();
 
@@ -40,6 +52,13 @@ export default function TaskyTab() {
 
   const [openProject, setOpenProject] = useState(false);
   const [openTask, setOpenTask] = useState(false);
+  const [selectedTask, setSelectedTask] = useState<any>(null);
+
+  const [comments, setComments] = useState<any[]>([]);
+  const [commentText, setCommentText] = useState("");
+  const [mentionQuery, setMentionQuery] = useState("");
+
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const [projectForm, setProjectForm] = useState({
     name: "",
@@ -71,9 +90,18 @@ export default function TaskyTab() {
     setTasks(t || []);
   }
 
+  async function loadComments(taskId: string) {
+    const { data } = await supabase
+      .from("task_comments")
+      .select("*, profiles(full_name, avatar_url)")
+      .eq("task_id", taskId)
+      .order("created_at");
+
+    setComments(data || []);
+  }
+
   async function createProject() {
     if (!projectForm.name) return;
-
     await supabase.from("projects").insert(projectForm);
     setProjectForm({ name: "", description: "" });
     setOpenProject(false);
@@ -111,13 +139,42 @@ export default function TaskyTab() {
     loadAll();
   }
 
+  async function addComment() {
+    if (!commentText || !selectedTask) return;
+
+    const {
+      data: { user }
+    } = await supabase.auth.getUser();
+
+    await supabase.from("task_comments").insert({
+      task_id: selectedTask.id,
+      author_id: user?.id,
+      content: commentText
+    });
+
+    setCommentText("");
+    loadComments(selectedTask.id);
+  }
+
+  function onCommentChange(value: string) {
+    setCommentText(value);
+    const match = value.match(/@(\w*)$/);
+    setMentionQuery(match ? match[1] : "");
+  }
+
+  function insertMention(name: string) {
+    setCommentText(prev => prev.replace(/@\w*$/, `@${name} `));
+    setMentionQuery("");
+    textareaRef.current?.focus();
+  }
+
   function getProfile(id?: string) {
     return profiles.find(p => p.id === id);
   }
 
   return (
     <div className="p-4 md:p-6 space-y-6">
-      <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center gap-4">
+      <div className="flex items-center justify-between">
         <h1 className="text-xl md:text-2xl font-semibold flex items-center gap-2">
           <FolderKanban />
           Gestion des projets
@@ -166,11 +223,7 @@ export default function TaskyTab() {
 
               <div className="space-y-3">
                 {tasks
-                  .filter(
-                    t =>
-                      t.project_id === activeProject &&
-                      t.status === col.key
-                  )
+                  .filter(t => t.project_id === activeProject && t.status === col.key)
                   .map(task => {
                     const profile = getProfile(task.assigned_to);
 
@@ -179,50 +232,47 @@ export default function TaskyTab() {
                         key={task.id}
                         className="bg-white rounded-lg border p-4 shadow-sm"
                       >
-                        <p className="font-medium">{task.title}</p>
+                        <div
+                          onClick={() => {
+                            setSelectedTask(task);
+                            loadComments(task.id);
+                          }}
+                          className="cursor-pointer"
+                        >
+                          <p className="font-medium text-sm">{task.title}</p>
 
-                        {task.description && (
-                          <p className="text-sm text-gray-500 mt-1">
-                            {task.description}
-                          </p>
-                        )}
-
-                        <div className="flex items-center justify-between mt-3">
-                          <span
-                            className={`px-2 py-1 rounded text-xs font-medium ${priorityClasses(
-                              task.priority
-                            )}`}
-                          >
-                            Priorité {task.priority}
-                          </span>
-
-                          {task.due_date && (
-                            <span className="flex items-center gap-1 text-xs text-gray-500">
-                              <Calendar size={12} />
-                              {task.due_date}
+                          <div className="flex justify-between mt-3">
+                            <span className={`px-2 py-1 rounded text-xs ${priorityClasses(task.priority)}`}>
+                              Priorité {task.priority}
                             </span>
+
+                            {task.due_date && (
+                              <span className="flex items-center gap-1 text-xs text-gray-500">
+                                <Calendar size={12} />
+                                {task.due_date}
+                              </span>
+                            )}
+                          </div>
+
+                          {profile && (
+                            <div className="mt-3 flex items-center gap-2">
+                              {profile.avatar_url ? (
+                                <img
+                                  src={profile.avatar_url}
+                                  className="w-7 h-7 rounded-full object-cover"
+                                />
+                              ) : (
+                                <div className="w-7 h-7 rounded-full bg-gray-200 flex items-center justify-center text-xs font-medium">
+                                  {initials(profile.full_name)}
+                                </div>
+                              )}
+
+                              <span className="text-xs">
+                                {profile.full_name}
+                              </span>
+                            </div>
                           )}
                         </div>
-
-                        {profile && (
-                          <div className="mt-3 flex items-center gap-2">
-                            {profile.avatar_url ? (
-                              <img
-                                src={profile.avatar_url}
-                                alt={profile.full_name}
-                                className="w-8 h-8 rounded-full object-cover"
-                              />
-                            ) : (
-                              <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-xs font-medium">
-                                {initials(profile.full_name)}
-                              </div>
-                            )}
-
-                            <span className="text-sm">
-                              {profile.full_name}
-                            </span>
-                          </div>
-                        )}
 
                         <div className="flex flex-wrap gap-1 mt-3">
                           {columns
@@ -230,9 +280,7 @@ export default function TaskyTab() {
                             .map(c => (
                               <button
                                 key={c.key}
-                                onClick={() =>
-                                  moveTask(task.id, c.key)
-                                }
+                                onClick={() => moveTask(task.id, c.key)}
                                 className="px-2 py-1 text-xs rounded bg-gray-100 hover:bg-gray-200"
                               >
                                 {c.label}
@@ -249,10 +297,83 @@ export default function TaskyTab() {
       )}
 
       <Modal
-        open={openProject}
-        onClose={() => setOpenProject(false)}
-        title="Créer un projet"
+        open={!!selectedTask}
+        onClose={() => setSelectedTask(null)}
+        title={selectedTask?.title}
       >
+        {selectedTask && (
+          <div className="space-y-4">
+            {selectedTask.description && (
+              <p className="text-sm text-gray-600">
+                {selectedTask.description}
+              </p>
+            )}
+
+            <div className="space-y-4">
+              {comments.map(c => (
+                <div key={c.id} className="flex gap-3">
+                  {c.profiles?.avatar_url ? (
+                    <img
+                      src={c.profiles.avatar_url}
+                      className="w-8 h-8 rounded-full"
+                    />
+                  ) : (
+                    <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-xs">
+                      {initials(c.profiles?.full_name)}
+                    </div>
+                  )}
+
+                  <div>
+                    <p className="text-xs font-medium">
+                      {c.profiles?.full_name}
+                    </p>
+                    <p className="text-sm">
+                      {renderMentions(c.content)}
+                    </p>
+                  </div>
+                </div>
+              ))}
+
+              <div className="relative">
+                <textarea
+                  ref={textareaRef}
+                  value={commentText}
+                  onChange={e => onCommentChange(e.target.value)}
+                  className="w-full border rounded px-3 py-2 text-sm"
+                  placeholder="Ajouter un commentaire avec @mention"
+                />
+
+                {mentionQuery && (
+                  <div className="absolute bg-white border rounded shadow w-full mt-1 z-10">
+                    {profiles
+                      .filter(p =>
+                        p.full_name?.toLowerCase().includes(mentionQuery.toLowerCase())
+                      )
+                      .map(p => (
+                        <button
+                          key={p.id}
+                          onClick={() => insertMention(p.full_name)}
+                          className="block w-full text-left px-3 py-2 hover:bg-gray-50 text-sm"
+                        >
+                          {p.full_name}
+                        </button>
+                      ))}
+                  </div>
+                )}
+              </div>
+
+              <button
+                onClick={addComment}
+                className="bg-cyan-600 text-white px-4 py-2 rounded-lg text-sm"
+              >
+                Publier
+              </button>
+            </div>
+          </div>
+        )}
+      </Modal>
+
+      <Modal open={openProject} onClose={() => setOpenProject(false)} title="Créer un projet">
         <div className="space-y-4">
           <input
             className="w-full border rounded px-3 py-2"
@@ -262,20 +383,15 @@ export default function TaskyTab() {
               setProjectForm({ ...projectForm, name: e.target.value })
             }
           />
-
           <textarea
             className="w-full border rounded px-3 py-2"
             placeholder="Description"
             rows={3}
             value={projectForm.description}
             onChange={e =>
-              setProjectForm({
-                ...projectForm,
-                description: e.target.value
-              })
+              setProjectForm({ ...projectForm, description: e.target.value })
             }
           />
-
           <button
             onClick={createProject}
             className="w-full bg-gray-900 text-white py-3 rounded-lg"
@@ -285,11 +401,7 @@ export default function TaskyTab() {
         </div>
       </Modal>
 
-      <Modal
-        open={openTask}
-        onClose={() => setOpenTask(false)}
-        title="Créer une tâche"
-      >
+      <Modal open={openTask} onClose={() => setOpenTask(false)} title="Créer une tâche">
         <div className="space-y-4">
           <input
             className="w-full border rounded px-3 py-2"
@@ -299,28 +411,20 @@ export default function TaskyTab() {
               setTaskForm({ ...taskForm, title: e.target.value })
             }
           />
-
           <textarea
             className="w-full border rounded px-3 py-2"
             placeholder="Description"
             rows={3}
             value={taskForm.description}
             onChange={e =>
-              setTaskForm({
-                ...taskForm,
-                description: e.target.value
-              })
+              setTaskForm({ ...taskForm, description: e.target.value })
             }
           />
-
           <select
             className="w-full border rounded px-3 py-2"
             value={taskForm.assigned_to}
             onChange={e =>
-              setTaskForm({
-                ...taskForm,
-                assigned_to: e.target.value
-              })
+              setTaskForm({ ...taskForm, assigned_to: e.target.value })
             }
           >
             <option value="">Assigner à</option>
@@ -330,22 +434,17 @@ export default function TaskyTab() {
               </option>
             ))}
           </select>
-
           <select
             className="w-full border rounded px-3 py-2"
             value={taskForm.priority}
             onChange={e =>
-              setTaskForm({
-                ...taskForm,
-                priority: e.target.value
-              })
+              setTaskForm({ ...taskForm, priority: e.target.value })
             }
           >
             <option value="low">Priorité basse</option>
             <option value="medium">Priorité moyenne</option>
             <option value="high">Priorité élevée</option>
           </select>
-
           <input
             type="date"
             className="w-full border rounded px-3 py-2"
@@ -354,7 +453,6 @@ export default function TaskyTab() {
               setTaskForm({ ...taskForm, due_date: e.target.value })
             }
           />
-
           <button
             onClick={createTask}
             className="w-full bg-cyan-600 text-white py-3 rounded-lg"
