@@ -236,10 +236,10 @@ export default function MemberRegistrationForm({ isEdit, initialData, onSuccess 
     <form onSubmit={handleSubmit} className="space-y-6">
       {/* Paroisse */}
       <div>
-        <label className="font-medium">Paroisse *</label>
+        <label className="block text-sm font-medium">Paroisse *</label>
         <div className="mt-2 space-y-2">
           {["Rabat centre ville", "Rabat Annexe J5"].map(p => (
-            <label key={p} className="flex items-center gap-2">
+            <label key={p} className="flex items-center gap-2 text-sm">
               <input
                 type="radio"
                 name="paroisse"
@@ -255,7 +255,7 @@ export default function MemberRegistrationForm({ isEdit, initialData, onSuccess 
       </div>
 
       <div>
-        <label className="font-medium" htmlFor="nom">Nom *</label>
+        <label className="block text-sm font-medium" htmlFor="nom">Nom *</label>
         <div className="relative mt-1">
           <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
           <input 
@@ -264,14 +264,14 @@ export default function MemberRegistrationForm({ isEdit, initialData, onSuccess 
             value={form.nom}
             required 
             placeholder="Nom *" 
-            className="w-full border rounded-xl p-3 pl-10" 
+            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 pl-10 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50" 
             onChange={handleChange} 
           />
         </div>
       </div>
 
       <div>
-        <label className="font-medium" htmlFor="prenom">Prénom *</label>
+        <label className="block text-sm font-medium" htmlFor="prenom">Prénom *</label>
         <div className="relative mt-1">
           <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
           <input 
@@ -280,17 +280,17 @@ export default function MemberRegistrationForm({ isEdit, initialData, onSuccess 
             value={form.prenom}
             required 
             placeholder="Prénom *" 
-            className="w-full border rounded-xl p-3 pl-10" 
+            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 pl-10 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50" 
             onChange={handleChange} 
           />
         </div>
       </div>
 
       <div>
-        <label className="font-medium">Genre *</label>
+        <label className="block text-sm font-medium">Genre *</label>
         <div className="mt-2 space-y-2">
           {["Femme", "Homme"].map(g => (
-            <label key={g} className="flex items-center gap-2">
+            <label key={g} className="flex items-center gap-2 text-sm">
               <input
                 type="radio"
                 name="genre"
@@ -306,15 +306,15 @@ export default function MemberRegistrationForm({ isEdit, initialData, onSuccess 
       </div>
 
       <div>
-        <label className="font-medium">Nationalité *</label>
+        <label className="block text-sm font-medium">Nationalité *</label>
         <div className="relative mt-2">
-          <Flag className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+          <Flag className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4 z-10" />
           <select
             name="nationalite"
             value={form.nationalite}
             onChange={handleChange}
             required
-            className="w-full border rounded-xl p-3 pl-10"
+            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 pl-10 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
           >
             <option value="">Sélectionnez votre nationalité</option>
             {countries.map(country => (
@@ -327,7 +327,7 @@ export default function MemberRegistrationForm({ isEdit, initialData, onSuccess 
       </div>
 
       <div>
-        <label className="font-medium" htmlFor="date_naissance">Date de naissance *</label>
+        <label className="block text-sm font-medium" htmlFor="date_naissance">Date de naissance *</label>
         <div className="relative mt-1">
           <CalendarIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
           <input 
@@ -335,14 +335,14 @@ export default function MemberRegistrationForm({ isEdit, initialData, onSuccess 
             type="date" 
             name="date_naissance" 
             value={form.date_naissance}
-            className="w-full border rounded-xl p-3 pl-10" 
+            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 pl-10 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50" 
             onChange={handleChange} 
           />
         </div>
       </div>
 
       <div>
-        <label className="font-medium" htmlFor="telephone">Téléphone *</label>
+        <label className="block text-sm font-medium" htmlFor="telephone">Téléphone *</label>
         <div className="relative mt-1">
           <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
           <input 
@@ -351,14 +351,14 @@ export default function MemberRegistrationForm({ isEdit, initialData, onSuccess 
             value={form.telephone}
             required 
             placeholder="Téléphone *" 
-            className="w-full border rounded-xl p-3 pl-10" 
+            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 pl-10 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50" 
             onChange={handleChange} 
           />
         </div>
       </div>
 
       <div>
-        <label className="font-medium" htmlFor="email">Email</label>
+        <label className="block text-sm font-medium" htmlFor="email">Email</label>
         <div className="relative mt-1">
           <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
           <input 
@@ -367,14 +367,14 @@ export default function MemberRegistrationForm({ isEdit, initialData, onSuccess 
             name="email" 
             value={form.email}
             placeholder="Email" 
-            className="w-full border rounded-xl p-3 pl-10" 
+            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 pl-10 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50" 
             onChange={handleChange} 
           />
         </div>
       </div>
 
       <div>
-        <label className="font-medium" htmlFor="profession">Occupation professionnelle *</label>
+        <label className="block text-sm font-medium" htmlFor="profession">Occupation professionnelle *</label>
         <div className="relative mt-1">
           <Briefcase className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
           <input 
@@ -383,17 +383,17 @@ export default function MemberRegistrationForm({ isEdit, initialData, onSuccess 
             value={form.profession}
             required 
             placeholder="Occupation professionnelle *" 
-            className="w-full border rounded-xl p-3 pl-10" 
+            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 pl-10 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50" 
             onChange={handleChange} 
           />
         </div>
       </div>
 
       <div>
-        <label className="font-medium">Baptisé(e) *</label>
+        <label className="block text-sm font-medium">Baptisé(e) *</label>
         <div className="mt-2 space-y-2">
           {["Oui", "Non"].map(b => (
-            <label key={b} className="flex items-center gap-2">
+            <label key={b} className="flex items-center gap-2 text-sm">
               <input
                 type="radio"
                 name="baptise"
@@ -409,7 +409,7 @@ export default function MemberRegistrationForm({ isEdit, initialData, onSuccess 
       </div>
 
       <div>
-        <label className="font-medium" htmlFor="date_bapteme">Date ou année de baptême</label>
+        <label className="block text-sm font-medium" htmlFor="date_bapteme">Date ou année de baptême</label>
         <div className="relative mt-1">
           <Droplet className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
           <input 
@@ -417,14 +417,14 @@ export default function MemberRegistrationForm({ isEdit, initialData, onSuccess 
             name="date_bapteme" 
             value={form.date_bapteme}
             placeholder="Date ou année de baptême" 
-            className="w-full border rounded-xl p-3 pl-10" 
+            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 pl-10 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50" 
             onChange={handleChange} 
           />
         </div>
       </div>
 
       <div>
-        <label className="font-medium" htmlFor="adresse">Adresse / Quartier *</label>
+        <label className="block text-sm font-medium" htmlFor="adresse">Adresse / Quartier *</label>
         <div className="relative mt-1">
           <Home className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
           <input 
@@ -433,17 +433,17 @@ export default function MemberRegistrationForm({ isEdit, initialData, onSuccess 
             value={form.adresse}
             required 
             placeholder="Adresse / Quartier *" 
-            className="w-full border rounded-xl p-3 pl-10" 
+            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 pl-10 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50" 
             onChange={handleChange} 
           />
         </div>
       </div>
 
       <div>
-        <label className="font-medium">Commissions *</label>
+        <label className="block text-sm font-medium">Commissions *</label>
         <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2">
           {commissionsList.map(c => (
-            <label key={c} className="flex items-center gap-2">
+            <label key={c} className="flex items-center gap-2 text-sm">
               <input
                 type="checkbox"
                 checked={form.commissions.includes(c)}
