@@ -3,17 +3,6 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import {
   User,
   Phone,
@@ -54,6 +43,7 @@ export default function MemberRegistrationForm({ isEdit, initialData, onSuccess 
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
+
 
   useEffect(() => {
     if (isEdit && initialData) {
@@ -131,14 +121,14 @@ export default function MemberRegistrationForm({ isEdit, initialData, onSuccess 
   };
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
     const { name, value, type } = e.target;
 
     if (type === "checkbox") {
       setForm(prev => ({
         ...prev,
-        [name]: e.target.checked
+        [name]: (e.target as HTMLInputElement).checked
       }));
     } else {
       setForm(prev => ({
@@ -149,85 +139,93 @@ export default function MemberRegistrationForm({ isEdit, initialData, onSuccess 
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (loading) return;
+  e.preventDefault();
+  if (loading) return;
 
-    if (!isEdit && !form.consent) {
-      setError("Vous devez accepter la politique de confidentialité pour continuer.");
-      return;
-    }
+  if (!isEdit && !form.consent) {
+    setError(
+      "Vous devez accepter la politique de confidentialité pour continuer."
+    );
+    return;
+  }
 
-    if (!form.commissions.length) {
-      setError("Veuillez sélectionner au moins une commission.");
-      return;
-    }
+  if (!form.commissions.length) {
+    setError("Veuillez sélectionner au moins une commission.");
+    return;
+  }
 
-    setLoading(true);
-    setError(null);
+  setLoading(true);
+  setError(null);
 
-    const { error } = isEdit && initialData
-      ? await supabase
-          .from("member_registrations")
-          .update({
-            paroisse: form.paroisse,
-            nom: form.nom.trim(),
-            prenom: form.prenom.trim(),
-            genre: form.genre,
-            nationalite: form.nationalite.trim(),
-            date_naissance: form.date_naissance || null,
-            telephone: form.telephone.trim(),
-            email: form.email || null,
-            profession: form.profession.trim(),
-            baptise: form.baptise,
-            date_bapteme: form.date_bapteme || null,
-            adresse: form.adresse.trim(),
-            commissions: form.commissions,
-            consent: true
-          })
-          .eq('id', initialData.id)
-      : await supabase
-          .from("member_registrations")
-          .insert({
-            paroisse: form.paroisse,
-            nom: form.nom.trim(),
-            prenom: form.prenom.trim(),
-            genre: form.genre,
-            nationalite: form.nationalite.trim(),
-            date_naissance: form.date_naissance || null,
-            telephone: form.telephone.trim(),
-            email: form.email || null,
-            profession: form.profession.trim(),
-            baptise: form.baptise,
-            date_bapteme: form.date_bapteme || null,
-            adresse: form.adresse.trim(),
-            commissions: form.commissions,
-            consent: true
-          });
+  const { error } = isEdit && initialData
+    ? await supabase
+        .from("member_registrations")
+        .update({
+          paroisse: form.paroisse,
+          nom: form.nom.trim(),
+          prenom: form.prenom.trim(),
+          genre: form.genre,
+          nationalite: form.nationalite.trim(),
+          date_naissance: form.date_naissance || null,
+          telephone: form.telephone.trim(),
+          email: form.email || null,
+          profession: form.profession.trim(),
+          baptise: form.baptise,
+          date_bapteme: form.date_bapteme || null,
+          adresse: form.adresse.trim(),
+          commissions: form.commissions,
+          consent: true
+        })
+        .eq('id', initialData.id)
+    : await supabase
+        .from("member_registrations")
+        .insert({
+          paroisse: form.paroisse,
+          nom: form.nom.trim(),
+          prenom: form.prenom.trim(),
+          genre: form.genre,
+          nationalite: form.nationalite.trim(),
+          date_naissance: form.date_naissance || null,
+          telephone: form.telephone.trim(),
+          email: form.email || null,
+          profession: form.profession.trim(),
+          baptise: form.baptise,
+          date_bapteme: form.date_bapteme || null,
+          adresse: form.adresse.trim(),
+          commissions: form.commissions,
+          consent: true
+        });
 
-    if (error) {
-      if (error.code === "23505") {
-        setError("Un membre avec ce numéro de téléphone ou cet email existe déjà.");
-        setLoading(false);
-        return;
-      }
-
-      setError(error.message || "Une erreur est survenue lors de l'envoi. Veuillez réessayer.");
-      setLoading(false);
-      return;
-    }
-
-    setSuccess(true);
+ if (error) {
+  if (error.code === "23505") {
+    setError(
+      "Un membre avec ce numéro de téléphone ou cet email existe déjà."
+    );
     setLoading(false);
-    if (onSuccess) onSuccess();
-  };
+    return;
+  }
+
+  setError(
+    error.message ||
+      "Une erreur est survenue lors de l'envoi. Veuillez réessayer."
+  );
+  setLoading(false);
+  return;
+}
+
+
+  setSuccess(true);
+  setLoading(false);
+  if (onSuccess) onSuccess();
+};
 
   if (success) {
     return (
       <div className="text-center py-10">
-        <h3 className="text-xl font-bold text-green-600 dark:text-green-400 mb-2">
+        <h3 className="text-xl font-bold text-green-600 mb-2">
           {isEdit ? "Membre modifié" : "Inscription envoyée"}
         </h3>
-        <p className="text-muted-foreground">
+        <p className="text-sm">
           {isEdit ? "Les informations ont été mises à jour." : "Votre demande a bien été enregistrée. L'équipe vous contactera si nécessaire."}
         </p>
       </div>
@@ -237,11 +235,11 @@ export default function MemberRegistrationForm({ isEdit, initialData, onSuccess 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       {/* Paroisse */}
-      <div className="grid gap-2">
-        <Label>Paroisse *</Label>
-        <div className="space-y-2">
+      <div>
+        <label className="font-medium">Paroisse *</label>
+        <div className="mt-2 space-y-2">
           {["Rabat centre ville", "Rabat Annexe J5"].map(p => (
-            <label key={p} className="flex items-center gap-2 cursor-pointer">
+            <label key={p} className="flex items-center gap-2">
               <input
                 type="radio"
                 name="paroisse"
@@ -249,54 +247,50 @@ export default function MemberRegistrationForm({ isEdit, initialData, onSuccess 
                 checked={form.paroisse === p}
                 onChange={handleChange}
                 required
-                className="h-4 w-4"
               />
-              <span className="text-sm">{p}</span>
+              {p}
             </label>
           ))}
         </div>
       </div>
 
-      {/* Nom */}
-      <div className="grid gap-2">
-        <Label htmlFor="nom">Nom *</Label>
-        <div className="relative">
-          <User className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground h-4 w-4" />
-          <Input
-            id="nom"
-            name="nom"
+      <div>
+        <label className="font-medium" htmlFor="nom">Nom *</label>
+        <div className="relative mt-1">
+          <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+          <input 
+            id="nom" 
+            name="nom" 
             value={form.nom}
-            required
-            placeholder="Nom *"
-            className="pl-10"
-            onChange={handleChange}
+            required 
+            placeholder="Nom *" 
+            className="w-full border rounded-xl p-3 pl-10" 
+            onChange={handleChange} 
           />
         </div>
       </div>
 
-      {/* Prénom */}
-      <div className="grid gap-2">
-        <Label htmlFor="prenom">Prénom *</Label>
-        <div className="relative">
-          <User className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground h-4 w-4" />
-          <Input
-            id="prenom"
-            name="prenom"
+      <div>
+        <label className="font-medium" htmlFor="prenom">Prénom *</label>
+        <div className="relative mt-1">
+          <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+          <input 
+            id="prenom" 
+            name="prenom" 
             value={form.prenom}
-            required
-            placeholder="Prénom *"
-            className="pl-10"
-            onChange={handleChange}
+            required 
+            placeholder="Prénom *" 
+            className="w-full border rounded-xl p-3 pl-10" 
+            onChange={handleChange} 
           />
         </div>
       </div>
 
-      {/* Genre */}
-      <div className="grid gap-2">
-        <Label>Genre *</Label>
-        <div className="space-y-2">
+      <div>
+        <label className="font-medium">Genre *</label>
+        <div className="mt-2 space-y-2">
           {["Femme", "Homme"].map(g => (
-            <label key={g} className="flex items-center gap-2 cursor-pointer">
+            <label key={g} className="flex items-center gap-2">
               <input
                 type="radio"
                 name="genre"
@@ -304,111 +298,102 @@ export default function MemberRegistrationForm({ isEdit, initialData, onSuccess 
                 checked={form.genre === g}
                 onChange={handleChange}
                 required
-                className="h-4 w-4"
               />
-              <span className="text-sm">{g}</span>
+              {g}
             </label>
           ))}
         </div>
       </div>
 
-      {/* Nationalité */}
-      <div className="grid gap-2">
-        <Label htmlFor="nationalite">Nationalité *</Label>
-        <div className="relative">
-          <Flag className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground h-4 w-4 z-10" />
-          <Select
+      <div>
+        <label className="font-medium">Nationalité *</label>
+        <div className="relative mt-2">
+          <Flag className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+          <select
+            name="nationalite"
             value={form.nationalite}
-            onValueChange={(value) => setForm(prev => ({ ...prev, nationalite: value }))}
+            onChange={handleChange}
             required
+            className="w-full border rounded-xl p-3 pl-10"
           >
-            <SelectTrigger className="pl-10">
-              <SelectValue placeholder="Sélectionnez votre nationalité" />
-            </SelectTrigger>
-            <SelectContent>
-              {countries.map(country => (
-                <SelectItem key={country} value={country}>
-                  {country}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+            <option value="">Sélectionnez votre nationalité</option>
+            {countries.map(country => (
+              <option key={country} value={country}>
+                {country}
+              </option>
+            ))}
+          </select>
         </div>
       </div>
 
-      {/* Date de naissance */}
-      <div className="grid gap-2">
-        <Label htmlFor="date_naissance">Date de naissance *</Label>
-        <div className="relative">
-          <CalendarIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground h-4 w-4" />
-          <Input
-            id="date_naissance"
-            type="date"
-            name="date_naissance"
+      <div>
+        <label className="font-medium" htmlFor="date_naissance">Date de naissance *</label>
+        <div className="relative mt-1">
+          <CalendarIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+          <input 
+            id="date_naissance" 
+            type="date" 
+            name="date_naissance" 
             value={form.date_naissance}
-            className="pl-10"
-            onChange={handleChange}
+            className="w-full border rounded-xl p-3 pl-10" 
+            onChange={handleChange} 
           />
         </div>
       </div>
 
-      {/* Téléphone */}
-      <div className="grid gap-2">
-        <Label htmlFor="telephone">Téléphone *</Label>
-        <div className="relative">
-          <Phone className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground h-4 w-4" />
-          <Input
-            id="telephone"
-            name="telephone"
+      <div>
+        <label className="font-medium" htmlFor="telephone">Téléphone *</label>
+        <div className="relative mt-1">
+          <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+          <input 
+            id="telephone" 
+            name="telephone" 
             value={form.telephone}
-            required
-            placeholder="Téléphone *"
-            className="pl-10"
-            onChange={handleChange}
+            required 
+            placeholder="Téléphone *" 
+            className="w-full border rounded-xl p-3 pl-10" 
+            onChange={handleChange} 
           />
         </div>
       </div>
 
-      {/* Email */}
-      <div className="grid gap-2">
-        <Label htmlFor="email">Email</Label>
-        <div className="relative">
-          <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground h-4 w-4" />
-          <Input
-            id="email"
-            type="email"
-            name="email"
+      <div>
+        <label className="font-medium" htmlFor="email">Email</label>
+        <div className="relative mt-1">
+          <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+          <input 
+            id="email" 
+            type="email" 
+            name="email" 
             value={form.email}
-            placeholder="Email"
-            className="pl-10"
-            onChange={handleChange}
+            placeholder="Email" 
+            className="w-full border rounded-xl p-3 pl-10" 
+            onChange={handleChange} 
           />
         </div>
       </div>
 
-      {/* Profession */}
-      <div className="grid gap-2">
-        <Label htmlFor="profession">Occupation professionnelle *</Label>
-        <div className="relative">
-          <Briefcase className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground h-4 w-4" />
-          <Input
-            id="profession"
-            name="profession"
+      <div>
+        <label className="font-medium" htmlFor="profession">Occupation professionnelle *</label>
+        <div className="relative mt-1">
+          <Briefcase className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+          <input 
+            id="profession" 
+            name="profession" 
             value={form.profession}
-            required
-            placeholder="Occupation professionnelle *"
-            className="pl-10"
-            onChange={handleChange}
+            required 
+            placeholder="Occupation professionnelle *" 
+            className="w-full border rounded-xl p-3 pl-10" 
+            onChange={handleChange} 
           />
         </div>
       </div>
 
-      {/* Baptisé */}
-      <div className="grid gap-2">
-        <Label>Baptisé(e) *</Label>
-        <div className="space-y-2">
+      <div>
+        <label className="font-medium">Baptisé(e) *</label>
+        <div className="mt-2 space-y-2">
           {["Oui", "Non"].map(b => (
-            <label key={b} className="flex items-center gap-2 cursor-pointer">
+            <label key={b} className="flex items-center gap-2">
               <input
                 type="radio"
                 name="baptise"
@@ -416,97 +401,89 @@ export default function MemberRegistrationForm({ isEdit, initialData, onSuccess 
                 checked={form.baptise === b}
                 onChange={handleChange}
                 required
-                className="h-4 w-4"
               />
-              <span className="text-sm">{b}</span>
+              {b}
             </label>
           ))}
         </div>
       </div>
 
-      {/* Date de baptême */}
-      <div className="grid gap-2">
-        <Label htmlFor="date_bapteme">Date ou année de baptême</Label>
-        <div className="relative">
-          <Droplet className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground h-4 w-4" />
-          <Input
-            id="date_bapteme"
-            name="date_bapteme"
+      <div>
+        <label className="font-medium" htmlFor="date_bapteme">Date ou année de baptême</label>
+        <div className="relative mt-1">
+          <Droplet className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+          <input 
+            id="date_bapteme" 
+            name="date_bapteme" 
             value={form.date_bapteme}
-            placeholder="Date ou année de baptême"
-            className="pl-10"
-            onChange={handleChange}
+            placeholder="Date ou année de baptême" 
+            className="w-full border rounded-xl p-3 pl-10" 
+            onChange={handleChange} 
           />
         </div>
       </div>
 
-      {/* Adresse */}
-      <div className="grid gap-2">
-        <Label htmlFor="adresse">Adresse / Quartier *</Label>
-        <div className="relative">
-          <Home className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground h-4 w-4" />
-          <Input
-            id="adresse"
-            name="adresse"
+      <div>
+        <label className="font-medium" htmlFor="adresse">Adresse / Quartier *</label>
+        <div className="relative mt-1">
+          <Home className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+          <input 
+            id="adresse" 
+            name="adresse" 
             value={form.adresse}
-            required
-            placeholder="Adresse / Quartier *"
-            className="pl-10"
-            onChange={handleChange}
+            required 
+            placeholder="Adresse / Quartier *" 
+            className="w-full border rounded-xl p-3 pl-10" 
+            onChange={handleChange} 
           />
         </div>
       </div>
 
-      {/* Commissions */}
-      <div className="grid gap-2">
-        <Label>Commissions *</Label>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+      <div>
+        <label className="font-medium">Commissions *</label>
+        <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2">
           {commissionsList.map(c => (
-            <label key={c} className="flex items-center gap-2 cursor-pointer">
+            <label key={c} className="flex items-center gap-2">
               <input
                 type="checkbox"
                 checked={form.commissions.includes(c)}
                 onChange={() => toggleCommission(c)}
-                className="h-4 w-4"
               />
-              <span className="text-sm">{c}</span>
+              {c}
             </label>
           ))}
         </div>
       </div>
 
-      {/* Consent */}
       {!isEdit && (
-        <div className="border rounded-lg p-4 bg-muted/50">
-          <label className="flex items-start gap-3 text-sm cursor-pointer">
-            <input
-              type="checkbox"
-              name="consent"
-              checked={form.consent}
-              onChange={handleChange}
-              required
-              className="h-4 w-4 mt-0.5"
-            />
-            <span>
-              J'ai lu et j'accepte la{" "}
-              <Link
-                href="/politique-de-confidentialite"
-                target="_blank"
-                className="text-primary underline hover:text-primary/80"
-              >
-                politique de confidentialité
-              </Link>
-              .
-            </span>
-          </label>
-        </div>
+      <div className="border rounded-xl p-4">
+        <label className="flex items-start gap-3 text-sm">
+          <input
+            type="checkbox"
+            name="consent"
+            checked={form.consent}
+            onChange={handleChange}
+            required
+          />
+          <span>
+            J'ai lu et j'accepte la{" "}
+            <Link href="/politique-de-confidentialite" target="_blank" className="underline underline-offset-4">
+              politique de confidentialité
+            </Link>.
+          </span>
+        </label>
+      </div>
       )}
 
-      {error && <p className="text-sm text-red-500 dark:text-red-400">{error}</p>}
+      {error && <p className="text-sm text-red-500">{error}</p>}
 
-      <Button type="submit" className="w-full" disabled={loading}>
+      <button
+        type="submit"
+        disabled={loading}
+        className="w-full bg-primary text-primary-foreground py-3 rounded-xl font-semibold disabled:opacity-60 hover:bg-primary/90 transition-colors"
+      >
         {loading ? "Envoi en cours..." : isEdit ? "Modifier" : "Soumettre"}
-      </Button>
+      </button>
     </form>
   );
 }
