@@ -7,10 +7,12 @@ import {
   User,
   Phone,
   Mail,
+  MapPin,
   Calendar as CalendarIcon,
   Briefcase,
   Flag,
   Droplet,
+  Users,
   Home,
 } from "lucide-react";
 
@@ -19,6 +21,13 @@ type MemberRegistrationFormProps = {
   initialData?: any;
   onSuccess?: () => void;
 };
+
+// Centralized styling for inputs to ensure dark mode consistency
+const inputClass =
+  "w-full rounded-xl p-3 border bg-white text-gray-900 " +
+  "placeholder:text-gray-400 border-gray-300 " +
+  "dark:bg-gray-800 dark:text-gray-100 dark:placeholder:text-gray-500 dark:border-gray-700 " +
+  "focus:outline-none focus:ring-2 focus:ring-primary/40 transition-colors";
 
 export default function MemberRegistrationForm({ isEdit, initialData, onSuccess }: MemberRegistrationFormProps) {
   const supabase = createClient();
@@ -43,7 +52,6 @@ export default function MemberRegistrationForm({ isEdit, initialData, onSuccess 
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
-
 
   useEffect(() => {
     if (isEdit && initialData) {
@@ -93,22 +101,10 @@ export default function MemberRegistrationForm({ isEdit, initialData, onSuccess 
   ];
 
   const commissionsList = [
-    "Conseil Presbytéral",
-    "Groupe Musical",
-    "Commission Accueil",
-    "Commission Intercession",
-    "Commission Cuisine",
-    "Commission Multimédia",
-    "Commission Témoignage",
-    "Commission Compassion",
-    "Commission des bâtiments",
-    "École de Dimanche",
-    "Bureau des sœurs FEEAM",
-    "Bureau des Hommes",
-    "Bureau de la jeunesse JEEAM",
-    "Comité d'entraide internationale CEI",
-    "Bibliothèque",
-    "Aucun"
+    "Conseil Presbytéral", "Groupe Musical", "Commission Accueil", "Commission Intercession",
+    "Commission Cuisine", "Commission Multimédia", "Commission Témoignage", "Commission Compassion",
+    "Commission des bâtiments", "École de Dimanche", "Bureau des sœurs FEEAM", "Bureau des Hommes",
+    "Bureau de la jeunesse JEEAM", "Comité d'entraide internationale CEI", "Bibliothèque", "Aucun"
   ];
 
   const toggleCommission = (value: string) => {
@@ -120,113 +116,70 @@ export default function MemberRegistrationForm({ isEdit, initialData, onSuccess 
     }));
   };
 
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
-  ) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
-
     if (type === "checkbox") {
-      setForm(prev => ({
-        ...prev,
-        [name]: (e.target as HTMLInputElement).checked
-      }));
+      setForm(prev => ({ ...prev, [name]: (e.target as HTMLInputElement).checked }));
     } else {
-      setForm(prev => ({
-        ...prev,
-        [name]: value
-      }));
+      setForm(prev => ({ ...prev, [name]: value }));
     }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
-  e.preventDefault();
-  if (loading) return;
+    e.preventDefault();
+    if (loading) return;
+    if (!isEdit && !form.consent) {
+      setError("Vous devez accepter la politique de confidentialité pour continuer.");
+      return;
+    }
+    if (!form.commissions.length) {
+      setError("Veuillez sélectionner au moins une commission.");
+      return;
+    }
 
-  if (!isEdit && !form.consent) {
-    setError(
-      "Vous devez accepter la politique de confidentialité pour continuer."
-    );
-    return;
-  }
+    setLoading(true);
+    setError(null);
 
-  if (!form.commissions.length) {
-    setError("Veuillez sélectionner au moins une commission.");
-    return;
-  }
+    const dataToSubmit = {
+      paroisse: form.paroisse,
+      nom: form.nom.trim(),
+      prenom: form.prenom.trim(),
+      genre: form.genre,
+      nationalite: form.nationalite.trim(),
+      date_naissance: form.date_naissance || null,
+      telephone: form.telephone.trim(),
+      email: form.email || null,
+      profession: form.profession.trim(),
+      baptise: form.baptise,
+      date_bapteme: form.date_bapteme || null,
+      adresse: form.adresse.trim(),
+      commissions: form.commissions,
+      consent: true 
+    };
 
-  setLoading(true);
-  setError(null);
+    const { error } = isEdit && initialData
+      ? await supabase.from("member_registrations").update(dataToSubmit).eq('id', initialData.id)
+      : await supabase.from("member_registrations").insert(dataToSubmit);
 
-  const { error } = isEdit && initialData
-    ? await supabase
-        .from("member_registrations")
-        .update({
-          paroisse: form.paroisse,
-          nom: form.nom.trim(),
-          prenom: form.prenom.trim(),
-          genre: form.genre,
-          nationalite: form.nationalite.trim(),
-          date_naissance: form.date_naissance || null,
-          telephone: form.telephone.trim(),
-          email: form.email || null,
-          profession: form.profession.trim(),
-          baptise: form.baptise,
-          date_bapteme: form.date_bapteme || null,
-          adresse: form.adresse.trim(),
-          commissions: form.commissions,
-          consent: true
-        })
-        .eq('id', initialData.id)
-    : await supabase
-        .from("member_registrations")
-        .insert({
-          paroisse: form.paroisse,
-          nom: form.nom.trim(),
-          prenom: form.prenom.trim(),
-          genre: form.genre,
-          nationalite: form.nationalite.trim(),
-          date_naissance: form.date_naissance || null,
-          telephone: form.telephone.trim(),
-          email: form.email || null,
-          profession: form.profession.trim(),
-          baptise: form.baptise,
-          date_bapteme: form.date_bapteme || null,
-          adresse: form.adresse.trim(),
-          commissions: form.commissions,
-          consent: true
-        });
+    if (error) {
+      setError(error.code === "23505" ? "Un membre avec ce numéro de téléphone ou cet email existe déjà." : error.message);
+      setLoading(false);
+      return;
+    }
 
- if (error) {
-  if (error.code === "23505") {
-    setError(
-      "Un membre avec ce numéro de téléphone ou cet email existe déjà."
-    );
+    setSuccess(true);
     setLoading(false);
-    return;
-  }
-
-  setError(
-    error.message ||
-      "Une erreur est survenue lors de l'envoi. Veuillez réessayer."
-  );
-  setLoading(false);
-  return;
-}
-
-
-  setSuccess(true);
-  setLoading(false);
-  if (onSuccess) onSuccess();
-};
+    if (onSuccess) onSuccess();
+  };
 
   if (success) {
     return (
-      <div className="text-center py-10">
-        <h3 className="text-xl font-bold text-green-600 mb-2">
+      <div className="text-center py-10 bg-white dark:bg-gray-900 rounded-xl">
+        <h3 className="text-xl font-bold text-green-600 dark:text-green-400 mb-2">
           {isEdit ? "Membre modifié" : "Inscription envoyée"}
         </h3>
-        <p className="text-sm">
-          {isEdit ? "Les informations ont été mises à jour." : "Votre demande a bien été enregistrée. L'équipe vous contactera si nécessaire."}
+        <p className="text-gray-600 dark:text-gray-300">
+          {isEdit ? "Les informations ont été mises à jour." : "Votre demande a bien été enregistrée."}
         </p>
       </div>
     );
@@ -234,12 +187,12 @@ export default function MemberRegistrationForm({ isEdit, initialData, onSuccess 
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      {/* Paroisse */}
-      <div>
-        <label className="block text-sm font-medium">Paroisse *</label>
-        <div className="mt-2 space-y-2">
+      {/* Paroisse Section */}
+      <div className="bg-gray-50 dark:bg-gray-800/50 p-4 rounded-xl border border-gray-100 dark:border-gray-700">
+        <label className="block font-bold text-gray-900 dark:text-gray-100 mb-3">Paroisse *</label>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {["Rabat centre ville", "Rabat Annexe J5"].map(p => (
-            <label key={p} className="flex items-center gap-2 text-sm">
+            <label key={p} className="flex items-center gap-2 p-2 rounded-lg cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-200">
               <input
                 type="radio"
                 name="paroisse"
@@ -247,6 +200,7 @@ export default function MemberRegistrationForm({ isEdit, initialData, onSuccess 
                 checked={form.paroisse === p}
                 onChange={handleChange}
                 required
+                className="w-4 h-4 text-primary bg-gray-100 border-gray-300 dark:ring-offset-gray-800 dark:bg-gray-700 dark:border-gray-600"
               />
               {p}
             </label>
@@ -254,235 +208,158 @@ export default function MemberRegistrationForm({ isEdit, initialData, onSuccess 
         </div>
       </div>
 
-      <div>
-        <label className="block text-sm font-medium" htmlFor="nom">Nom *</label>
-        <div className="relative mt-1">
-          <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-          <input 
-            id="nom" 
-            name="nom" 
-            value={form.nom}
-            required 
-            placeholder="Nom *" 
-            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 pl-10 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50" 
-            onChange={handleChange} 
-          />
+      {/* Identity Info */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" htmlFor="nom">Nom *</label>
+          <div className="relative">
+            <User className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 h-4 w-4" />
+            <input id="nom" name="nom" value={form.nom} required placeholder="Votre nom" className={`${inputClass} pl-10`} onChange={handleChange} />
+          </div>
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1" htmlFor="prenom">Prénom *</label>
+          <div className="relative">
+            <User className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 h-4 w-4" />
+            <input id="prenom" name="prenom" value={form.prenom} required placeholder="Votre prénom" className={`${inputClass} pl-10`} onChange={handleChange} />
+          </div>
         </div>
       </div>
 
-      <div>
-        <label className="block text-sm font-medium" htmlFor="prenom">Prénom *</label>
-        <div className="relative mt-1">
-          <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-          <input 
-            id="prenom" 
-            name="prenom" 
-            value={form.prenom}
-            required 
-            placeholder="Prénom *" 
-            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 pl-10 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50" 
-            onChange={handleChange} 
-          />
-        </div>
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium">Genre *</label>
-        <div className="mt-2 space-y-2">
-          {["Femme", "Homme"].map(g => (
-            <label key={g} className="flex items-center gap-2 text-sm">
-              <input
-                type="radio"
-                name="genre"
-                value={g}
-                checked={form.genre === g}
-                onChange={handleChange}
-                required
-              />
-              {g}
-            </label>
-          ))}
-        </div>
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium">Nationalité *</label>
-        <div className="relative mt-2">
-          <Flag className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4 z-10" />
-          <select
-            name="nationalite"
-            value={form.nationalite}
-            onChange={handleChange}
-            required
-            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 pl-10 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            <option value="">Sélectionnez votre nationalité</option>
-            {countries.map(country => (
-              <option key={country} value={country}>
-                {country}
-              </option>
+      {/* Genre & Nationalité */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Genre *</label>
+          <div className="flex gap-4 p-3 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-xl">
+            {["Femme", "Homme"].map(g => (
+              <label key={g} className="flex items-center gap-2 text-gray-800 dark:text-gray-200">
+                <input type="radio" name="genre" value={g} checked={form.genre === g} onChange={handleChange} required className="dark:bg-gray-700" />
+                {g}
+              </label>
             ))}
-          </select>
+          </div>
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Nationalité *</label>
+          <div className="relative">
+            <Flag className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 h-4 w-4 pointer-events-none" />
+            <select name="nationalite" value={form.nationalite} onChange={handleChange} required className={`${inputClass} pl-10 appearance-none`}>
+              <option value="">Sélectionnez</option>
+              {countries.map(c => <option key={c} value={c} className="dark:bg-gray-800">{c}</option>)}
+            </select>
+          </div>
         </div>
       </div>
 
-      <div>
-        <label className="block text-sm font-medium" htmlFor="date_naissance">Date de naissance *</label>
-        <div className="relative mt-1">
-          <CalendarIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-          <input 
-            id="date_naissance" 
-            type="date" 
-            name="date_naissance" 
-            value={form.date_naissance}
-            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 pl-10 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50" 
-            onChange={handleChange} 
-          />
+      {/* Contact & Professional */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Téléphone *</label>
+          <div className="relative">
+            <Phone className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 h-4 w-4" />
+            <input name="telephone" value={form.telephone} required className={`${inputClass} pl-10`} placeholder="+212 ..." onChange={handleChange} />
+          </div>
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email</label>
+          <div className="relative">
+            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 h-4 w-4" />
+            <input type="email" name="email" value={form.email} className={`${inputClass} pl-10`} placeholder="email@exemple.com" onChange={handleChange} />
+          </div>
         </div>
       </div>
 
-      <div>
-        <label className="block text-sm font-medium" htmlFor="telephone">Téléphone *</label>
-        <div className="relative mt-1">
-          <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-          <input 
-            id="telephone" 
-            name="telephone" 
-            value={form.telephone}
-            required 
-            placeholder="Téléphone *" 
-            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 pl-10 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50" 
-            onChange={handleChange} 
-          />
+      {/* Dates & Profession */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Date de naissance *</label>
+          <div className="relative">
+            <CalendarIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 h-4 w-4" />
+            <input type="date" name="date_naissance" value={form.date_naissance} className={`${inputClass} pl-10`} onChange={handleChange} />
+          </div>
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Profession *</label>
+          <div className="relative">
+            <Briefcase className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 h-4 w-4" />
+            <input name="profession" value={form.profession} required className={`${inputClass} pl-10`} placeholder="Occupation" onChange={handleChange} />
+          </div>
         </div>
       </div>
 
-      <div>
-        <label className="block text-sm font-medium" htmlFor="email">Email</label>
-        <div className="relative mt-1">
-          <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-          <input 
-            id="email" 
-            type="email" 
-            name="email" 
-            value={form.email}
-            placeholder="Email" 
-            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 pl-10 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50" 
-            onChange={handleChange} 
-          />
+      {/* Baptism & Address */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Baptisé(e) *</label>
+          <div className="flex gap-4 p-3 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-xl">
+             {["Oui", "Non"].map(b => (
+              <label key={b} className="flex items-center gap-2 text-gray-800 dark:text-gray-200">
+                <input type="radio" name="baptise" value={b} checked={form.baptise === b} onChange={handleChange} required />
+                {b}
+              </label>
+            ))}
+          </div>
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Adresse / Quartier *</label>
+          <div className="relative">
+            <Home className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 h-4 w-4" />
+            <input name="adresse" value={form.adresse} required className={`${inputClass} pl-10`} placeholder="Quartier..." onChange={handleChange} />
+          </div>
         </div>
       </div>
 
-      <div>
-        <label className="block text-sm font-medium" htmlFor="profession">Occupation professionnelle *</label>
-        <div className="relative mt-1">
-          <Briefcase className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-          <input 
-            id="profession" 
-            name="profession" 
-            value={form.profession}
-            required 
-            placeholder="Occupation professionnelle *" 
-            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 pl-10 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50" 
-            onChange={handleChange} 
-          />
-        </div>
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium">Baptisé(e) *</label>
-        <div className="mt-2 space-y-2">
-          {["Oui", "Non"].map(b => (
-            <label key={b} className="flex items-center gap-2 text-sm">
-              <input
-                type="radio"
-                name="baptise"
-                value={b}
-                checked={form.baptise === b}
-                onChange={handleChange}
-                required
-              />
-              {b}
-            </label>
-          ))}
-        </div>
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium" htmlFor="date_bapteme">Date ou année de baptême</label>
-        <div className="relative mt-1">
-          <Droplet className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-          <input 
-            id="date_bapteme" 
-            name="date_bapteme" 
-            value={form.date_bapteme}
-            placeholder="Date ou année de baptême" 
-            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 pl-10 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50" 
-            onChange={handleChange} 
-          />
-        </div>
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium" htmlFor="adresse">Adresse / Quartier *</label>
-        <div className="relative mt-1">
-          <Home className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-          <input 
-            id="adresse" 
-            name="adresse" 
-            value={form.adresse}
-            required 
-            placeholder="Adresse / Quartier *" 
-            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 pl-10 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50" 
-            onChange={handleChange} 
-          />
-        </div>
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium">Commissions *</label>
-        <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2">
+      {/* Commissions Grid */}
+      <div className="p-4 bg-gray-50 dark:bg-gray-800/40 rounded-xl border border-gray-200 dark:border-gray-700">
+        <label className="block font-bold text-gray-900 dark:text-gray-100 mb-3">Commissions *</label>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
           {commissionsList.map(c => (
-            <label key={c} className="flex items-center gap-2 text-sm">
+            <label key={c} className="flex items-center gap-2 p-1 text-gray-800 dark:text-gray-200 hover:text-primary transition-colors cursor-pointer">
               <input
                 type="checkbox"
                 checked={form.commissions.includes(c)}
                 onChange={() => toggleCommission(c)}
+                className="w-4 h-4 rounded border-gray-300 dark:bg-gray-700 dark:border-gray-600"
               />
-              {c}
+              <span className="text-sm">{c}</span>
             </label>
           ))}
         </div>
       </div>
 
       {!isEdit && (
-      <div className="border rounded-xl p-4">
-        <label className="flex items-start gap-3 text-sm">
-          <input
-            type="checkbox"
-            name="consent"
-            checked={form.consent}
-            onChange={handleChange}
-            required
-          />
-          <span>
-            J'ai lu et j'accepte la{" "}
-            <Link href="/politique-de-confidentialite" target="_blank" className="underline underline-offset-4">
-              politique de confidentialité
-            </Link>.
-          </span>
-        </label>
-      </div>
+        <div className="border rounded-xl p-4 bg-gray-50 dark:bg-gray-800/60 border-gray-300 dark:border-gray-700">
+          <label className="flex items-start gap-3 text-sm text-gray-900 dark:text-gray-100 cursor-pointer">
+            <input
+              type="checkbox"
+              name="consent"
+              checked={form.consent}
+              onChange={handleChange}
+              required
+              className="mt-1 w-4 h-4"
+            />
+            <span>
+              J'ai lu et j'accepte la{" "}
+              <Link href="/politique-de-confidentialite" target="_blank" className="text-primary font-semibold underline">
+                politique de confidentialité
+              </Link>.
+            </span>
+          </label>
+        </div>
       )}
 
-      {error && <p className="text-sm text-red-500">{error}</p>}
+      {error && (
+        <div className="p-3 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
+           <p className="text-red-600 dark:text-red-400 text-sm font-medium">{error}</p>
+        </div>
+      )}
 
       <button
         type="submit"
         disabled={loading}
-        className="w-full bg-primary text-primary-foreground py-3 rounded-xl font-semibold disabled:opacity-60 hover:bg-primary/90 transition-colors"
+        className="w-full bg-primary text-white py-4 rounded-xl font-bold text-lg shadow-lg hover:opacity-90 disabled:opacity-50 transition-all active:scale-[0.98]"
       >
-        {loading ? "Envoi en cours..." : isEdit ? "Modifier" : "Soumettre"}
+        {loading ? "Chargement..." : isEdit ? "Mettre à jour" : "Soumettre l'inscription"}
       </button>
     </form>
   );
