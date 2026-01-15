@@ -7,12 +7,10 @@ import {
   User,
   Phone,
   Mail,
-  MapPin,
   Calendar as CalendarIcon,
   Briefcase,
   Flag,
   Droplet,
-  Users,
   Home,
   Loader2,
 } from "lucide-react";
@@ -74,6 +72,16 @@ export default function MemberRegistrationForm({ isEdit, initialData, onSuccess 
     }
   }, [isEdit, initialData]);
 
+  // FIX: Updated type to include HTMLTextAreaElement
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+    const { name, value, type } = e.target;
+    if (type === "checkbox") {
+      setForm(prev => ({ ...prev, [name]: (e.target as HTMLInputElement).checked }));
+    } else {
+      setForm(prev => ({ ...prev, [name]: value }));
+    }
+  };
+
   const countries = [
     "Afghanistan", "Afrique du Sud", "Albanie", "Algérie", "Allemagne", "Andorre", "Angola", "Antigua-et-Barbuda",
     "Arabie saoudite", "Argentine", "Arménie", "Australie", "Autriche", "Azerbaïdjan", "Bahamas", "Bahreïn",
@@ -114,15 +122,6 @@ export default function MemberRegistrationForm({ isEdit, initialData, onSuccess 
         ? prev.commissions.filter(c => c !== value)
         : [...prev.commissions, value]
     }));
-  };
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { name, value, type } = e.target;
-    if (type === "checkbox") {
-      setForm(prev => ({ ...prev, [name]: (e.target as HTMLInputElement).checked }));
-    } else {
-      setForm(prev => ({ ...prev, [name]: value }));
-    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -175,202 +174,163 @@ export default function MemberRegistrationForm({ isEdit, initialData, onSuccess 
   if (success) {
     return (
       <div className="p-8 text-center bg-white dark:bg-gray-900 rounded-3xl border border-gray-100 dark:border-gray-800 shadow-xl">
-        <div className="mb-4 inline-flex items-center justify-center w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-full">
-            <span className="text-green-600 dark:text-green-400 text-3xl">✓</span>
-        </div>
-        <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-          {isEdit ? "Modifié avec succès" : "Demande enregistrée"}
-        </h3>
-        <p className="text-gray-600 dark:text-gray-400">
-          Les informations ont été synchronisées avec la base de données de l'église.
-        </p>
+        <div className="mb-4 inline-flex items-center justify-center w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-full text-green-600 dark:text-green-400 text-3xl">✓</div>
+        <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">{isEdit ? "Modifié" : "Enregistré"}</h3>
+        <p className="text-gray-600 dark:text-gray-400">Opération réussie.</p>
       </div>
     );
   }
 
   return (
-    // Main Wrapper with Responsive Padding
     <div className="w-full px-4 py-6 sm:px-8 sm:py-10 bg-white dark:bg-gray-900 rounded-3xl transition-all duration-300">
       <form onSubmit={handleSubmit} className="max-w-4xl mx-auto space-y-8">
         
-        {/* Section: Paroisse */}
+        {/* Paroisse */}
         <div className="bg-gray-50 dark:bg-gray-800/50 p-6 rounded-2xl border border-gray-200 dark:border-gray-700">
-          <label className="font-bold text-gray-900 dark:text-gray-100 block mb-4">Choix de la Paroisse *</label>
+          <label className="font-bold text-gray-900 dark:text-gray-100 block mb-4">Paroisse *</label>
           <div className="flex flex-col sm:flex-row gap-4">
             {["Rabat centre ville", "Rabat Annexe J5"].map(p => (
-              <label key={p} className="flex flex-1 items-center gap-3 p-3 rounded-xl border border-gray-300 dark:border-gray-600 hover:border-primary dark:hover:border-primary cursor-pointer transition-all">
-                <input
-                  type="radio"
-                  name="paroisse"
-                  value={p}
-                  checked={form.paroisse === p}
-                  onChange={handleChange}
-                  required
-                  className="w-5 h-5 text-primary bg-transparent border-gray-400 dark:border-gray-500"
-                />
+              <label key={p} className="flex flex-1 items-center gap-3 p-3 rounded-xl border border-gray-300 dark:border-gray-600 hover:border-primary cursor-pointer transition-all">
+                <input type="radio" name="paroisse" value={p} checked={form.paroisse === p} onChange={handleChange} required className="w-5 h-5 text-primary" />
                 <span className="text-gray-800 dark:text-gray-200 font-medium">{p}</span>
               </label>
             ))}
           </div>
         </div>
 
-        {/* Section: Identité */}
+        {/* Identité */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-2">
-            <label className="text-sm font-bold text-gray-700 dark:text-gray-300" htmlFor="nom">Nom de famille *</label>
+            <label className="text-sm font-bold dark:text-gray-300">Nom *</label>
             <div className="relative">
-              <User className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 h-5 w-5" />
-              <input id="nom" name="nom" value={form.nom} required placeholder="Votre nom" className={`${inputClass} pl-10`} onChange={handleChange} />
+              <User className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-5 w-5" />
+              <input name="nom" value={form.nom} required placeholder="Nom" className={`${inputClass} pl-10`} onChange={handleChange} />
             </div>
           </div>
           <div className="space-y-2">
-            <label className="text-sm font-bold text-gray-700 dark:text-gray-300" htmlFor="prenom">Prénom *</label>
+            <label className="text-sm font-bold dark:text-gray-300">Prénom *</label>
             <div className="relative">
-              <User className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 h-5 w-5" />
-              <input id="prenom" name="prenom" value={form.prenom} required placeholder="Votre prénom" className={`${inputClass} pl-10`} onChange={handleChange} />
+              <User className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-5 w-5" />
+              <input name="prenom" value={form.prenom} required placeholder="Prénom" className={`${inputClass} pl-10`} onChange={handleChange} />
             </div>
           </div>
         </div>
 
-        {/* Section: Infos Perso */}
+        {/* Genre & Nationalité */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="space-y-2">
-            <label className="text-sm font-bold text-gray-700 dark:text-gray-300">Genre *</label>
+            <label className="text-sm font-bold dark:text-gray-300">Genre *</label>
             <select name="genre" value={form.genre} onChange={handleChange} required className={inputClass}>
-                <option value="" className="dark:bg-gray-800">Sélectionner</option>
-                <option value="Femme" className="dark:bg-gray-800">Femme</option>
-                <option value="Homme" className="dark:bg-gray-800">Homme</option>
+                <option value="">Choisir</option>
+                <option value="Femme">Femme</option>
+                <option value="Homme">Homme</option>
             </select>
           </div>
           <div className="md:col-span-2 space-y-2">
-            <label className="text-sm font-bold text-gray-700 dark:text-gray-300">Nationalité *</label>
+            <label className="text-sm font-bold dark:text-gray-300">Nationalité *</label>
             <div className="relative">
-              <Flag className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 h-5 w-5 pointer-events-none" />
+              <Flag className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-5 w-5 pointer-events-none" />
               <select name="nationalite" value={form.nationalite} onChange={handleChange} required className={`${inputClass} pl-10 appearance-none`}>
-                <option value="" className="dark:bg-gray-900">Pays d'origine</option>
+                <option value="">Sélectionnez un pays</option>
                 {countries.map(c => <option key={c} value={c} className="dark:bg-gray-800">{c}</option>)}
               </select>
             </div>
           </div>
         </div>
 
-        {/* Section: Contact & Bio */}
+        {/* Contact */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-2">
-            <label className="text-sm font-bold text-gray-700 dark:text-gray-300">Date de Naissance *</label>
+            <label className="text-sm font-bold dark:text-gray-300">Date de Naissance *</label>
             <input type="date" name="date_naissance" value={form.date_naissance} className={inputClass} onChange={handleChange} required />
           </div>
           <div className="space-y-2">
-            <label className="text-sm font-bold text-gray-700 dark:text-gray-300">Téléphone *</label>
+            <label className="text-sm font-bold dark:text-gray-300">Téléphone *</label>
             <div className="relative">
-              <Phone className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 h-5 w-5" />
+              <Phone className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-5 w-5" />
               <input name="telephone" value={form.telephone} required placeholder="+212 ..." className={`${inputClass} pl-10`} onChange={handleChange} />
             </div>
           </div>
           <div className="space-y-2">
-            <label className="text-sm font-bold text-gray-700 dark:text-gray-300">Email Personnel</label>
-            <input type="email" name="email" value={form.email} placeholder="exemple@mail.com" className={inputClass} onChange={handleChange} />
+            <label className="text-sm font-bold dark:text-gray-300">Email</label>
+            <input type="email" name="email" value={form.email} placeholder="email@domaine.com" className={inputClass} onChange={handleChange} />
           </div>
           <div className="space-y-2">
-            <label className="text-sm font-bold text-gray-700 dark:text-gray-300">Profession / Occupation *</label>
-            <input name="profession" value={form.profession} required placeholder="Étudiant, Ingénieur, etc." className={inputClass} onChange={handleChange} />
+            <label className="text-sm font-bold dark:text-gray-300">Profession *</label>
+            <input name="profession" value={form.profession} required placeholder="Votre métier" className={inputClass} onChange={handleChange} />
           </div>
         </div>
 
-        {/* Section: Spirituel */}
+        {/* Baptême */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-gray-50 dark:bg-gray-800/50 p-6 rounded-2xl border border-gray-200 dark:border-gray-700">
           <div className="space-y-2">
-            <label className="text-sm font-bold text-gray-700 dark:text-gray-300">Êtes-vous baptisé(e) ? *</label>
+            <label className="text-sm font-bold dark:text-gray-300">Baptisé(e) ? *</label>
             <div className="flex gap-4">
               {["Oui", "Non"].map(b => (
-                <label key={b} className="flex items-center gap-2 cursor-pointer text-gray-800 dark:text-gray-200">
-                  <input type="radio" name="baptise" value={b} checked={form.baptise === b} onChange={handleChange} required className="w-4 h-4 text-primary dark:bg-gray-700" />
+                <label key={b} className="flex items-center gap-2 cursor-pointer dark:text-gray-200">
+                  <input type="radio" name="baptise" value={b} checked={form.baptise === b} onChange={handleChange} required className="w-4 h-4 text-primary" />
                   {b}
                 </label>
               ))}
             </div>
           </div>
           <div className="space-y-2">
-            <label className="text-sm font-bold text-gray-700 dark:text-gray-300">Date/Année de Baptême</label>
-            <input name="date_bapteme" value={form.date_bapteme} placeholder="Ex: 2018" className={inputClass} onChange={handleChange} />
+            <label className="text-sm font-bold dark:text-gray-300">Année de Baptême</label>
+            <div className="relative">
+              <Droplet className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-5 w-5" />
+              <input name="date_bapteme" value={form.date_bapteme} placeholder="Ex: 2018" className={`${inputClass} pl-10`} onChange={handleChange} />
+            </div>
           </div>
         </div>
 
-        {/* Section: Localisation */}
+        {/* Adresse - THE ERROR SOURCE FIXED */}
         <div className="space-y-2">
-          <label className="text-sm font-bold text-gray-700 dark:text-gray-300">Adresse Complète / Quartier *</label>
+          <label className="text-sm font-bold dark:text-gray-300">Adresse / Quartier *</label>
           <div className="relative">
-            <Home className="absolute left-3 top-3 text-gray-400 dark:text-gray-500 h-5 w-5" />
+            <Home className="absolute left-3 top-3 text-gray-400 h-5 w-5" />
             <textarea 
                 name="adresse" 
                 value={form.adresse} 
                 required 
                 rows={2}
-                placeholder="Indiquez votre quartier et adresse à Rabat" 
+                placeholder="Votre adresse à Rabat" 
                 className={`${inputClass} pl-10 resize-none`} 
                 onChange={handleChange} 
             />
           </div>
         </div>
 
-        {/* Section: Engagement */}
+        {/* Commissions */}
         <div className="space-y-4">
-          <label className="font-bold text-gray-900 dark:text-gray-100 block">Commissions d'Engagement *</label>
+          <label className="font-bold dark:text-gray-100 block">Commissions *</label>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
             {commissionsList.map(c => (
               <label key={c} className="flex items-center gap-3 p-3 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 cursor-pointer hover:border-primary transition-all">
-                <input
-                  type="checkbox"
-                  checked={form.commissions.includes(c)}
-                  onChange={() => toggleCommission(c)}
-                  className="w-4 h-4 rounded text-primary dark:bg-gray-700"
-                />
-                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{c}</span>
+                <input type="checkbox" checked={form.commissions.includes(c)} onChange={() => toggleCommission(c)} className="w-4 h-4 text-primary" />
+                <span className="text-sm font-medium dark:text-gray-300">{c}</span>
               </label>
             ))}
           </div>
         </div>
 
-        {/* Legal & Errors */}
         {!isEdit && (
         <div className="p-4 rounded-2xl bg-primary/5 dark:bg-primary/10 border border-primary/20">
-          <label className="flex items-start gap-3 text-sm text-gray-700 dark:text-gray-300 cursor-pointer">
+          <label className="flex items-start gap-3 text-sm dark:text-gray-300 cursor-pointer">
             <input type="checkbox" name="consent" checked={form.consent} onChange={handleChange} required className="mt-1 w-4 h-4 text-primary" />
-            <span>J'accepte le stockage de mes données par l'église conformément à la politique de confidentialité.</span>
+            <span>J'accepte la politique de confidentialité.</span>
           </label>
         </div>
         )}
 
-        {error && (
-          <p className="p-4 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-xl text-sm font-bold text-center">
-            {error}
-          </p>
-        )}
+        {error && <p className="p-4 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-xl text-sm font-bold text-center">{error}</p>}
 
-        {/* THE SUBMIT BUTTON - Enhanced for Dark Mode */}
-        <div className="pt-4">
-            <button
+        <button
             type="submit"
             disabled={loading}
-            className={`
-                w-full flex items-center justify-center gap-3 py-4 px-6 rounded-2xl font-bold text-lg 
-                transition-all duration-300 active:scale-[0.98]
-                ${loading 
-                ? "bg-gray-400 dark:bg-gray-700 cursor-not-allowed" 
-                : "bg-primary text-white shadow-xl shadow-primary/20 hover:shadow-primary/40 dark:shadow-black/50 hover:-translate-y-0.5"
-                }
-            `}
-            >
-            {loading ? (
-                <>
-                <Loader2 className="h-6 w-6 animate-spin" />
-                Traitement...
-                </>
-            ) : (
-                isEdit ? "Mettre à jour le profil" : "Valider mon inscription"
-            )}
-            </button>
-        </div>
+            className={`w-full flex items-center justify-center gap-3 py-4 px-6 rounded-2xl font-bold text-lg transition-all duration-300 active:scale-[0.98] ${loading ? "bg-gray-400 dark:bg-gray-700 cursor-not-allowed" : "bg-primary text-white shadow-xl hover:shadow-primary/40 hover:-translate-y-0.5"}`}
+        >
+            {loading ? <Loader2 className="h-6 w-6 animate-spin" /> : (isEdit ? "Modifier" : "S'inscrire")}
+        </button>
       </form>
     </div>
   );
