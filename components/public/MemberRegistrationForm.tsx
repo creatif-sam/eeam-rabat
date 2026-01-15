@@ -74,7 +74,8 @@ export default function MemberRegistrationForm({ isEdit, initialData, onSuccess 
 
   // FIX: Updated type to include HTMLTextAreaElement
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
-    const { name, value, type } = e.target;
+  const { name, value, type } = e.target;
+
     if (type === "checkbox") {
       setForm(prev => ({ ...prev, [name]: (e.target as HTMLInputElement).checked }));
     } else {
