@@ -326,11 +326,11 @@ export default function MemberRegistrationForm({ isEdit, initialData, onSuccess 
         {error && <p className="p-4 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-xl text-sm font-bold text-center">{error}</p>}
 
         <button
-            type="submit"
-            disabled={loading}
-            className={`w-full flex items-center justify-center gap-3 py-4 px-6 rounded-2xl font-bold text-lg transition-all duration-300 active:scale-[0.98] ${loading ? "bg-gray-400 dark:bg-gray-700 cursor-not-allowed" : "bg-primary text-white shadow-xl hover:shadow-primary/40 hover:-translate-y-0.5"}`}
+          type="submit"
+          disabled={loading}
+          className={`w-full flex items-center justify-center gap-3 py-4 px-6 rounded-2xl font-bold text-lg transition-all duration-300 active:scale-[0.98] ${loading ? "bg-gray-400 dark:bg-gray-700 cursor-not-allowed" : "bg-primary text-white dark:text-black shadow-xl hover:shadow-primary/40 hover:-translate-y-0.5"}`}
         >
-            {loading ? <Loader2 className="h-6 w-6 animate-spin" /> : (isEdit ? "Modifier" : "S'inscrire")}
+          {loading ? <Loader2 className="h-6 w-6 animate-spin" /> : (isEdit ? "Modifier" : "S'inscrire")}
         </button>
       </form>
     </div>
