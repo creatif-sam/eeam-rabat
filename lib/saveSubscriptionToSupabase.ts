@@ -1,5 +1,5 @@
 // Utility to save push subscription to Supabase
-export async function saveSubscriptionToSupabase(subscription) {
+export async function saveSubscriptionToSupabase(subscription: PushSubscription) {
   await fetch('https://<YOUR_SUPABASE_PROJECT>.supabase.co/rest/v1/push_subscriptions', {
     method: 'POST',
     headers: {
