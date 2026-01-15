@@ -9,7 +9,7 @@ export async function saveSubscriptionToSupabase(subscription: PushSubscription)
     },
     body: JSON.stringify({
       endpoint: subscription.endpoint,
-      keys: subscription.keys,
+      keys: subscription.toJSON().keys,
       created_at: new Date().toISOString()
     })
   });
