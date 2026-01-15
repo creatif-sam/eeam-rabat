@@ -3,16 +3,25 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   User,
   Phone,
   Mail,
-  MapPin,
   Calendar as CalendarIcon,
   Briefcase,
   Flag,
   Droplet,
-  Users,
   Home,
 } from "lucide-react";
 
@@ -21,15 +30,6 @@ type MemberRegistrationFormProps = {
   initialData?: any;
   onSuccess?: () => void;
 };
-
-
-const inputClass =
-  "w-full rounded-xl p-3 border bg-white text-gray-900 " +
-  "placeholder:text-gray-400 border-gray-300 " +
-  "dark:bg-gray-900 dark:text-gray-100 dark:placeholder:text-gray-500 dark:border-gray-700 " +
-  "focus:outline-none focus:ring-2 focus:ring-primary/40";
-
-
 
 export default function MemberRegistrationForm({ isEdit, initialData, onSuccess }: MemberRegistrationFormProps) {
   const supabase = createClient();
@@ -54,7 +54,6 @@ export default function MemberRegistrationForm({ isEdit, initialData, onSuccess 
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
-
 
   useEffect(() => {
     if (isEdit && initialData) {
@@ -132,14 +131,14 @@ export default function MemberRegistrationForm({ isEdit, initialData, onSuccess 
   };
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+    e: React.ChangeEvent<HTMLInputElement>
   ) => {
     const { name, value, type } = e.target;
 
     if (type === "checkbox") {
       setForm(prev => ({
         ...prev,
-        [name]: (e.target as HTMLInputElement).checked
+        [name]: e.target.checked
       }));
     } else {
       setForm(prev => ({
@@ -150,85 +149,77 @@ export default function MemberRegistrationForm({ isEdit, initialData, onSuccess 
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
-  e.preventDefault();
-  if (loading) return;
+    e.preventDefault();
+    if (loading) return;
 
-  if (!isEdit && !form.consent) {
-    setError(
-      "Vous devez accepter la politique de confidentialité pour continuer."
-    );
-    return;
-  }
+    if (!isEdit && !form.consent) {
+      setError("Vous devez accepter la politique de confidentialité pour continuer.");
+      return;
+    }
 
-  if (!form.commissions.length) {
-    setError("Veuillez sélectionner au moins une commission.");
-    return;
-  }
+    if (!form.commissions.length) {
+      setError("Veuillez sélectionner au moins une commission.");
+      return;
+    }
 
-  setLoading(true);
-  setError(null);
+    setLoading(true);
+    setError(null);
 
-  const { error } = isEdit && initialData
-    ? await supabase
-        .from("member_registrations")
-        .update({
-          paroisse: form.paroisse,
-          nom: form.nom.trim(),
-          prenom: form.prenom.trim(),
-          genre: form.genre,
-          nationalite: form.nationalite.trim(),
-          date_naissance: form.date_naissance || null,
-          telephone: form.telephone.trim(),
-          email: form.email || null,
-          profession: form.profession.trim(),
-          baptise: form.baptise,
-          date_bapteme: form.date_bapteme || null,
-          adresse: form.adresse.trim(),
-          commissions: form.commissions,
-          consent: true // 🔥 FORCE TRUE — REQUIRED FOR RLS
-        })
-        .eq('id', initialData.id)
-    : await supabase
-        .from("member_registrations")
-        .insert({
-          paroisse: form.paroisse,
-          nom: form.nom.trim(),
-          prenom: form.prenom.trim(),
-          genre: form.genre,
-          nationalite: form.nationalite.trim(),
-          date_naissance: form.date_naissance || null,
-          telephone: form.telephone.trim(),
-          email: form.email || null,
-          profession: form.profession.trim(),
-          baptise: form.baptise,
-          date_bapteme: form.date_bapteme || null,
-          adresse: form.adresse.trim(),
-          commissions: form.commissions,
-          consent: true // 🔥 FORCE TRUE — REQUIRED FOR RLS
-        });
+    const { error } = isEdit && initialData
+      ? await supabase
+          .from("member_registrations")
+          .update({
+            paroisse: form.paroisse,
+            nom: form.nom.trim(),
+            prenom: form.prenom.trim(),
+            genre: form.genre,
+            nationalite: form.nationalite.trim(),
+            date_naissance: form.date_naissance || null,
+            telephone: form.telephone.trim(),
+            email: form.email || null,
+            profession: form.profession.trim(),
+            baptise: form.baptise,
+            date_bapteme: form.date_bapteme || null,
+            adresse: form.adresse.trim(),
+            commissions: form.commissions,
+            consent: true
+          })
+          .eq('id', initialData.id)
+      : await supabase
+          .from("member_registrations")
+          .insert({
+            paroisse: form.paroisse,
+            nom: form.nom.trim(),
+            prenom: form.prenom.trim(),
+            genre: form.genre,
+            nationalite: form.nationalite.trim(),
+            date_naissance: form.date_naissance || null,
+            telephone: form.telephone.trim(),
+            email: form.email || null,
+            profession: form.profession.trim(),
+            baptise: form.baptise,
+            date_bapteme: form.date_bapteme || null,
+            adresse: form.adresse.trim(),
+            commissions: form.commissions,
+            consent: true
+          });
 
- if (error) {
-  if (error.code === "23505") {
-    setError(
-      "Un membre avec ce numéro de téléphone ou cet email existe déjà."
-    );
+    if (error) {
+      if (error.code === "23505") {
+        setError("Un membre avec ce numéro de téléphone ou cet email existe déjà.");
+        setLoading(false);
+        return;
+      }
+
+      setError(error.message || "Une erreur est survenue lors de l'envoi. Veuillez réessayer.");
+      setLoading(false);
+      return;
+    }
+
+    setSuccess(true);
     setLoading(false);
-    return;
-  }
-
-  setError(
-    error.message ||
-      "Une erreur est survenue lors de l'envoi. Veuillez réessayer."
-  );
-  setLoading(false);
-  return;
-}
-
-
-  setSuccess(true);
-  setLoading(false);
-  if (onSuccess) onSuccess();
-};
+    if (onSuccess) onSuccess();
+  };
 
   if (success) {
     return (
@@ -236,7 +227,7 @@ export default function MemberRegistrationForm({ isEdit, initialData, onSuccess 
         <h3 className="text-xl font-bold text-green-600 dark:text-green-400 mb-2">
           {isEdit ? "Membre modifié" : "Inscription envoyée"}
         </h3>
-        <p className="text-gray-600 dark:text-gray-400">
+        <p className="text-muted-foreground">
           {isEdit ? "Les informations ont été mises à jour." : "Votre demande a bien été enregistrée. L'équipe vous contactera si nécessaire."}
         </p>
       </div>
@@ -246,11 +237,11 @@ export default function MemberRegistrationForm({ isEdit, initialData, onSuccess 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       {/* Paroisse */}
-      <div>
-        <label className="font-medium text-gray-900 dark:text-gray-100">Paroisse *</label>
-        <div className="mt-2 space-y-2">
+      <div className="grid gap-2">
+        <Label>Paroisse *</Label>
+        <div className="space-y-2">
           {["Rabat centre ville", "Rabat Annexe J5"].map(p => (
-            <label key={p} className="flex items-center gap-2 text-gray-900 dark:text-gray-100">
+            <label key={p} className="flex items-center gap-2 cursor-pointer">
               <input
                 type="radio"
                 name="paroisse"
@@ -258,34 +249,54 @@ export default function MemberRegistrationForm({ isEdit, initialData, onSuccess 
                 checked={form.paroisse === p}
                 onChange={handleChange}
                 required
-                className="bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-700"
+                className="h-4 w-4"
               />
-              {p}
+              <span className="text-sm">{p}</span>
             </label>
           ))}
         </div>
       </div>
 
-      <div>
-        <label className="font-medium text-gray-900 dark:text-gray-100" htmlFor="nom">Nom *</label>
-        <div className="relative mt-1">
-          <User className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 h-4 w-4" />
-          <input id="nom" name="nom" value={form.nom} required placeholder="Nom *" className="w-full border rounded-xl p-3 pl-10 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-700 placeholder:text-gray-400 dark:placeholder:text-gray-500" onChange={handleChange} />
-        </div>
-      </div>
-      <div>
-        <label className="font-medium text-gray-900 dark:text-gray-100" htmlFor="prenom">Prénom *</label>
-        <div className="relative mt-1">
-          <User className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 h-4 w-4" />
-          <input id="prenom" name="prenom" value={form.prenom} required placeholder="Prénom *" className="w-full border rounded-xl p-3 pl-10 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-700 placeholder:text-gray-400 dark:placeholder:text-gray-500" onChange={handleChange} />
+      {/* Nom */}
+      <div className="grid gap-2">
+        <Label htmlFor="nom">Nom *</Label>
+        <div className="relative">
+          <User className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground h-4 w-4" />
+          <Input
+            id="nom"
+            name="nom"
+            value={form.nom}
+            required
+            placeholder="Nom *"
+            className="pl-10"
+            onChange={handleChange}
+          />
         </div>
       </div>
 
-      <div>
-        <label className="font-medium text-gray-900 dark:text-gray-100">Genre *</label>
-        <div className="mt-2 space-y-2">
+      {/* Prénom */}
+      <div className="grid gap-2">
+        <Label htmlFor="prenom">Prénom *</Label>
+        <div className="relative">
+          <User className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground h-4 w-4" />
+          <Input
+            id="prenom"
+            name="prenom"
+            value={form.prenom}
+            required
+            placeholder="Prénom *"
+            className="pl-10"
+            onChange={handleChange}
+          />
+        </div>
+      </div>
+
+      {/* Genre */}
+      <div className="grid gap-2">
+        <Label>Genre *</Label>
+        <div className="space-y-2">
           {["Femme", "Homme"].map(g => (
-            <label key={g} className="flex items-center gap-2 text-gray-900 dark:text-gray-100">
+            <label key={g} className="flex items-center gap-2 cursor-pointer">
               <input
                 type="radio"
                 name="genre"
@@ -293,68 +304,111 @@ export default function MemberRegistrationForm({ isEdit, initialData, onSuccess 
                 checked={form.genre === g}
                 onChange={handleChange}
                 required
-                className="bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-700"
+                className="h-4 w-4"
               />
-              {g}
+              <span className="text-sm">{g}</span>
             </label>
           ))}
         </div>
       </div>
 
-      <div>
-        <label className="font-medium text-gray-900 dark:text-gray-100">Nationalité *</label>
-        <div className="relative mt-2">
-          <Flag className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 h-4 w-4" />
-          <select
-            name="nationalite"
+      {/* Nationalité */}
+      <div className="grid gap-2">
+        <Label htmlFor="nationalite">Nationalité *</Label>
+        <div className="relative">
+          <Flag className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground h-4 w-4 z-10" />
+          <Select
             value={form.nationalite}
-            onChange={handleChange}
+            onValueChange={(value) => setForm(prev => ({ ...prev, nationalite: value }))}
             required
-            className="w-full border rounded-xl p-3 pl-10 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-700"
           >
-            <option value="">Sélectionnez votre nationalité</option>
-            {countries.map(country => (
-              <option key={country} value={country}>
-                {country}
-              </option>
-            ))}
-          </select>
-        </div>
-      </div>
-      <div>
-        <label className="font-medium text-gray-900 dark:text-gray-100" htmlFor="date_naissance">Date de naissance *</label>
-        <div className="relative mt-1">
-          <CalendarIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 h-4 w-4" />
-          <input id="date_naissance" type="date" name="date_naissance" value={form.date_naissance} className="w-full border rounded-xl p-3 pl-10 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-700" onChange={handleChange} />
-        </div>
-      </div>
-      <div>
-        <label className="font-medium text-gray-900 dark:text-gray-100" htmlFor="telephone">Téléphone *</label>
-        <div className="relative mt-1">
-          <Phone className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 h-4 w-4" />
-          <input id="telephone" name="telephone" value={form.telephone} required placeholder="Téléphone *" className="w-full border rounded-xl p-3 pl-10 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-700 placeholder:text-gray-400 dark:placeholder:text-gray-500" onChange={handleChange} />
-        </div>
-      </div>
-      <div>
-        <label className="font-medium text-gray-900 dark:text-gray-100" htmlFor="email">Email</label>
-        <div className="relative mt-1">
-          <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 h-4 w-4" />
-          <input id="email" type="email" name="email" value={form.email} placeholder="Email" className="w-full border rounded-xl p-3 pl-10 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-700 placeholder:text-gray-400 dark:placeholder:text-gray-500" onChange={handleChange} />
-        </div>
-      </div>
-      <div>
-        <label className="font-medium text-gray-900 dark:text-gray-100" htmlFor="profession">Occupation professionnelle *</label>
-        <div className="relative mt-1">
-          <Briefcase className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 h-4 w-4" />
-          <input id="profession" name="profession" value={form.profession} required placeholder="Occupation professionnelle *" className="w-full border rounded-xl p-3 pl-10 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-700 placeholder:text-gray-400 dark:placeholder:text-gray-500" onChange={handleChange} />
+            <SelectTrigger className="pl-10">
+              <SelectValue placeholder="Sélectionnez votre nationalité" />
+            </SelectTrigger>
+            <SelectContent>
+              {countries.map(country => (
+                <SelectItem key={country} value={country}>
+                  {country}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
       </div>
 
-      <div>
-        <label className="font-medium text-gray-900 dark:text-gray-100">Baptisé(e) *</label>
-        <div className="mt-2 space-y-2">
+      {/* Date de naissance */}
+      <div className="grid gap-2">
+        <Label htmlFor="date_naissance">Date de naissance *</Label>
+        <div className="relative">
+          <CalendarIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground h-4 w-4" />
+          <Input
+            id="date_naissance"
+            type="date"
+            name="date_naissance"
+            value={form.date_naissance}
+            className="pl-10"
+            onChange={handleChange}
+          />
+        </div>
+      </div>
+
+      {/* Téléphone */}
+      <div className="grid gap-2">
+        <Label htmlFor="telephone">Téléphone *</Label>
+        <div className="relative">
+          <Phone className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground h-4 w-4" />
+          <Input
+            id="telephone"
+            name="telephone"
+            value={form.telephone}
+            required
+            placeholder="Téléphone *"
+            className="pl-10"
+            onChange={handleChange}
+          />
+        </div>
+      </div>
+
+      {/* Email */}
+      <div className="grid gap-2">
+        <Label htmlFor="email">Email</Label>
+        <div className="relative">
+          <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground h-4 w-4" />
+          <Input
+            id="email"
+            type="email"
+            name="email"
+            value={form.email}
+            placeholder="Email"
+            className="pl-10"
+            onChange={handleChange}
+          />
+        </div>
+      </div>
+
+      {/* Profession */}
+      <div className="grid gap-2">
+        <Label htmlFor="profession">Occupation professionnelle *</Label>
+        <div className="relative">
+          <Briefcase className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground h-4 w-4" />
+          <Input
+            id="profession"
+            name="profession"
+            value={form.profession}
+            required
+            placeholder="Occupation professionnelle *"
+            className="pl-10"
+            onChange={handleChange}
+          />
+        </div>
+      </div>
+
+      {/* Baptisé */}
+      <div className="grid gap-2">
+        <Label>Baptisé(e) *</Label>
+        <div className="space-y-2">
           {["Oui", "Non"].map(b => (
-            <label key={b} className="flex items-center gap-2 text-gray-900 dark:text-gray-100">
+            <label key={b} className="flex items-center gap-2 cursor-pointer">
               <input
                 type="radio"
                 name="baptise"
@@ -362,76 +416,97 @@ export default function MemberRegistrationForm({ isEdit, initialData, onSuccess 
                 checked={form.baptise === b}
                 onChange={handleChange}
                 required
-                className="bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-700"
+                className="h-4 w-4"
               />
-              {b}
+              <span className="text-sm">{b}</span>
             </label>
           ))}
         </div>
       </div>
 
-      <div>
-        <label className="font-medium text-gray-900 dark:text-gray-100" htmlFor="date_bapteme">Date ou année de baptême</label>
-        <div className="relative mt-1">
-          <Droplet className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 h-4 w-4" />
-          <input id="date_bapteme" name="date_bapteme" value={form.date_bapteme} placeholder="Date ou année de baptême" className="w-full border rounded-xl p-3 pl-10 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-700 placeholder:text-gray-400 dark:placeholder:text-gray-500" onChange={handleChange} />
-        </div>
-      </div>
-      <div>
-        <label className="font-medium text-gray-900 dark:text-gray-100" htmlFor="adresse">Adresse / Quartier *</label>
-        <div className="relative mt-1">
-          <Home className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 h-4 w-4" />
-          <input id="adresse" name="adresse" value={form.adresse} required placeholder="Adresse / Quartier *" className="w-full border rounded-xl p-3 pl-10 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 border-gray-300 dark:border-gray-700 placeholder:text-gray-400 dark:placeholder:text-gray-500" onChange={handleChange} />
+      {/* Date de baptême */}
+      <div className="grid gap-2">
+        <Label htmlFor="date_bapteme">Date ou année de baptême</Label>
+        <div className="relative">
+          <Droplet className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground h-4 w-4" />
+          <Input
+            id="date_bapteme"
+            name="date_bapteme"
+            value={form.date_bapteme}
+            placeholder="Date ou année de baptême"
+            className="pl-10"
+            onChange={handleChange}
+          />
         </div>
       </div>
 
-      <div>
-        <label className="font-medium text-gray-900 dark:text-gray-100">Commissions *</label>
-        <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2">
+      {/* Adresse */}
+      <div className="grid gap-2">
+        <Label htmlFor="adresse">Adresse / Quartier *</Label>
+        <div className="relative">
+          <Home className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground h-4 w-4" />
+          <Input
+            id="adresse"
+            name="adresse"
+            value={form.adresse}
+            required
+            placeholder="Adresse / Quartier *"
+            className="pl-10"
+            onChange={handleChange}
+          />
+        </div>
+      </div>
+
+      {/* Commissions */}
+      <div className="grid gap-2">
+        <Label>Commissions *</Label>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
           {commissionsList.map(c => (
-            <label key={c} className="flex items-center gap-2 text-gray-900 dark:text-gray-100">
+            <label key={c} className="flex items-center gap-2 cursor-pointer">
               <input
                 type="checkbox"
                 checked={form.commissions.includes(c)}
                 onChange={() => toggleCommission(c)}
-                className="bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-700"
+                className="h-4 w-4"
               />
-              {c}
+              <span className="text-sm">{c}</span>
             </label>
           ))}
         </div>
       </div>
 
+      {/* Consent */}
       {!isEdit && (
-      <div className="border rounded-xl p-4 bg-gray-50 dark:bg-gray-800 border-gray-300 dark:border-gray-700">
-        <label className="flex items-start gap-3 text-sm text-gray-900 dark:text-gray-100">
-          <input
-            type="checkbox"
-            name="consent"
-            checked={form.consent}
-            onChange={handleChange}
-            required
-            className="mt-0.5 bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-700"
-          />
-          <span>
-            J'ai lu et j'accepte la{" "}
-            <Link href="/politique-de-confidentialite" target="_blank" className="text-primary underline hover:text-primary/80">
-              politique de confidentialité
-            </Link>.
-          </span>
-        </label>
-      </div>
+        <div className="border rounded-lg p-4 bg-muted/50">
+          <label className="flex items-start gap-3 text-sm cursor-pointer">
+            <input
+              type="checkbox"
+              name="consent"
+              checked={form.consent}
+              onChange={handleChange}
+              required
+              className="h-4 w-4 mt-0.5"
+            />
+            <span>
+              J'ai lu et j'accepte la{" "}
+              <Link
+                href="/politique-de-confidentialite"
+                target="_blank"
+                className="text-primary underline hover:text-primary/80"
+              >
+                politique de confidentialité
+              </Link>
+              .
+            </span>
+          </label>
+        </div>
       )}
 
-      {error && <p className="text-red-600 dark:text-red-400 text-sm">{error}</p>}
+      {error && <p className="text-sm text-red-500 dark:text-red-400">{error}</p>}
 
-      <button
-        type="submit"
-        disabled={loading}
-        className="w-full bg-primary text-primary-foreground py-3 rounded-xl font-semibold disabled:opacity-60 hover:bg-primary/90 transition-colors"
-      >
+      <Button type="submit" className="w-full" disabled={loading}>
         {loading ? "Envoi en cours..." : isEdit ? "Modifier" : "Soumettre"}
-      </button>
+      </Button>
     </form>
   );
 }
