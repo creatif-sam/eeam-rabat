@@ -50,3 +50,20 @@ self.addEventListener('fetch', (event) => {
       })
   );
 });
+  // Listen for push events and show notifications
+  self.addEventListener('push', function(event) {
+    let data = {};
+    if (event.data) {
+      data = event.data.json();
+    }
+    const title = data.title || 'EEAM Notification';
+    const options = {
+      body: data.body || 'You have a new notification.',
+      icon: '/images/eeam-logo.png',
+      badge: '/images/eeam-logo.png',
+      data: data.url || '/'
+    };
+    event.waitUntil(
+      self.registration.showNotification(title, options)
+    );
+  });
