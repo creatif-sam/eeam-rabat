@@ -388,7 +388,7 @@ export default function EventsTab() {
               <div className="flex items-center gap-2 mb-2">
                 <span className={`w-2 h-2 rounded-full flex-shrink-0 ${ev.color || "bg-blue-500"}`} />
                 <p className="font-semibold text-sm md:text-base text-gray-800 dark:text-gray-200">{ev.title}</p>
-                {ev.is_recurring && <RefreshCw size={12} className="text-gray-400 dark:text-gray-500 flex-shrink-0" title="Récurrent" />}
+                {ev.is_recurring && <span title="Récurrent"><RefreshCw size={12} className="text-gray-400 dark:text-gray-500 flex-shrink-0" /></span>}
               </div>
               <div className="space-y-1">
                 <p className="text-xs md:text-sm text-gray-500 dark:text-gray-400 flex items-center gap-2">
