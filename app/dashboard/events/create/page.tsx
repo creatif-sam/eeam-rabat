@@ -110,6 +110,7 @@ export default function CreateEventPage() {
               <label className={labelCls}>Type</label>
               <select name="type" value={form.type} onChange={handleChange} className={inputCls} autoComplete="off">
                 <option value="worship">Culte</option>
+                <option value="reunion">Réunion</option>
                 <option value="formation">Formation</option>
                 <option value="prayer">Prière</option>
                 <option value="youth">Jeunes</option>

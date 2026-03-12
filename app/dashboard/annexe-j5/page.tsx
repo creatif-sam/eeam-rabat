@@ -180,14 +180,13 @@ export default function J5AnnexeTab() {
             className={`px-6 py-2 rounded-lg ${
               selectedView === v
                 ? "text-white"
-                : "text-gray-600"
+                : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
             }`}
             style={{
               backgroundColor:
                 selectedView === v ? "#b92b39" : "transparent",
               color: selectedView === v ? "white" : undefined
             }}
-            className={selectedView !== v ? "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white" : ""}
           >
             {v === "overview"
               ? "Vue d’ensemble"

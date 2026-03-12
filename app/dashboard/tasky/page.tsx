@@ -95,7 +95,7 @@ export default function TaskyPage() {
   const loadAll = useCallback(async () => {
     const [{ data: p }, { data: pr }, { data: t }] = await Promise.all([
       supabase.from("projects").select("*").order("created_at"),
-      supabase.from("profiles").select("id, full_name, avatar_url").order("full_name"),
+      supabase.from("profiles").select("id, full_name, avatar_url, email").order("full_name"),
       supabase.from("tasks").select("*").order("created_at", { ascending: false }),
     ]);
     setProjects(p || []);
@@ -136,6 +136,33 @@ export default function TaskyPage() {
     loadAll();
   }
 
+  async function sendTaskAssignmentEmail(assignedToId: string, taskTitle: string, projectName: string, priority: string, dueDate?: string) {
+    const profile = profiles.find(p => p.id === assignedToId);
+    if (!profile?.email) return;
+    const priorityLabels: Record<string, string> = { low: "Basse", medium: "Moyenne", high: "Elevée" };
+    const html = `
+      <div style="font-family:sans-serif;max-width:520px;margin:auto;padding:32px 24px;background:#f9fafb;border-radius:12px">
+        <h2 style="color:#0e7490;margin-bottom:8px">📋 Nouvelle tâche assignée</h2>
+        <p style="color:#374151">Bonjour <strong>${profile.full_name}</strong>,</p>
+        <p style="color:#374151">Une tâche vous a été assignée dans le projet <strong>${projectName}</strong>.</p>
+        <div style="background:#fff;border:1px solid #e5e7eb;border-radius:8px;padding:16px;margin:20px 0">
+          <p style="margin:4px 0;color:#374151"><strong>Tâche :</strong> ${taskTitle}</p>
+          <p style="margin:4px 0;color:#374151"><strong>Priorité :</strong> ${priorityLabels[priority] ?? priority}</p>
+          ${dueDate ? `<p style="margin:4px 0;color:#374151"><strong>Échéance :</strong> ${new Date(dueDate).toLocaleDateString("fr-FR")}</p>` : ""}
+        </div>
+        <p style="color:#6b7280;font-size:13px;margin-top:24px">Église EEAM — Planify</p>
+      </div>`;
+    fetch("/api/send-email", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        to: profile.email,
+        subject: `Tâche assignée : ${taskTitle} — EEAM Planify`,
+        html,
+      }),
+    });
+  }
+
   async function createTask() {
     if (!taskForm.title.trim()) { toast.error("Le titre est requis"); return; }
     if (!activeProject) { toast.error("Selectionnez un projet"); return; }
@@ -149,6 +176,10 @@ export default function TaskyPage() {
     setLoadingAction(false);
     if (error) { toast.error("Impossible de creer la tache"); return; }
     toast.success("Tache ajoutee !");
+    if (taskForm.assigned_to) {
+      const proj = projects.find(p => p.id === activeProject);
+      sendTaskAssignmentEmail(taskForm.assigned_to, taskForm.title, proj?.name ?? "Projet", taskForm.priority, taskForm.due_date || undefined);
+    }
     setTaskForm({ title: "", description: "", status: "backlog", priority: "medium", due_date: "", assigned_to: "" });
     setShowTaskModal(false);
     loadAll();
@@ -183,6 +214,10 @@ export default function TaskyPage() {
     setLoadingAction(false);
     if (error) { toast.error("Erreur lors de la sauvegarde"); return; }
     toast.success("Tache mise a jour");
+    if (editingTask.assigned_to) {
+      const proj = projects.find(p => p.id === editingTask.project_id);
+      sendTaskAssignmentEmail(editingTask.assigned_to, editingTask.title, proj?.name ?? "Projet", editingTask.priority, editingTask.due_date || undefined);
+    }
     setTasks(prev => prev.map(t => t.id === editingTask.id ? editingTask : t));
     setSelectedTask(editingTask);
     setEditingTask(null);

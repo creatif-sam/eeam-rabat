@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { Eye, CheckCircle } from "lucide-react";
+import { toast } from "sonner";
 
 type Counselling = {
   id: string;
@@ -12,8 +13,35 @@ type Counselling = {
   phone: string;
   email: string | null;
   reason: string;
+  confirmed?: boolean;
   pastors: { name: string } | null;
 };
+
+async function sendConfirmationEmail(item: Counselling) {
+  if (!item.email) return;
+  const html = `
+    <div style="font-family:sans-serif;max-width:520px;margin:auto;padding:32px 24px;background:#f9fafb;border-radius:12px">
+      <h2 style="color:#0e7490;margin-bottom:8px">✅ Entretien pastoral confirmé</h2>
+      <p style="color:#374151;margin-bottom:16px">Bonjour <strong>${item.full_name}</strong>,</p>
+      <p style="color:#374151">Votre entretien pastoral a été <strong>confirmé</strong>.</p>
+      <div style="background:#fff;border:1px solid #e5e7eb;border-radius:8px;padding:16px;margin:20px 0">
+        <p style="margin:4px 0;color:#374151"><strong>Date :</strong> ${new Date(item.counselling_date).toLocaleDateString("fr-FR", { weekday:"long", year:"numeric", month:"long", day:"numeric" })}</p>
+        <p style="margin:4px 0;color:#374151"><strong>Heure :</strong> ${item.counselling_time}</p>
+        ${item.pastors ? `<p style="margin:4px 0;color:#374151"><strong>Pasteur :</strong> ${item.pastors.name}</p>` : ""}
+      </div>
+      <p style="color:#6b7280;font-size:13px">En cas de besoin, n’hésitez pas à nous contacter.</p>
+      <p style="color:#6b7280;font-size:13px;margin-top:24px">Église EEAM — Rabat</p>
+    </div>`;
+  await fetch("/api/send-email", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      to: item.email,
+      subject: "Confirmation de votre entretien pastoral — EEAM Rabat",
+      html,
+    }),
+  });
+}
 
 export default function PastoralCounsellingList() {
   const supabase = createClient();
@@ -172,7 +200,19 @@ export default function PastoralCounsellingList() {
                         </button>
 
                         <button
-                          onClick={() => alert("Entretien confirmé")}
+                          onClick={async () => {
+                            await supabase
+                              .from("pastoral_counselling")
+                              .update({ confirmed: true })
+                              .eq("id", item.id);
+                            await sendConfirmationEmail(item);
+                            toast.success(
+                              item.email
+                                ? `Entretien confirmé — email envoyé à ${item.email}`
+                                : "Entretien confirmé (pas d’email renseigné)"
+                            );
+                            loadCounselling();
+                          }}
                           className="flex items-center gap-1 px-3 py-2 rounded-lg bg-green-600 text-white text-xs font-medium hover:bg-green-700"
                         >
                           <CheckCircle size={14} />

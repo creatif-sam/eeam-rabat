@@ -32,6 +32,25 @@ type Event = {
   date: Date;
 };
 
+const TYPE_LABELS: Record<string, string> = {
+  worship: "Culte",
+  formation: "Formation",
+  prayer: "Prière",
+  youth: "Jeunes",
+  baptism: "Baptême",
+  leadership: "Leadership",
+  special: "Spécial",
+  reunion: "Réunion",
+};
+
+const RECURRING_LABELS: Record<string, string> = {
+  daily: "Quotidien",
+  weekly: "Hebdomadaire",
+  monthly: "Mensuel",
+  yearly: "Annuel",
+  none: "Non",
+};
+
 // Expand recurring events into virtual occurrences for the given month
 function expandEventsForMonth(events: Event[], year: number, month: number): Event[] {
   const monthStart = new Date(year, month, 1);
@@ -163,17 +182,19 @@ export default function EventsTab() {
 
   const exportExcel = () => {
     const monthLabel = `${monthNames[currentDate.getMonth()]} ${currentDate.getFullYear()}`;
-    const rows = getMonthEventsForExport().map(e => ({
+    const evts = getMonthEventsForExport();
+    const rows = evts.map((e, i) => ({
+      "#": i + 1,
       Titre: e.title,
-      "Date début": e.event_date,
-      "Date fin": e.end_date ?? e.event_date,
+      "Date début": new Date(e.event_date).toLocaleDateString("fr-FR"),
+      "Date fin": e.end_date ? new Date(e.end_date).toLocaleDateString("fr-FR") : new Date(e.event_date).toLocaleDateString("fr-FR"),
       "Heure début": e.start_time,
       "Heure fin": e.end_time,
-      Type: e.type,
+      Type: TYPE_LABELS[e.type] ?? e.type,
       Lieu: e.location,
       "En ligne": e.is_online ? "Oui" : "Non",
       Participants: e.attendees,
-      Récurrent: e.is_recurring ? (e.recurring_type ?? "") : "Non",
+      Récurrent: e.is_recurring ? (RECURRING_LABELS[e.recurring_type ?? ""] ?? e.recurring_type ?? "Oui") : "Non",
       Description: e.description ?? "",
     }));
 
@@ -204,19 +225,22 @@ export default function EventsTab() {
 
     autoTable(doc, {
       startY: 28,
-      head: [["Titre", "Date début", "Heure", "Type", "Lieu", "Participants", "Récurrent"]],
-      body: rows.map(e => [
+      head: [["#", "Titre", "Date début", "Heure", "Type", "Lieu", "En ligne", "Participants", "Récurrent"]],
+      body: rows.map((e, i) => [
+        (i + 1).toString(),
         e.title,
         new Date(e.event_date).toLocaleDateString("fr-FR"),
         `${e.start_time} - ${e.end_time}`,
-        e.type,
-        e.location,
+        TYPE_LABELS[e.type] ?? e.type,
+        e.is_online ? e.location : e.location,
+        e.is_online ? `Oui — ${e.location}` : "Non",
         e.attendees.toString(),
-        e.is_recurring ? (e.recurring_type ?? "oui") : "non",
+        e.is_recurring ? (RECURRING_LABELS[e.recurring_type ?? ""] ?? e.recurring_type ?? "Oui") : "Non",
       ]),
-      styles: { fontSize: 9, cellPadding: 3 },
+      styles: { fontSize: 8, cellPadding: 2.5 },
       headStyles: { fillColor: [6, 182, 212], textColor: 255, fontStyle: "bold" },
       alternateRowStyles: { fillColor: [240, 253, 255] },
+      columnStyles: { 0: { cellWidth: 8 }, 5: { cellWidth: 36 }, 6: { cellWidth: 36 } },
       theme: "striped",
     });
 
@@ -415,17 +439,37 @@ export default function EventsTab() {
             )}
 
             <div className="space-y-3 mb-6">
-              {[
-                { icon: Calendar, text: selectedEvent.date.toLocaleDateString("fr-FR", { weekday: "long", year: "numeric", month: "long", day: "numeric" }) },
-                { icon: Clock, text: `${selectedEvent.start_time} - ${selectedEvent.end_time}` },
-                { icon: MapPin, text: selectedEvent.location },
-                { icon: Users, text: `${selectedEvent.attendees} participants` },
-              ].map(({ icon: Icon, text }) => text ? (
-                <div key={text} className="flex items-center gap-2.5 text-sm md:text-base text-gray-700 dark:text-gray-300">
-                  <Icon size={16} className="text-gray-400 dark:text-gray-500 shrink-0" />
-                  <span>{text}</span>
+              <div className="flex items-center gap-2.5 text-sm md:text-base text-gray-700 dark:text-gray-300">
+                <Calendar size={16} className="text-gray-400 dark:text-gray-500 shrink-0" />
+                <span>{selectedEvent.date.toLocaleDateString("fr-FR", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}</span>
+              </div>
+              <div className="flex items-center gap-2.5 text-sm md:text-base text-gray-700 dark:text-gray-300">
+                <Clock size={16} className="text-gray-400 dark:text-gray-500 shrink-0" />
+                <span>{selectedEvent.start_time} - {selectedEvent.end_time}</span>
+              </div>
+              {selectedEvent.location && (
+                <div className="flex items-center gap-2.5 text-sm md:text-base text-gray-700 dark:text-gray-300">
+                  <MapPin size={16} className="text-gray-400 dark:text-gray-500 shrink-0" />
+                  {selectedEvent.is_online && /^https?:\/\//i.test(selectedEvent.location) ? (
+                    <a
+                      href={selectedEvent.location}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-cyan-600 dark:text-cyan-400 underline underline-offset-2 hover:text-cyan-700 dark:hover:text-cyan-300 break-all"
+                    >
+                      {selectedEvent.location}
+                    </a>
+                  ) : (
+                    <span>{selectedEvent.location}</span>
+                  )}
                 </div>
-              ) : null)}
+              )}
+              {selectedEvent.attendees > 0 && (
+                <div className="flex items-center gap-2.5 text-sm md:text-base text-gray-700 dark:text-gray-300">
+                  <Users size={16} className="text-gray-400 dark:text-gray-500 shrink-0" />
+                  <span>{selectedEvent.attendees} participants</span>
+                </div>
+              )}
             </div>
 
             <div className="flex flex-col sm:flex-row gap-3">
