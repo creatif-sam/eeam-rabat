@@ -318,7 +318,12 @@ export default function MemberRegistrationForm({ isEdit, initialData, onSuccess 
         <div className="p-4 rounded-2xl bg-primary/5 dark:bg-primary/10 border border-primary/20">
           <label className="flex items-start gap-3 text-sm dark:text-gray-300 cursor-pointer">
             <input type="checkbox" name="consent" checked={form.consent} onChange={handleChange} required className="mt-1 w-4 h-4 text-primary" />
-            <span>J'accepte la politique de confidentialité.</span>
+            <span>
+              J&apos;accepte la{" "}
+              <Link href="/politique-de-confidentialite" target="_blank" className="text-primary underline hover:text-primary/80 font-medium">
+                politique de confidentialité
+              </Link>.
+            </span>
           </label>
         </div>
         )}

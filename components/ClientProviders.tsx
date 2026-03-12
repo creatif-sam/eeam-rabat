@@ -2,6 +2,7 @@
 
 import { ThemeProvider } from "next-themes"
 import { useEffect, useState } from "react"
+import { Toaster } from "sonner"
 import CookieBanner from "@/components/CookieBanner"
 import { CookieManager } from "@/components/CookieManager"
 import PWAInstallPrompt from "@/components/PWAInstallPrompt"
@@ -22,6 +23,7 @@ export default function ClientProviders({
     <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
       <NormalizeBody />
       {children}
+      <Toaster richColors position="top-right" />
       <CookieManager />
       {mounted && <CookieBanner />}
       <PWAInstallPrompt />

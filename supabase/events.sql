@@ -1,1 +1,0 @@
-SQL script to create the `events` table in Supabase and populate it with sample data.

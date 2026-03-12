@@ -1,15 +1,19 @@
 "use client";
 
 import { useState } from "react";
-import { Save, CheckCircle, AlertCircle } from "lucide-react";
+import { Save } from "lucide-react";
+import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
+
+const inputClass = "w-full px-4 py-3 rounded-xl border transition-all focus:outline-none focus:ring-2 " +
+  "bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 " +
+  "border-gray-200 dark:border-gray-700 placeholder:text-gray-400 dark:placeholder:text-gray-500 " +
+  "focus:ring-cyan-500 dark:focus:ring-cyan-400";
 
 export default function VolunteerForm() {
   const supabase = createClient();
 
   const [loading, setLoading] = useState(false);
-  const [success, setSuccess] = useState(false);
-  const [error, setError] = useState("");
 
   const [form, setForm] = useState({
     first_name: "",
@@ -40,106 +44,35 @@ export default function VolunteerForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setError("");
 
-    const { error } = await supabase
-      .from("volunteer_requests")
-      .insert(form);
-
+    const { error } = await supabase.from("volunteer_requests").insert(form);
     setLoading(false);
 
     if (error) {
-      setError(
-        "Une erreur est survenue. Veuillez informer un responsable."
-      );
+      toast.error("Une erreur est survenue. Veuillez informer un responsable.");
       return;
     }
 
-    setSuccess(true);
-    setForm({
-      first_name: "",
-      last_name: "",
-      email: "",
-      phone: "",
-      ministry: "",
-      skills: "",
-      availability: []
-    });
+    toast.success("Candidature envoyée ! Nous vous contacterons bientôt.");
+    setForm({ first_name: "", last_name: "", email: "", phone: "", ministry: "", skills: "", availability: [] });
   };
-
-  if (success) {
-    return (
-      <div className="bg-green-50 border border-green-200 rounded-xl p-6 text-center space-y-3">
-        <CheckCircle className="mx-auto text-green-600" size={40} />
-        <h3 className="font-semibold text-green-800">
-          Candidature envoyée
-        </h3>
-        <p className="text-sm text-green-700">
-          Merci pour votre disponibilité. Nous vous contacterons bientôt.
-        </p>
-        <button
-          onClick={() => setSuccess(false)}
-          className="px-4 py-2 bg-green-600 text-white rounded-md text-sm"
-        >
-          Envoyer une autre candidature
-        </button>
-      </div>
-    );
-  }
 
   return (
     <form onSubmit={handleSubmit} className="max-w-xl space-y-6">
-      {error && (
-        <div className="flex items-center gap-2 bg-red-50 border border-red-200 rounded-md p-3 text-sm text-red-700">
-          <AlertCircle size={16} />
-          {error}
-        </div>
-      )}
-
       <div className="grid md:grid-cols-2 gap-4">
-        <input
-          name="first_name"
-          placeholder="Prénom"
-          required
-          value={form.first_name}
-          onChange={handleChange}
-          className="border rounded-md px-4 py-2"
-        />
-        <input
-          name="last_name"
-          placeholder="Nom"
-          required
-          value={form.last_name}
-          onChange={handleChange}
-          className="border rounded-md px-4 py-2"
-        />
+        <input name="first_name" placeholder="Prénom" required value={form.first_name}
+          onChange={handleChange} className={inputClass} />
+        <input name="last_name" placeholder="Nom" required value={form.last_name}
+          onChange={handleChange} className={inputClass} />
       </div>
 
-      <input
-        name="email"
-        type="email"
-        placeholder="Email"
-        value={form.email}
-        onChange={handleChange}
-        className="border rounded-md px-4 py-2 w-full"
-      />
+      <input name="email" type="email" placeholder="Email" value={form.email}
+        onChange={handleChange} className={inputClass} />
 
-      <input
-        name="phone"
-        placeholder="Téléphone"
-        required
-        value={form.phone}
-        onChange={handleChange}
-        className="border rounded-md px-4 py-2 w-full"
-      />
+      <input name="phone" placeholder="Téléphone" required value={form.phone}
+        onChange={handleChange} className={inputClass} />
 
-      <select
-        name="ministry"
-        required
-        value={form.ministry}
-        onChange={handleChange}
-        className="border rounded-md px-4 py-2 w-full"
-      >
+      <select name="ministry" required value={form.ministry} onChange={handleChange} className={inputClass}>
         <option value="">Ministère d’intérêt</option>
         <option value="Louange">Louange et Musique</option>
         <option value="Accueil">Accueil</option>
@@ -151,33 +84,23 @@ export default function VolunteerForm() {
         <option value="Logistique">Logistique</option>
       </select>
 
-      <textarea
-        name="skills"
-        rows={3}
-        placeholder="Compétences et talents"
-        value={form.skills}
-        onChange={handleChange}
-        className="border rounded-md px-4 py-2 w-full"
-      />
+      <textarea name="skills" rows={3} placeholder="Compétences et talents" value={form.skills}
+        onChange={handleChange} className={inputClass} />
 
       <div className="space-y-2">
+        <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Disponibilité</p>
         {["Dimanche", "Semaine", "Événements"].map(opt => (
-          <label key={opt} className="flex items-center gap-2 text-sm">
-            <input
-              type="checkbox"
-              checked={form.availability.includes(opt)}
+          <label key={opt} className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300 cursor-pointer">
+            <input type="checkbox" checked={form.availability.includes(opt)}
               onChange={() => toggleAvailability(opt)}
-            />
+              className="w-4 h-4 rounded accent-cyan-500" />
             {opt}
           </label>
         ))}
       </div>
 
-      <button
-        type="submit"
-        disabled={loading}
-        className="w-full flex justify-center items-center gap-2 bg-cyan-600 text-white py-3 rounded-md"
-      >
+      <button type="submit" disabled={loading}
+        className="w-full flex justify-center items-center gap-2 bg-gradient-to-r from-cyan-500 to-emerald-600 text-white py-3 rounded-xl font-medium shadow-lg hover:from-cyan-600 hover:to-emerald-700 transition disabled:opacity-60">
         <Save size={18} />
         {loading ? "Envoi en cours..." : "Soumettre ma candidature"}
       </button>

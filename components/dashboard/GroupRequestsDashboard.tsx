@@ -79,12 +79,12 @@ export default function GroupRequestsDashboard() {
         {Object.entries(stats).map(([group, count]) => (
           <div
             key={group}
-            className="border rounded-xl p-4 bg-gray-50 flex items-center gap-3"
+            className="border border-gray-200 dark:border-gray-700 rounded-xl p-4 bg-gray-50 dark:bg-gray-800 flex items-center gap-3"
           >
             <Users className="text-cyan-600" />
             <div>
-              <p className="text-sm text-gray-500">{group}</p>
-              <p className="text-xl font-bold text-gray-800">{count}</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">{group}</p>
+              <p className="text-xl font-bold text-gray-800 dark:text-white">{count}</p>
             </div>
           </div>
         ))}
@@ -92,9 +92,9 @@ export default function GroupRequestsDashboard() {
 
       {/* Table */}
       <div className="overflow-x-auto">
-        <table className="min-w-full border border-gray-200 rounded-xl overflow-hidden">
-          <thead className="bg-gray-50">
-            <tr className="text-left text-sm text-gray-600">
+        <table className="min-w-full border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden">
+          <thead className="bg-gray-50 dark:bg-gray-700">
+            <tr className="text-left text-sm text-gray-600 dark:text-gray-300">
               <th className="px-4 py-3">Nom</th>
               <th className="px-4 py-3">Téléphone</th>
               <th className="px-4 py-3">Commission</th>
@@ -107,21 +107,21 @@ export default function GroupRequestsDashboard() {
             {requests.map(req => (
               <tr
                 key={req.id}
-                className={`border-t text-sm ${
-                  req.processed ? "bg-green-50" : ""
+                className={`border-t border-gray-100 dark:border-gray-700 text-sm ${
+                  req.processed ? "bg-green-50 dark:bg-green-900/10" : "hover:bg-gray-50 dark:hover:bg-gray-700/50"
                 }`}
               >
-                <td className="px-4 py-3 font-medium">{req.full_name}</td>
-                <td className="px-4 py-3">{req.phone}</td>
-                <td className="px-4 py-3">{req.group.name}</td>
-                <td className="px-4 py-3">
+                <td className="px-4 py-3 font-medium text-gray-800 dark:text-gray-200">{req.full_name}</td>
+                <td className="px-4 py-3 text-gray-700 dark:text-gray-300">{req.phone}</td>
+                <td className="px-4 py-3 text-gray-700 dark:text-gray-300">{req.group.name}</td>
+                <td className="px-4 py-3 text-gray-600 dark:text-gray-400">
                   {new Date(req.created_at).toLocaleDateString()}
                 </td>
                 <td className="px-4 py-3 text-right">
                   <div className="flex justify-end gap-3">
                     <button
                       onClick={() => setSelected(req)}
-                      className="p-2 rounded-lg border hover:bg-gray-100"
+                      className="p-2 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300"
                       title="Voir la demande"
                     >
                       <Eye size={16} />
@@ -156,30 +156,30 @@ export default function GroupRequestsDashboard() {
       {/* View modal */}
       {selected && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-          <div className="bg-white rounded-2xl p-6 w-full max-w-md space-y-4">
-            <h3 className="text-lg font-semibold text-gray-800">
+          <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 w-full max-w-md space-y-4 border border-gray-200 dark:border-gray-700 shadow-xl">
+            <h3 className="text-lg font-semibold text-gray-800 dark:text-white">
               Détails de la demande
             </h3>
 
-            <p><strong>Nom</strong> {selected.full_name}</p>
-            <p><strong>Téléphone</strong> {selected.phone}</p>
+            <p className="text-gray-800 dark:text-gray-200"><strong>Nom</strong> {selected.full_name}</p>
+            <p className="text-gray-800 dark:text-gray-200"><strong>Téléphone</strong> {selected.phone}</p>
             {selected.email && (
-              <p><strong>Email</strong> {selected.email}</p>
+              <p className="text-gray-800 dark:text-gray-200"><strong>Email</strong> {selected.email}</p>
             )}
-            <p><strong>Commission</strong> {selected.group.name}</p>
-            <p>
+            <p className="text-gray-800 dark:text-gray-200"><strong>Commission</strong> {selected.group.name}</p>
+            <p className="text-gray-800 dark:text-gray-200">
               <strong>Date</strong>{" "}
               {new Date(selected.created_at).toLocaleString()}
             </p>
-            <p><strong>Motivation</strong></p>
-            <p className="text-gray-700 text-sm">
+            <p className="text-gray-800 dark:text-gray-200"><strong>Motivation</strong></p>
+            <p className="text-gray-700 dark:text-gray-300 text-sm bg-gray-50 dark:bg-gray-800 p-3 rounded-lg">
               {selected.motivation}
             </p>
 
             <div className="flex justify-end pt-4">
               <button
                 onClick={() => setSelected(null)}
-                className="px-4 py-2 rounded-lg border"
+                className="px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 text-sm"
               >
                 Fermer
               </button>

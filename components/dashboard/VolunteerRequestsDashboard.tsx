@@ -100,7 +100,7 @@ export default function VolunteerRequestsDashboard() {
             onChange={e =>
               setGroupBy(e.target.value as "none" | "ministry" | "availability")
             }
-            className="border rounded-md px-3 py-2 text-sm"
+            className="border border-gray-200 dark:border-gray-700 rounded-md px-3 py-2 text-sm bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 outline-none focus:border-cyan-400 transition-colors"
           >
             <option value="none">Sans regroupement</option>
             <option value="ministry">Par ministère</option>
@@ -120,19 +120,19 @@ export default function VolunteerRequestsDashboard() {
       {/* Grouped tables */}
       {Object.entries(groupedData()).map(([group, rows]) => (
         <div key={group} className="space-y-2">
-          <h3 className="font-semibold text-gray-800">
+          <h3 className="font-semibold text-gray-800 dark:text-white">
             {group} ({rows.length})
           </h3>
 
-          <div className="overflow-x-auto border rounded-md">
+          <div className="overflow-x-auto border border-gray-200 dark:border-gray-700 rounded-md">
             <table className="w-full text-sm">
-              <thead className="bg-gray-50">
+              <thead className="bg-gray-50 dark:bg-gray-700">
                 <tr>
-                  <th className="p-3 text-left">Nom</th>
-                  <th className="p-3">Téléphone</th>
-                  <th className="p-3">Ministère</th>
-                  <th className="p-3">Date</th>
-                  <th className="p-3 text-right">Actions</th>
+                  <th className="p-3 text-left text-gray-700 dark:text-gray-300">Nom</th>
+                  <th className="p-3 text-gray-700 dark:text-gray-300">Téléphone</th>
+                  <th className="p-3 text-gray-700 dark:text-gray-300">Ministère</th>
+                  <th className="p-3 text-gray-700 dark:text-gray-300">Date</th>
+                  <th className="p-3 text-right text-gray-700 dark:text-gray-300">Actions</th>
                 </tr>
               </thead>
 
@@ -140,20 +140,22 @@ export default function VolunteerRequestsDashboard() {
                 {rows.map(v => (
                   <tr
                     key={v.id}
-                    className={v.processed ? "bg-green-50" : ""}
+                    className={`border-t border-gray-100 dark:border-gray-700 ${
+                      v.processed ? "bg-green-50 dark:bg-green-900/10" : "hover:bg-gray-50 dark:hover:bg-gray-700/50"
+                    }`}
                   >
-                    <td className="p-3">
+                    <td className="p-3 text-gray-800 dark:text-gray-200">
                       {v.first_name} {v.last_name}
                     </td>
-                    <td className="p-3">{v.phone}</td>
-                    <td className="p-3">{v.ministry}</td>
-                    <td className="p-3">
+                    <td className="p-3 text-gray-700 dark:text-gray-300">{v.phone}</td>
+                    <td className="p-3 text-gray-700 dark:text-gray-300">{v.ministry}</td>
+                    <td className="p-3 text-gray-600 dark:text-gray-400">
                       {new Date(v.created_at).toLocaleDateString()}
                     </td>
                     <td className="p-3 text-right space-x-2">
                       <button
                         onClick={() => setView(v)}
-                        className="border px-2 py-1 rounded-md"
+                        className="border border-gray-200 dark:border-gray-700 px-2 py-1 rounded-md text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                       >
                         <Eye size={14} />
                       </button>
@@ -161,7 +163,7 @@ export default function VolunteerRequestsDashboard() {
                       {!v.processed && (
                         <button
                           onClick={() => markProcessed(v.id)}
-                          className="border px-2 py-1 rounded-md"
+                          className="border border-gray-200 dark:border-gray-700 px-2 py-1 rounded-md text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                         >
                           <CheckCircle size={14} />
                         </button>
@@ -178,17 +180,17 @@ export default function VolunteerRequestsDashboard() {
       {/* View modal */}
       {view && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-          <div className="bg-white rounded-md p-6 max-w-md w-full space-y-2">
-            <p><strong>Nom :</strong> {view.first_name} {view.last_name}</p>
-            <p><strong>Email :</strong> {view.email || "N/A"}</p>
-            <p><strong>Téléphone :</strong> {view.phone}</p>
-            <p><strong>Ministère :</strong> {view.ministry}</p>
-            <p><strong>Disponibilités :</strong> {view.availability.join(", ")}</p>
-            <p className="text-sm text-gray-600">{view.skills}</p>
+          <div className="bg-white dark:bg-gray-900 rounded-md p-6 max-w-md w-full space-y-2 border border-gray-200 dark:border-gray-700 shadow-xl">
+            <p className="text-gray-800 dark:text-gray-200"><strong>Nom :</strong> {view.first_name} {view.last_name}</p>
+            <p className="text-gray-800 dark:text-gray-200"><strong>Email :</strong> {view.email || "N/A"}</p>
+            <p className="text-gray-800 dark:text-gray-200"><strong>Téléphone :</strong> {view.phone}</p>
+            <p className="text-gray-800 dark:text-gray-200"><strong>Ministère :</strong> {view.ministry}</p>
+            <p className="text-gray-800 dark:text-gray-200"><strong>Disponibilités :</strong> {view.availability.join(", ")}</p>
+            <p className="text-sm text-gray-600 dark:text-gray-400">{view.skills}</p>
 
             <button
               onClick={() => setView(null)}
-              className="mt-4 px-4 py-2 border rounded-md"
+              className="mt-4 px-4 py-2 border border-gray-200 dark:border-gray-700 rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 text-sm"
             >
               Fermer
             </button>

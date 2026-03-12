@@ -1,4 +1,4 @@
-import { Calendar, ChevronRight, Clock, MapPin, Play, Settings, Edit } from "lucide-react"
+import { Calendar, ChevronRight, Clock, MapPin, Play, Users, HandHeart, ClipboardList, FileText, UserCheck, HeartHandshake } from "lucide-react"
 import { createSupabaseServerClient } from "@/lib/supabase/server"
 import WelcomeMessageEditor from "@/components/WelcomeMessageEditor"
 
@@ -16,6 +16,25 @@ export default async function DashboardHome() {
     .maybeSingle()
 
   const hasAvatar = profile?.avatar_url
+
+  // Fetch stats in parallel
+  const [
+    { count: totalMembers },
+    { count: totalCommissions },
+    { count: pendingLeaderRequests },
+    { count: totalPrayerRequests },
+    { count: pendingCounsellingRequests },
+    { count: pendingGroupRequests },
+    { count: pendingVolunteerRequests },
+  ] = await Promise.all([
+    supabase.from("member_registrations").select("*", { count: "exact", head: true }),
+    supabase.from("groupes_commissions").select("*", { count: "exact", head: true }),
+    supabase.from("commission_requests").select("*", { count: "exact", head: true }).eq("processed", false),
+    supabase.from("prayer_requests").select("*", { count: "exact", head: true }),
+    supabase.from("pastoral_counselling").select("*", { count: "exact", head: true }),
+    supabase.from("group_join_requests").select("*", { count: "exact", head: true }).eq("processed", false),
+    supabase.from("volunteer_requests").select("*", { count: "exact", head: true }).eq("processed", false),
+  ])
 
   // Fetch formations data
   const { data: formations } = await supabase
@@ -95,10 +114,80 @@ export default async function DashboardHome() {
         </div>
       </div>
 
+      {/* Overview Stats */}
+      <div className="mt-8 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-4">
+        {[
+          {
+            label: "Membres inscrits",
+            value: totalMembers ?? 0,
+            icon: Users,
+            color: "from-cyan-500 to-blue-600",
+            href: "/dashboard/membres",
+          },
+          {
+            label: "Commissions",
+            value: totalCommissions ?? 0,
+            icon: UserCheck,
+            color: "from-violet-500 to-purple-600",
+            href: "/dashboard/groupes",
+          },
+          {
+            label: "Requêtes responsables",
+            value: pendingLeaderRequests ?? 0,
+            icon: FileText,
+            color: "from-orange-500 to-amber-600",
+            href: "/dashboard/formulaires",
+          },
+          {
+            label: "Sujets de prière",
+            value: totalPrayerRequests ?? 0,
+            icon: HandHeart,
+            color: "from-rose-500 to-pink-600",
+            href: "/dashboard/formulaires",
+          },
+          {
+            label: "Entretiens pastoraux",
+            value: pendingCounsellingRequests ?? 0,
+            icon: ClipboardList,
+            color: "from-teal-500 to-emerald-600",
+            href: "/dashboard/formulaires",
+          },
+          {
+            label: "Rejoindre commission",
+            value: pendingGroupRequests ?? 0,
+            icon: Users,
+            color: "from-indigo-500 to-blue-700",
+            href: "/dashboard/formulaires",
+          },
+          {
+            label: "Bénévoles en attente",
+            value: pendingVolunteerRequests ?? 0,
+            icon: HeartHandshake,
+            color: "from-green-500 to-lime-600",
+            href: "/dashboard/formulaires",
+          },
+        ].map((stat) => {
+          const Icon = stat.icon
+          return (
+            <a
+              key={stat.label}
+              href={stat.href}
+              className="group relative overflow-hidden bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-2xl p-4 shadow-sm hover:shadow-md transition-all hover:-translate-y-0.5"
+            >
+              <div className={`w-10 h-10 rounded-xl bg-gradient-to-br ${stat.color} flex items-center justify-center mb-3 shadow`}>
+                <Icon size={18} className="text-white" />
+              </div>
+              <p className="text-2xl font-bold text-gray-800 dark:text-white">{stat.value.toLocaleString()}</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 leading-snug">{stat.label}</p>
+            </a>
+          )
+        })}
+      </div>
+
       {/* Featured Content */}
       <div className="mt-8">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 md:mb-6 gap-3">
-          <h2 className="text-xl md:text-2xl font-bold text-gray-800">
+          <h2 className="text-xl md:text-2xl font-bold text-gray-800 dark:text-white">
             Formations A Venir
           </h2>
           <button className="text-cyan-600 hover:text-cyan-700 font-medium flex items-center gap-2 justify-center sm:justify-start text-sm md:text-base">

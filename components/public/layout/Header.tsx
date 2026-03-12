@@ -3,12 +3,13 @@
 import Image from "next/image";
 import { LogIn, UserPlus } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { ThemeSwitcher } from "@/components/theme-switcher";
 
 export default function Header({ onLogin, onSignUp }: { onLogin?: () => void; onSignUp?: () => void }) {
   const router = useRouter();
 
   return (
-    <header className="bg-white border-b border-gray-100 shadow-sm">
+    <header className="bg-white dark:bg-gray-950 border-b border-gray-100 dark:border-gray-800 shadow-sm transition-colors duration-300">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4">
         <div className="flex items-center justify-between">
           {/* Logo + Title */}
@@ -24,26 +25,29 @@ export default function Header({ onLogin, onSignUp }: { onLogin?: () => void; on
             </div>
 
             <div className="leading-tight">
-              <h1 className="text-lg sm:text-2xl font-bold text-gray-800">
+              <h1 className="text-lg sm:text-2xl font-bold text-gray-800 dark:text-white">
                 EEAM Rabat
               </h1>
-              <p className="text-xs sm:text-sm text-gray-600">
+              <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
                 Intranet Lead
               </p>
             </div>
           </div>
 
-          {/* Buttons */}
-          <div className="flex gap-3">
+          {/* Buttons + Theme Switcher */}
+          <div className="flex items-center gap-2 sm:gap-3">
+            <ThemeSwitcher />
+
             <button
               onClick={() =>
                 onSignUp ? onSignUp() : router.push("/auth/sign-up")
               }
               className="flex items-center justify-center gap-2
                 px-3 py-3 sm:px-6 sm:py-3
-                bg-white border-2 border-cyan-500 text-cyan-600
+                bg-white dark:bg-gray-900 border-2 border-cyan-500 dark:border-cyan-400
+                text-cyan-600 dark:text-cyan-400
                 rounded-xl shadow-lg
-                hover:bg-cyan-50 transition"
+                hover:bg-cyan-50 dark:hover:bg-gray-800 transition"
               aria-label="S'inscrire"
             >
               <UserPlus size={20} />

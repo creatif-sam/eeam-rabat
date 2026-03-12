@@ -32,10 +32,10 @@ function Detail({
 }) {
   return (
     <div>
-      <p className="text-xs uppercase text-gray-400 tracking-wide">
+      <p className="text-xs uppercase text-gray-400 dark:text-gray-500 tracking-wide">
         {label}
       </p>
-      <p className="mt-1 font-medium text-gray-800">
+      <p className="mt-1 font-medium text-gray-800 dark:text-gray-100">
         {value}
       </p>
     </div>
@@ -153,7 +153,7 @@ export default function AttendanceDashboard() {
     <div className="space-y-6 md:space-y-10">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <h2 className="text-lg md:text-xl font-bold text-gray-800">
+        <h2 className="text-lg md:text-xl font-bold text-gray-800 dark:text-white">
           Tableau d’assiduité
         </h2>
 
@@ -161,7 +161,7 @@ export default function AttendanceDashboard() {
           <select
             value={selectedMonth}
             onChange={e => setSelectedMonth(e.target.value)}
-            className="px-3 py-2 border rounded-lg text-sm w-full sm:w-auto"
+            className="px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg text-sm w-full sm:w-auto bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 outline-none focus:border-cyan-400 transition-colors"
           >
             <option value="">Tous les mois</option>
             {months.map(m => (
@@ -196,8 +196,8 @@ export default function AttendanceDashboard() {
       </div>
 
       {/* Chart */}
-      <div className="bg-white border rounded-2xl p-6">
-        <div className="flex items-center gap-2 mb-4 font-semibold text-gray-800">
+      <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl p-6">
+        <div className="flex items-center gap-2 mb-4 font-semibold text-gray-800 dark:text-gray-100">
           <CalendarDays size={18} />
           Évolution de l’assiduité
         </div>
@@ -223,8 +223,8 @@ export default function AttendanceDashboard() {
       </div>
 
       {/* Table with actions */}
-      <div className="bg-white border rounded-2xl overflow-hidden">
-        <div className="px-4 md:px-6 py-4 border-b font-semibold text-gray-800">
+      <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl overflow-hidden">
+        <div className="px-4 md:px-6 py-4 border-b border-gray-200 dark:border-gray-700 font-semibold text-gray-800 dark:text-white">
           Historique détaillé
         </div>
 
@@ -233,26 +233,26 @@ export default function AttendanceDashboard() {
           {filteredData.map(row => (
             <div
               key={`${row.attendance_date}-${row.service.name}`}
-              className="p-4 border-b last:border-b-0"
+              className="p-4 border-b border-gray-100 dark:border-gray-700 last:border-b-0"
             >
               <div className="flex justify-between items-start mb-3">
                 <div>
-                  <p className="font-medium text-gray-800">
+                  <p className="font-medium text-gray-800 dark:text-gray-100">
                     {new Date(row.attendance_date).toLocaleDateString()}
                   </p>
-                  <p className="text-sm text-gray-600">{row.service.name}</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">{row.service.name}</p>
                 </div>
                 <div className="flex gap-2">
                   <button
                     onClick={() => setViewRow(row)}
-                    className="p-2 rounded-lg border hover:bg-gray-100"
+                    className="p-2 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300"
                     title="Voir"
                   >
                     <Eye size={16} />
                   </button>
                   <button
                     onClick={() => setEditRow(row)}
-                    className="p-2 rounded-lg border hover:bg-gray-100"
+                    className="p-2 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300"
                     title="Modifier"
                   >
                     <Edit size={16} />
@@ -261,24 +261,24 @@ export default function AttendanceDashboard() {
               </div>
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>
-                  <span className="text-gray-500">Culte:</span>
-                  <span className="ml-2 font-medium">{row.culte_total}</span>
+                  <span className="text-gray-500 dark:text-gray-400">Culte:</span>
+                  <span className="ml-2 font-medium text-gray-800 dark:text-gray-200">{row.culte_total}</span>
                 </div>
                 <div>
-                  <span className="text-gray-500">Hommes:</span>
-                  <span className="ml-2 font-medium">{row.hommes}</span>
+                  <span className="text-gray-500 dark:text-gray-400">Hommes:</span>
+                  <span className="ml-2 font-medium text-gray-800 dark:text-gray-200">{row.hommes}</span>
                 </div>
                 <div>
-                  <span className="text-gray-500">Femmes:</span>
-                  <span className="ml-2 font-medium">{row.femmes}</span>
+                  <span className="text-gray-500 dark:text-gray-400">Femmes:</span>
+                  <span className="ml-2 font-medium text-gray-800 dark:text-gray-200">{row.femmes}</span>
                 </div>
                 <div>
-                  <span className="text-gray-500">Enfants:</span>
-                  <span className="ml-2 font-medium">{row.enfants}</span>
+                  <span className="text-gray-500 dark:text-gray-400">Enfants:</span>
+                  <span className="ml-2 font-medium text-gray-800 dark:text-gray-200">{row.enfants}</span>
                 </div>
                 <div className="col-span-2">
-                  <span className="text-gray-500">Nouveaux:</span>
-                  <span className="ml-2 font-medium">{row.nouveaux}</span>
+                  <span className="text-gray-500 dark:text-gray-400">Nouveaux:</span>
+                  <span className="ml-2 font-medium text-gray-800 dark:text-gray-200">{row.nouveaux}</span>
                 </div>
               </div>
             </div>
@@ -288,7 +288,7 @@ export default function AttendanceDashboard() {
         {/* Desktop Table View */}
         <div className="hidden md:block overflow-x-auto">
           <table className="min-w-full text-sm">
-            <thead className="bg-gray-50 text-gray-600">
+            <thead className="bg-gray-50 dark:bg-gray-700 text-gray-600 dark:text-gray-300">
               <tr>
                 <th className="px-4 py-3 text-left">Date</th>
                 <th className="px-4 py-3 text-left">Service</th>
@@ -305,22 +305,22 @@ export default function AttendanceDashboard() {
               {filteredData.map(row => (
                 <tr
                   key={`${row.attendance_date}-${row.service.name}`}
-                  className="border-t"
+                  className="border-t border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
                 >
-                  <td className="px-4 py-3 font-medium">
+                  <td className="px-4 py-3 font-medium text-gray-800 dark:text-gray-200">
                     {new Date(row.attendance_date).toLocaleDateString()}
                   </td>
-                  <td className="px-4 py-3">{row.service.name}</td>
-                  <td className="px-4 py-3 text-center">{row.culte_total}</td>
-                  <td className="px-4 py-3 text-center">{row.hommes}</td>
-                  <td className="px-4 py-3 text-center">{row.femmes}</td>
-                  <td className="px-4 py-3 text-center">{row.enfants}</td>
-                  <td className="px-4 py-3 text-center">{row.nouveaux}</td>
+                  <td className="px-4 py-3 text-gray-700 dark:text-gray-300">{row.service.name}</td>
+                  <td className="px-4 py-3 text-center text-gray-700 dark:text-gray-300">{row.culte_total}</td>
+                  <td className="px-4 py-3 text-center text-gray-700 dark:text-gray-300">{row.hommes}</td>
+                  <td className="px-4 py-3 text-center text-gray-700 dark:text-gray-300">{row.femmes}</td>
+                  <td className="px-4 py-3 text-center text-gray-700 dark:text-gray-300">{row.enfants}</td>
+                  <td className="px-4 py-3 text-center text-gray-700 dark:text-gray-300">{row.nouveaux}</td>
                   <td className="px-4 py-3 text-right">
                     <div className="flex justify-end gap-3">
                       <button
                         onClick={() => setViewRow(row)}
-                        className="p-2 rounded-lg border hover:bg-gray-100"
+                        className="p-2 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300"
                         title="Voir"
                       >
                         <Eye size={16} />
@@ -328,7 +328,7 @@ export default function AttendanceDashboard() {
 
                       <button
                         onClick={() => setEditRow(row)}
-                        className="p-2 rounded-lg border hover:bg-gray-100"
+                        className="p-2 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300"
                         title="Modifier"
                       >
                         <Edit size={16} />
@@ -345,13 +345,13 @@ export default function AttendanceDashboard() {
       {/* View modal */}
     {viewRow && (
   <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
-    <div className="bg-white w-full max-w-lg rounded-xl shadow-xl border border-gray-200 max-h-[90vh] overflow-y-auto">
+    <div className="bg-white dark:bg-gray-900 w-full max-w-lg rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 max-h-[90vh] overflow-y-auto">
       {/* Header */}
-      <div className="px-4 md:px-6 py-4 border-b">
-        <h3 className="text-lg font-semibold text-gray-800">
-          Détails de l’assiduité
+      <div className="px-4 md:px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+        <h3 className="text-lg font-semibold text-gray-800 dark:text-white">
+          Détails de l'assiduité
         </h3>
-        <p className="text-sm text-gray-500">
+        <p className="text-sm text-gray-500 dark:text-gray-400">
           Informations du service enregistré
         </p>
       </div>
@@ -370,10 +370,10 @@ export default function AttendanceDashboard() {
       </div>
 
       {/* Footer */}
-      <div className="px-4 md:px-6 py-4 border-t flex justify-end">
+      <div className="px-4 md:px-6 py-4 border-t border-gray-200 dark:border-gray-700 flex justify-end">
         <button
           onClick={() => setViewRow(null)}
-          className="px-5 py-2 rounded-lg border text-sm font-medium text-gray-700 hover:bg-gray-50 w-full sm:w-auto"
+          className="px-5 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 w-full sm:w-auto"
         >
           Fermer
         </button>
@@ -385,13 +385,13 @@ export default function AttendanceDashboard() {
       {/* Edit modal */}
       {editRow && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl p-4 md:p-6 w-full max-w-md space-y-4 max-h-[90vh] overflow-y-auto">
-            <h3 className="text-lg font-semibold">Modifier</h3>
+          <div className="bg-white dark:bg-gray-900 rounded-2xl p-4 md:p-6 w-full max-w-md space-y-4 max-h-[90vh] overflow-y-auto border border-gray-200 dark:border-gray-700">
+            <h3 className="text-lg font-semibold text-gray-800 dark:text-white">Modifier</h3>
 
             {(["culte_total","hommes","femmes","enfants","nouveaux"] as const).map(
               field => (
                 <div key={field}>
-                  <label className="block text-sm font-medium text-gray-700 mb-1 capitalize">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 capitalize">
                     {field.replace('_', ' ')}
                   </label>
                   <input
@@ -403,7 +403,7 @@ export default function AttendanceDashboard() {
                         [field]: Number(e.target.value)
                       })
                     }
-                    className="w-full px-4 py-2 border rounded-lg text-sm"
+                    className="w-full px-4 py-2 border border-gray-200 dark:border-gray-700 rounded-lg text-sm bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 outline-none focus:border-cyan-400"
                   />
                 </div>
               )
@@ -412,7 +412,7 @@ export default function AttendanceDashboard() {
             <div className="flex flex-col sm:flex-row justify-end gap-3 pt-4">
               <button
                 onClick={() => setEditRow(null)}
-                className="px-4 py-2 border rounded-lg text-sm font-medium w-full sm:w-auto"
+                className="px-4 py-2 border border-gray-200 dark:border-gray-700 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 w-full sm:w-auto"
               >
                 Annuler
               </button>

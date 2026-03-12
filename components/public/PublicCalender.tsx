@@ -92,10 +92,10 @@ export default function PublicCalendar() {
   const calendarDays = [...Array.from({ length: startingDayOfWeek }, () => null), ...Array.from({ length: daysInMonth }, (_, i) => i + 1)];
 
   return (
-    <section className="bg-white dark:bg-gray-950 rounded-[2.5rem] shadow-2xl border border-gray-100 dark:border-gray-800 p-4 sm:p-10 transition-all duration-300">
+    <section className="bg-white dark:bg-gray-900 rounded-2xl sm:rounded-[2.5rem] shadow-2xl border border-gray-100 dark:border-gray-800 p-3 sm:p-10 transition-all duration-300">
       
       {/* HEADER: Month Navigation */}
-      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-6 mb-10">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6 sm:mb-10">
         <div className="space-y-1">
           <h2 className="text-2xl sm:text-3xl font-black flex items-center gap-3 text-gray-900 dark:text-white">
             <div className="p-2 bg-primary/10 rounded-xl">
@@ -125,16 +125,16 @@ export default function PublicCalendar() {
       </div>
 
       {/* GRID: Day Names */}
-      <div className="grid grid-cols-7 gap-2 sm:gap-6 mb-4 px-2">
+      <div className="grid grid-cols-7 gap-1 sm:gap-6 mb-2 sm:mb-4 px-0 sm:px-2">
         {dayNames.map(day => (
-          <div key={day} className="text-center font-black text-[10px] sm:text-xs uppercase tracking-[0.2em] text-gray-400 dark:text-gray-600">
+          <div key={day} className="text-center font-black text-[9px] sm:text-xs uppercase tracking-[0.1em] sm:tracking-[0.2em] text-gray-400 dark:text-gray-600">
             {day}
           </div>
         ))}
       </div>
 
       {/* GRID: Calendar Days */}
-      <div className="grid grid-cols-7 gap-2 sm:gap-4">
+      <div className="grid grid-cols-7 gap-1 sm:gap-4">
         {calendarDays.map((day, index) => {
           if (!day) return <div key={`empty-${index}`} className="aspect-square opacity-0" />;
 
@@ -145,26 +145,42 @@ export default function PublicCalendar() {
           return (
             <div
               key={`${currentDate.getFullYear()}-${currentDate.getMonth()}-${day}`}
-              className={`min-h-[90px] sm:min-h-[130px] border-2 rounded-3xl p-2 sm:p-3 transition-all relative group ${
+              className={`min-h-[46px] sm:min-h-[110px] border-2 rounded-xl sm:rounded-3xl p-1 sm:p-3 transition-all relative group ${
                 isToday
                   ? "bg-primary/[0.03] border-primary shadow-lg shadow-primary/5 dark:bg-primary/5"
                   : "bg-white dark:bg-gray-900 border-gray-50 dark:border-gray-800 hover:border-gray-200 dark:hover:border-gray-700 hover:shadow-md"
               }`}
             >
-              <div className={`font-black text-sm sm:text-lg mb-2 ${isToday ? "text-primary" : "text-gray-400 dark:text-gray-600"}`}>
+              <div className={`font-black text-[10px] sm:text-lg mb-1 sm:mb-2 ${isToday ? "text-primary" : "text-gray-400 dark:text-gray-600"}`}>
                 {day}
               </div>
 
-              <div className="space-y-1.5">
+              {/* Desktop: full event tiles */}
+              <div className="hidden sm:flex flex-col gap-1.5">
                 {dayEvents.map(ev => (
                   <button
                     key={ev.id}
                     onClick={() => setSelectedEvent(ev)}
-                    className={`${ev.color} text-white text-[9px] sm:text-[11px] font-bold px-2 py-1.5 rounded-xl w-full text-left truncate hover:scale-[1.03] transition-transform shadow-sm`}
+                    className={`${ev.color} text-white text-[11px] font-bold px-2 py-1.5 rounded-xl w-full text-left truncate hover:scale-[1.03] transition-transform shadow-sm`}
                   >
                     {ev.title}
                   </button>
                 ))}
+              </div>
+
+              {/* Mobile: colored dot indicators */}
+              <div className="flex sm:hidden flex-wrap gap-0.5 mt-0.5">
+                {dayEvents.slice(0, 3).map(ev => (
+                  <button
+                    key={ev.id}
+                    onClick={() => setSelectedEvent(ev)}
+                    className={`${ev.color} w-2 h-2 rounded-full flex-shrink-0`}
+                    title={ev.title}
+                  />
+                ))}
+                {dayEvents.length > 3 && (
+                  <span className="text-[8px] text-gray-400 leading-none">+{dayEvents.length - 3}</span>
+                )}
               </div>
             </div>
           );

@@ -72,7 +72,7 @@ export default function CommissionRequestsDashboard() {
         <select
           value={filter}
           onChange={e => setFilter(e.target.value)}
-          className="border px-3 py-2 rounded-md text-sm"
+          className="border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 px-3 py-2 rounded-md text-sm outline-none focus:border-cyan-400 transition-colors"
         >
           <option value="all">Toutes les demandes</option>
           <option value="Prière">Prière</option>
@@ -92,15 +92,15 @@ export default function CommissionRequestsDashboard() {
       </div>
 
       {/* Table */}
-      <div className="overflow-x-auto border rounded-md">
+      <div className="overflow-x-auto border border-gray-200 dark:border-gray-700 rounded-md">
         <table className="w-full text-sm">
-          <thead className="bg-gray-50">
+          <thead className="bg-gray-50 dark:bg-gray-800">
             <tr>
-              <th className="p-3 text-left">Responsable</th>
-              <th className="p-3">Type</th>
-              <th className="p-3">Email</th>
-              <th className="p-3">Date</th>
-              <th className="p-3 text-right">Actions</th>
+              <th className="p-3 text-left text-gray-700 dark:text-gray-300">Responsable</th>
+              <th className="p-3 text-gray-700 dark:text-gray-300">Type</th>
+              <th className="p-3 text-gray-700 dark:text-gray-300">Email</th>
+              <th className="p-3 text-gray-700 dark:text-gray-300">Date</th>
+              <th className="p-3 text-right text-gray-700 dark:text-gray-300">Actions</th>
             </tr>
           </thead>
 
@@ -108,18 +108,18 @@ export default function CommissionRequestsDashboard() {
             {data.map(r => (
               <tr
                 key={r.id}
-                className={r.processed ? "bg-green-50" : ""}
+                className={`border-t border-gray-100 dark:border-gray-800 transition-colors ${r.processed ? "bg-green-50 dark:bg-green-900/10" : "hover:bg-gray-50 dark:hover:bg-gray-800/50"}`}
               >
-                <td className="p-3 font-medium">{r.full_name}</td>
-                <td className="p-3">{r.request_type}</td>
-                <td className="p-3">{r.email}</td>
-                <td className="p-3">
+                <td className="p-3 font-medium text-gray-800 dark:text-gray-200">{r.full_name}</td>
+                <td className="p-3 text-gray-700 dark:text-gray-300">{r.request_type}</td>
+                <td className="p-3 text-gray-700 dark:text-gray-300">{r.email}</td>
+                <td className="p-3 text-gray-600 dark:text-gray-400">
                   {new Date(r.created_at).toLocaleDateString()}
                 </td>
                 <td className="p-3 text-right space-x-2">
                   <button
                     onClick={() => setView(r)}
-                    className="border px-2 py-1 rounded-md"
+                    className="border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 px-2 py-1 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                   >
                     <Eye size={14} />
                   </button>
@@ -127,7 +127,7 @@ export default function CommissionRequestsDashboard() {
                   {!r.processed && (
                     <button
                       onClick={() => markProcessed(r.id)}
-                      className="border px-2 py-1 rounded-md"
+                      className="border border-green-200 dark:border-green-800 bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 px-2 py-1 rounded-md hover:bg-green-100 dark:hover:bg-green-800/30 transition-colors"
                     >
                       <CheckCircle size={14} />
                     </button>
@@ -138,7 +138,7 @@ export default function CommissionRequestsDashboard() {
 
             {!data.length && (
               <tr>
-                <td colSpan={5} className="p-6 text-center text-gray-500">
+                <td colSpan={5} className="p-6 text-center text-gray-500 dark:text-gray-400">
                   Aucune demande
                 </td>
               </tr>
@@ -149,22 +149,22 @@ export default function CommissionRequestsDashboard() {
 
       {/* View modal */}
       {view && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-          <div className="bg-white rounded-md p-6 max-w-lg w-full space-y-3">
-            <h3 className="font-semibold text-gray-800">
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl p-6 max-w-lg w-full space-y-3 shadow-2xl">
+            <h3 className="font-semibold text-gray-800 dark:text-white">
               Détails de la demande
             </h3>
 
-            <p><strong>Responsable :</strong> {view.full_name}</p>
-            <p><strong>Email :</strong> {view.email}</p>
-            <p><strong>Type :</strong> {view.request_type}</p>
-            <p className="text-sm whitespace-pre-line">
+            <p className="text-gray-700 dark:text-gray-300"><strong className="text-gray-900 dark:text-white">Responsable :</strong> {view.full_name}</p>
+            <p className="text-gray-700 dark:text-gray-300"><strong className="text-gray-900 dark:text-white">Email :</strong> {view.email}</p>
+            <p className="text-gray-700 dark:text-gray-300"><strong className="text-gray-900 dark:text-white">Type :</strong> {view.request_type}</p>
+            <p className="text-sm whitespace-pre-line text-gray-700 dark:text-gray-300">
               {view.details}
             </p>
 
             <button
               onClick={() => setView(null)}
-              className="mt-4 px-4 py-2 border rounded-md"
+              className="mt-4 px-4 py-2 border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
             >
               Fermer
             </button>

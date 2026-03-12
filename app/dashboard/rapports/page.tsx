@@ -229,13 +229,13 @@ export default function ReportsTab() {
   }, [attendanceData, financeData, membershipGrowth]);
 
   return (
-    <div className="p-8 space-y-6 bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 min-h-screen">
+    <div className="p-8 space-y-6 bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950 min-h-screen">
       {/* HEADER */}
       <div>
-        <h1 className="text-3xl font-bold text-gray-800 mb-2">
+        <h1 className="text-3xl font-bold text-gray-800 dark:text-white mb-2">
           Rapports et Analytics
         </h1>
-        <p className="text-gray-600">
+        <p className="text-gray-600 dark:text-gray-400">
           Vue d’ensemble des statistiques et performances
         </p>
       </div>
@@ -247,7 +247,7 @@ export default function ReportsTab() {
           return (
             <div
               key={i}
-              className={`bg-gradient-to-br ${kpi.bgColor} rounded-2xl p-6`}
+              className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl p-6 shadow-sm"
             >
               <div className="flex justify-between mb-4">
                 <div
@@ -259,8 +259,8 @@ export default function ReportsTab() {
                   <TrendingUp size={14} />
                 </div>
               </div>
-              <p className="text-sm text-gray-600">{kpi.title}</p>
-              <p className="text-3xl font-bold">{kpi.value}</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400">{kpi.title}</p>
+              <p className="text-3xl font-bold text-gray-900 dark:text-white">{kpi.value}</p>
             </div>
           );
         })}
@@ -268,8 +268,8 @@ export default function ReportsTab() {
 
       {/* CHARTS */}
       <div className="grid lg:grid-cols-2 gap-6">
-        <div className="bg-white rounded-2xl p-6">
-          <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
+        <div className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl p-6 shadow-sm">
+          <h2 className="text-xl font-bold mb-4 text-gray-800 dark:text-white flex items-center gap-2">
             <LineChartIcon className="text-cyan-600" />
             Assiduité
           </h2>
@@ -285,8 +285,8 @@ export default function ReportsTab() {
           </ResponsiveContainer>
         </div>
 
-        <div className="bg-white rounded-2xl p-6">
-          <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
+        <div className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl p-6 shadow-sm">
+          <h2 className="text-xl font-bold mb-4 text-gray-800 dark:text-white flex items-center gap-2">
             <BarChart3 className="text-cyan-600" />
             Revenus et Dépenses
           </h2>
@@ -305,8 +305,8 @@ export default function ReportsTab() {
       </div>
 
       {/* MINISTRIES */}
-      <div className="bg-white rounded-2xl p-6">
-        <h2 className="text-xl font-bold mb-4">Participation aux ministères</h2>
+      <div className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl p-6 shadow-sm">
+        <h2 className="text-xl font-bold mb-4 text-gray-800 dark:text-white">Participation aux ministères</h2>
         <ResponsiveContainer width="100%" height={300}>
           <BarChart data={ministryParticipation} layout="vertical">
             <XAxis type="number" />

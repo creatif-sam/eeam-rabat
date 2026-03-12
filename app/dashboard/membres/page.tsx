@@ -168,23 +168,23 @@ export default function MembersTab() {
   };
 
   if (loading) {
-    return <div className="p-8">Chargement des membres...</div>;
+    return <div className="p-8 bg-slate-50 dark:bg-gray-950 min-h-screen text-gray-900 dark:text-white">Chargement des membres...</div>;
   }
 
   /* ================= UI ================= */
 
   return (
-    <div className="p-4 md:p-8 space-y-4 md:space-y-6 bg-slate-50 min-h-screen">
+    <div className="p-4 md:p-8 space-y-4 md:space-y-6 bg-slate-50 dark:bg-gray-950 min-h-screen">
       <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center gap-4">
         <div>
-          <h1 className="text-2xl md:text-3xl font-bold">Gestion des Membres</h1>
-          <p className="text-gray-600 text-sm md:text-base">Administration et suivi</p>
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">Gestion des Membres</h1>
+          <p className="text-gray-600 dark:text-gray-400 text-sm md:text-base">Administration et suivi</p>
         </div>
 
         <div className="flex flex-col sm:flex-row gap-3">
           <button
             onClick={exportCSV}
-            className="px-4 py-2 bg-white border rounded-xl flex items-center justify-center gap-2 text-sm md:text-base"
+            className="px-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 rounded-xl flex items-center justify-center gap-2 text-sm md:text-base hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
           >
             <Download size={18} />
             Exporter
@@ -208,7 +208,7 @@ export default function MembersTab() {
         <StatCard label="Nationalités" value={nationalities} />
       </div>
 
-      <div className="bg-white p-3 md:p-4 rounded-xl grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+      <div className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 p-3 md:p-4 rounded-xl grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
         <input
           value={search}
           onChange={e => {
@@ -216,7 +216,7 @@ export default function MembersTab() {
             setCurrentPage(1);
           }}
           placeholder="Recherche..."
-          className="border rounded-lg px-3 py-2 text-sm md:text-base"
+          className="border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 placeholder:text-gray-400 dark:placeholder:text-gray-500 rounded-lg px-3 py-2 text-sm md:text-base outline-none focus:border-cyan-400 transition-colors"
         />
 
         <select
@@ -225,7 +225,7 @@ export default function MembersTab() {
             setFilterParoisse(e.target.value);
             setCurrentPage(1);
           }}
-          className="border rounded-lg px-3 py-2 text-sm md:text-base"
+          className="border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 rounded-lg px-3 py-2 text-sm md:text-base outline-none focus:border-cyan-400 transition-colors"
         >
           <option value="all">Toutes les paroisses</option>
           {paroisses.map(p => (
@@ -239,7 +239,7 @@ export default function MembersTab() {
             setFilterCommission(e.target.value);
             setCurrentPage(1);
           }}
-          className="border rounded-lg px-3 py-2 text-sm md:text-base"
+          className="border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 rounded-lg px-3 py-2 text-sm md:text-base outline-none focus:border-cyan-400 transition-colors"
         >
           <option value="all">Toutes les commissions</option>
           {commissions.map(c => (
@@ -253,7 +253,7 @@ export default function MembersTab() {
             setFilterGenre(e.target.value as any);
             setCurrentPage(1);
           }}
-          className="border rounded-lg px-3 py-2 text-sm md:text-base"
+          className="border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 rounded-lg px-3 py-2 text-sm md:text-base outline-none focus:border-cyan-400 transition-colors"
         >
           <option value="all">Genre</option>
           <option value="Homme">Homme</option>
@@ -266,7 +266,7 @@ export default function MembersTab() {
             setFilterBaptise(e.target.value as any);
             setCurrentPage(1);
           }}
-          className="border rounded-lg px-3 py-2 text-sm md:text-base"
+          className="border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 rounded-lg px-3 py-2 text-sm md:text-base outline-none focus:border-cyan-400 transition-colors"
         >
           <option value="all">Baptême</option>
           <option value="Oui">Baptisé</option>
@@ -274,36 +274,36 @@ export default function MembersTab() {
         </select>
       </div>
 
-      <div className="bg-white rounded-xl overflow-x-auto">
+      <div className="bg-white dark:bg-gray-900 rounded-xl overflow-x-auto border border-gray-100 dark:border-gray-800">
         <table className="w-full text-xs md:text-sm">
-          <thead className="bg-gray-100">
+          <thead className="bg-gray-100 dark:bg-gray-800">
             <tr>
-               <th className="p-2 md:p-3 text-left">#</th>
-              <th className="p-2 md:p-3 text-left">Nom</th>
-              <th className="p-2 md:p-3 hidden sm:table-cell">Paroisse</th>
-              <th className="p-2 md:p-3 hidden md:table-cell">Genre</th>
-              <th className="p-2 md:p-3">Téléphone</th>
-              <th className="p-2 md:p-3 hidden lg:table-cell">Baptisé</th>
-              <th className="p-2 md:p-3">Actions</th>
+               <th className="p-2 md:p-3 text-left text-gray-700 dark:text-gray-300">#</th>
+              <th className="p-2 md:p-3 text-left text-gray-700 dark:text-gray-300">Nom</th>
+              <th className="p-2 md:p-3 hidden sm:table-cell text-gray-700 dark:text-gray-300">Paroisse</th>
+              <th className="p-2 md:p-3 hidden md:table-cell text-gray-700 dark:text-gray-300">Genre</th>
+              <th className="p-2 md:p-3 text-gray-700 dark:text-gray-300">Téléphone</th>
+              <th className="p-2 md:p-3 hidden lg:table-cell text-gray-700 dark:text-gray-300">Baptisé</th>
+              <th className="p-2 md:p-3 text-gray-700 dark:text-gray-300">Actions</th>
             </tr>
           </thead>
           <tbody>
   {paginatedMembers.map((m, index) => (
-    <tr key={m.id} className="border-t">
-      <td className="p-2 md:p-3 text-gray-500 text-xs md:text-sm">
+    <tr key={m.id} className="border-t border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+      <td className="p-2 md:p-3 text-gray-500 dark:text-gray-400 text-xs md:text-sm">
         {(currentPage - 1) * itemsPerPage + index + 1}
       </td>
-      <td className="p-2 md:p-3 font-medium text-xs md:text-sm">
+      <td className="p-2 md:p-3 font-medium text-xs md:text-sm text-gray-800 dark:text-gray-200">
         <div className="flex flex-col">
           <span>{m.prenom} {m.nom}</span>
-          <span className="text-gray-500 sm:hidden">{m.paroisse}</span>
-          <span className="text-gray-500 md:hidden lg:table-cell">{m.genre}</span>
+          <span className="text-gray-500 dark:text-gray-400 sm:hidden">{m.paroisse}</span>
+          <span className="text-gray-500 dark:text-gray-400 md:hidden lg:table-cell">{m.genre}</span>
         </div>
       </td>
-      <td className="p-2 md:p-3 hidden sm:table-cell text-xs md:text-sm">{m.paroisse}</td>
-      <td className="p-2 md:p-3 hidden md:table-cell text-xs md:text-sm">{m.genre}</td>
-      <td className="p-2 md:p-3 text-xs md:text-sm">{m.telephone}</td>
-      <td className="p-2 md:p-3 hidden lg:table-cell text-xs md:text-sm">{m.baptise}</td>
+      <td className="p-2 md:p-3 hidden sm:table-cell text-xs md:text-sm text-gray-700 dark:text-gray-300">{m.paroisse}</td>
+      <td className="p-2 md:p-3 hidden md:table-cell text-xs md:text-sm text-gray-700 dark:text-gray-300">{m.genre}</td>
+      <td className="p-2 md:p-3 text-xs md:text-sm text-gray-700 dark:text-gray-300">{m.telephone}</td>
+      <td className="p-2 md:p-3 hidden lg:table-cell text-xs md:text-sm text-gray-700 dark:text-gray-300">{m.baptise}</td>
       <td className="p-2 md:p-3">
         <div className="flex gap-1 md:gap-2">
           <button
@@ -311,7 +311,7 @@ export default function MembersTab() {
               setSelectedMember(m);
               setShowViewModal(true);
             }}
-            className="px-2 py-1 md:px-3 md:py-1 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 text-xs md:text-sm"
+            className="px-2 py-1 md:px-3 md:py-1 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-800/30 text-xs md:text-sm transition-colors"
           >
             <Eye size={14} />
           </button>
@@ -321,7 +321,7 @@ export default function MembersTab() {
               setSelectedMember(m);
               setShowEditModal(true);
             }}
-            className="px-2 py-1 md:px-3 md:py-1 bg-gray-100 rounded-lg hover:bg-gray-200 text-xs md:text-sm"
+            className="px-2 py-1 md:px-3 md:py-1 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 text-xs md:text-sm transition-colors"
           >
             <Edit size={14} />
           </button>
@@ -334,7 +334,7 @@ export default function MembersTab() {
         </table>
 
         {!filteredMembers.length && (
-          <div className="p-6 text-center text-gray-500">
+          <div className="p-6 text-center text-gray-500 dark:text-gray-400">
             Aucun membre trouvé
           </div>
         )}
@@ -349,7 +349,7 @@ export default function MembersTab() {
   Précédent
 </button>
 
-<span className="text-xs md:text-sm">
+<span className="text-xs md:text-sm text-gray-700 dark:text-gray-300">
   Page {currentPage} sur {totalPages}
 </span>
 
@@ -409,9 +409,9 @@ export default function MembersTab() {
 
 function StatCard({ label, value }: { label: string; value: number }) {
   return (
-    <div className="bg-white rounded-xl p-3 md:p-4 shadow">
-      <p className="text-xs md:text-sm text-gray-600">{label}</p>
-      <p className="text-xl md:text-2xl font-bold">{value}</p>
+    <div className="bg-white dark:bg-gray-900 rounded-xl p-3 md:p-4 shadow border border-gray-100 dark:border-gray-800">
+      <p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">{label}</p>
+      <p className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white">{value}</p>
     </div>
   );
 }

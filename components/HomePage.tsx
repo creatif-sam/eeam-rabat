@@ -42,10 +42,10 @@ export default function HomePage() {
   }, [searchParams]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950 transition-colors duration-300">
       <Header onLogin={() => setLoginOpen(true)} onSignUp={() => setSignUpOpen(true)} />
 
-      <main className="max-w-7xl mx-auto px-6 py-8">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
         <div id="home">
           <WelcomeSection />
         </div>
@@ -61,7 +61,7 @@ export default function HomePage() {
           />
         </div>
 
-        <div id="calendar">
+        <div id="calendar" className="rounded-2xl overflow-hidden bg-white dark:bg-gray-900 shadow-sm border border-gray-100 dark:border-gray-800 mb-8">
           <PublicCalendar />
         </div>
 

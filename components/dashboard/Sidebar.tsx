@@ -14,7 +14,8 @@ import {
   UsersRound,
   FileText,
   MapPin,
-  ClipboardList
+  ClipboardList,
+  ListTodo
 } from "lucide-react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
@@ -24,10 +25,8 @@ const menuItems = [
   { label: "Accueil", icon: Home, route: "/dashboard" },
   { label: "Baptêmes", icon: Droplet, route: "/dashboard/baptemes" },
   { label: "Événements", icon: Calendar, route: "/dashboard/events" },
-  { label: "Planify", icon: ClipboardList, route: "/dashboard/tasky" },
-
+  { label: "Planify", icon: ListTodo, route: "/dashboard/tasky" },
   { label: "Formulaires", icon: ClipboardList, route: "/dashboard/formulaires" },
-
   { label: "Finance", icon: DollarSign, route: "/dashboard/finances" },
   { label: "Formations", icon: GraduationCap, route: "/dashboard/formations" },
   { label: "Commissions", icon: Users, route: "/dashboard/groupes" },
@@ -40,18 +39,17 @@ export default function Sidebar() {
   const { isMobileOpen, setIsMobileOpen, isDesktopExpanded, toggleSidebar } = useSidebar()
   const pathname = usePathname()
 
-  const closeMobileSidebar = () => {
-    if (typeof window !== 'undefined' && window.innerWidth < 768) {
-      setIsMobileOpen(false)
-    }
-  }
+  // showLabel: true when sidebar is fully open (mobile overlay OR desktop expanded)
+  const showLabel = isMobileOpen || isDesktopExpanded
+
+  const closeMobileSidebar = () => setIsMobileOpen(false)
 
   return (
     <>
       {/* Mobile menu button */}
       <button
         onClick={() => setIsMobileOpen(true)}
-        className="fixed top-4 left-4 z-50 md:hidden p-2 bg-white rounded-lg shadow-lg border border-gray-200 hover:bg-gray-50 transition-colors"
+        className="fixed top-4 left-4 z-50 md:hidden p-2 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
       >
         <Menu size={20} />
       </button>
@@ -65,55 +63,66 @@ export default function Sidebar() {
       )}
 
       <aside
-        className={`fixed left-0 top-0 h-screen bg-white shadow-2xl transition-all duration-300 z-50 ${
-          // Mobile: full overlay when open
-          isMobileOpen ? "w-72" :
-          // Desktop: expanded or collapsed
-          typeof window !== 'undefined' && window.innerWidth >= 768 ? (isDesktopExpanded ? "w-72" : "w-20") : "w-0"
-        } flex flex-col overflow-hidden`}
+        className={`fixed left-0 top-0 h-screen bg-white dark:bg-gray-900 shadow-2xl transition-all duration-300 z-50 flex flex-col overflow-hidden
+          ${isMobileOpen ? "w-72" : isDesktopExpanded ? "w-0 md:w-72" : "w-0 md:w-20"}`}
       >
-        <div className="h-16 md:h-20 flex items-center justify-between px-4 md:px-6 border-b border-gray-100 bg-gradient-to-r from-rose-600 to-rose-700 shrink-0">
-          {((isMobileOpen && typeof window !== 'undefined' && window.innerWidth < 768) || (isDesktopExpanded && typeof window !== 'undefined' && window.innerWidth >= 768)) && (
-            <span className="text-xl md:text-2xl font-bold text-white tracking-tight">
-              EEAM Rabat
-            </span>
+        {/* Brand header */}
+        <div className={`h-16 md:h-20 flex items-center border-b border-white/20 bg-gradient-to-r from-rose-600 to-rose-700 shrink-0 transition-all duration-300
+          ${showLabel ? "px-4 md:px-5 justify-between" : "justify-center px-2"}`}
+        >
+          {showLabel && (
+            <div className="flex items-center gap-2 min-w-0">
+              <div className="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center flex-shrink-0">
+                <span className="text-white text-xs font-bold">EE</span>
+              </div>
+              <span className="text-lg font-bold text-white tracking-tight truncate">
+                EEAM Rabat
+              </span>
+            </div>
           )}
           <button
             onClick={toggleSidebar}
-            className="p-2 rounded-lg hover:bg-white/20 transition-colors text-white ml-auto md:ml-0"
+            className="p-2 rounded-lg hover:bg-white/20 transition-colors text-white flex-shrink-0"
+            title={showLabel ? "Réduire" : "Développer"}
           >
-            {isMobileOpen || isDesktopExpanded ? <X size={20} /> : <Menu size={20} />}
+            {showLabel ? <X size={18} /> : <Menu size={18} />}
           </button>
         </div>
 
-        <nav className="flex-1 overflow-y-auto p-3 md:p-4 space-y-1 md:space-y-2">
+        {/* Navigation */}
+        <nav className={`flex-1 overflow-y-auto dark:bg-gray-900 space-y-0.5 transition-all duration-300
+          ${showLabel ? "p-3" : "p-2"}`}
+        >
           {menuItems.map(item => {
             const Icon = item.icon
             const isActive = pathname === item.route
-            const isCollapsed = !isMobileOpen && !isDesktopExpanded && typeof window !== 'undefined' && window.innerWidth >= 768
 
             return (
               <Link
                 key={item.label}
                 href={item.route}
                 onClick={closeMobileSidebar}
-                className={`w-full flex items-center gap-3 md:gap-4 px-3 md:px-4 py-2 md:py-3 rounded-xl transition-all duration-200 group ${
-                  isActive
-                    ? "bg-gradient-to-r from-cyan-500 to-cyan-600 text-white shadow-lg shadow-cyan-500/30"
-                    : "text-gray-600 hover:bg-gray-50 hover:text-cyan-600"
-                }`}
-                title={isCollapsed ? item.label : undefined}
+                title={!showLabel ? item.label : undefined}
+                className={`flex items-center rounded-xl transition-all duration-200 group
+                  ${showLabel
+                    ? "gap-3 px-3 py-2.5"
+                    : "justify-center p-3"
+                  }
+                  ${isActive
+                    ? "bg-gradient-to-r from-cyan-500 to-cyan-600 text-white shadow-md shadow-cyan-500/25"
+                    : "text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-cyan-600 dark:hover:text-cyan-400"
+                  }`}
               >
                 <Icon
-                  size={20}
-                  className={`${isCollapsed && "mx-auto"} transition-transform group-hover:scale-110`}
+                  size={18}
+                  className="flex-shrink-0 transition-transform duration-200 group-hover:scale-110"
                 />
-                {((isMobileOpen && typeof window !== 'undefined' && window.innerWidth < 768) || (isDesktopExpanded && typeof window !== 'undefined' && window.innerWidth >= 768)) && (
+                {showLabel && (
                   <>
-                    <span className="font-medium flex-1 text-left">
+                    <span className="font-medium flex-1 text-left text-sm truncate">
                       {item.label}
                     </span>
-                    {isActive && <ChevronRight size={16} />}
+                    {isActive && <ChevronRight size={14} className="flex-shrink-0 opacity-70" />}
                   </>
                 )}
               </Link>
@@ -121,13 +130,18 @@ export default function Sidebar() {
           })}
         </nav>
 
-        {((isMobileOpen && typeof window !== 'undefined' && window.innerWidth < 768) || (isDesktopExpanded && typeof window !== 'undefined' && window.innerWidth >= 768)) && (
-          <div className="p-4 md:p-6 border-t border-gray-100 shrink-0">
-            <p className="text-xs text-gray-400 text-center">
-              © EEAM 2026
+        {/* Footer */}
+        <div className={`border-t border-gray-100 dark:border-gray-800 shrink-0 transition-all duration-300
+          ${showLabel ? "p-4" : "p-2 flex justify-center"}`}
+        >
+          {showLabel ? (
+            <p className="text-xs text-gray-400 dark:text-gray-600 text-center">
+              EEAM Rabat © 2026
             </p>
-          </div>
-        )}
+          ) : (
+            <div className="w-6 h-1 bg-gray-200 dark:bg-gray-700 rounded-full" />
+          )}
+        </div>
       </aside>
     </>
   )

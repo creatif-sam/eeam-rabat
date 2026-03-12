@@ -74,7 +74,7 @@ export default function PastoralCounsellingList() {
     <div className="space-y-6 md:space-y-10">
       {Object.entries(groupedByDate).map(([date, items]) => (
         <div key={date} className="space-y-4">
-          <h3 className="text-lg font-semibold text-gray-800">
+          <h3 className="text-lg font-semibold text-gray-800 dark:text-white">
             {date}
           </h3>
 
@@ -83,34 +83,34 @@ export default function PastoralCounsellingList() {
             {items.map((item, index) => (
               <div
                 key={item.id}
-                className="bg-white border rounded-xl p-4 shadow-sm"
+                className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4 shadow-sm"
               >
                 <div className="flex justify-between items-start mb-3">
                   <div>
-                    <p className="font-medium text-gray-800">{item.full_name}</p>
-                    <p className="text-sm text-gray-600">{item.phone}</p>
+                    <p className="font-medium text-gray-800 dark:text-white">{item.full_name}</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">{item.phone}</p>
                     {item.email && (
-                      <p className="text-sm text-gray-600">{item.email}</p>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">{item.email}</p>
                     )}
                   </div>
                   <div className="flex gap-2">
                     <button
                       onClick={() => setSelected(item)}
-                      className="p-2 rounded-lg border hover:bg-gray-100"
+                      className="p-2 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300"
                       title="Voir"
                     >
                       <Eye size={16} />
                     </button>
                   </div>
                 </div>
-                <div className="text-sm text-gray-600">
-                  <p><span className="font-medium">Heure:</span> {item.counselling_time}</p>
+                <div className="text-sm text-gray-600 dark:text-gray-400">
+                  <p><span className="font-medium text-gray-700 dark:text-gray-300">Heure:</span> {item.counselling_time}</p>
                   {item.pastors && (
-                    <p><span className="font-medium">Pasteur:</span> {item.pastors.name}</p>
+                    <p><span className="font-medium text-gray-700 dark:text-gray-300">Pasteur:</span> {item.pastors.name}</p>
                   )}
                 </div>
-                <div className="mt-3 p-3 bg-gray-50 rounded-lg">
-                  <p className="text-sm text-gray-700">{item.reason}</p>
+                <div className="mt-3 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                  <p className="text-sm text-gray-700 dark:text-gray-300">{item.reason}</p>
                 </div>
               </div>
             ))}
@@ -118,9 +118,9 @@ export default function PastoralCounsellingList() {
 
           {/* Desktop Table View */}
           <div className="hidden md:block overflow-x-auto">
-            <table className="min-w-full border border-gray-200 rounded-xl overflow-hidden">
-              <thead className="bg-gray-50">
-                <tr className="text-left text-sm text-gray-600">
+            <table className="min-w-full border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden">
+              <thead className="bg-gray-50 dark:bg-gray-700">
+                <tr className="text-left text-sm text-gray-600 dark:text-gray-300">
                   <th className="px-4 py-3">N°</th>
                   <th className="px-4 py-3">Heure</th>
                   <th className="px-4 py-3">Nom</th>
@@ -135,29 +135,29 @@ export default function PastoralCounsellingList() {
                 {items.map((item, index) => (
                   <tr
                     key={item.id}
-                    className="border-t text-sm hover:bg-gray-50"
+                    className="border-t border-gray-100 dark:border-gray-700 text-sm hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
                   >
-                    <td className="px-4 py-3 font-medium">
+                    <td className="px-4 py-3 font-medium text-gray-700 dark:text-gray-300">
                       {index + 1}
                     </td>
 
-                    <td className="px-4 py-3">
+                    <td className="px-4 py-3 text-gray-700 dark:text-gray-300">
                       {item.counselling_time}
                     </td>
 
-                    <td className="px-4 py-3 font-medium text-gray-800">
+                    <td className="px-4 py-3 font-medium text-gray-800 dark:text-white">
                       {item.full_name}
                     </td>
 
-                    <td className="px-4 py-3">
+                    <td className="px-4 py-3 text-gray-700 dark:text-gray-300">
                       {item.phone}
                     </td>
 
-                    <td className="px-4 py-3 text-gray-600">
+                    <td className="px-4 py-3 text-gray-600 dark:text-gray-400">
                       {item.email || "—"}
                     </td>
 
-                    <td className="px-4 py-3 font-medium">
+                    <td className="px-4 py-3 font-medium text-gray-700 dark:text-gray-300">
                       {item.pastors?.name || "Indifférent"}
                     </td>
 
@@ -165,7 +165,7 @@ export default function PastoralCounsellingList() {
                       <div className="flex items-center justify-end gap-3">
                         <button
                           onClick={() => setSelected(item)}
-                          className="p-2 rounded-lg border hover:bg-gray-100"
+                          className="p-2 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300"
                           title="Voir les détails"
                         >
                           <Eye size={16} />
@@ -190,30 +190,30 @@ export default function PastoralCounsellingList() {
 
       {selected && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl p-4 md:p-6 w-full max-w-md space-y-4 max-h-[90vh] overflow-y-auto">
-            <h3 className="text-lg font-semibold text-gray-800">
+        <div className="bg-white dark:bg-gray-900 rounded-2xl p-4 md:p-6 w-full max-w-md space-y-4 max-h-[90vh] overflow-y-auto border border-gray-200 dark:border-gray-700 shadow-xl">
+            <h3 className="text-lg font-semibold text-gray-800 dark:text-white">
               Détails de l'entretien
             </h3>
 
             <div className="space-y-3 text-sm">
-              <p><strong>Nom:</strong> {selected.full_name}</p>
-              <p><strong>Téléphone:</strong> {selected.phone}</p>
+              <p className="text-gray-800 dark:text-gray-200"><strong>Nom:</strong> {selected.full_name}</p>
+              <p className="text-gray-800 dark:text-gray-200"><strong>Téléphone:</strong> {selected.phone}</p>
               {selected.email && (
-                <p><strong>Email:</strong> {selected.email}</p>
+                <p className="text-gray-800 dark:text-gray-200"><strong>Email:</strong> {selected.email}</p>
               )}
-              <p><strong>Date:</strong> {selected.counselling_date}</p>
-              <p><strong>Heure:</strong> {selected.counselling_time}</p>
-              <p><strong>Pasteur:</strong> {selected.pastors?.name || "Indifférent"}</p>
+              <p className="text-gray-800 dark:text-gray-200"><strong>Date:</strong> {selected.counselling_date}</p>
+              <p className="text-gray-800 dark:text-gray-200"><strong>Heure:</strong> {selected.counselling_time}</p>
+              <p className="text-gray-800 dark:text-gray-200"><strong>Pasteur:</strong> {selected.pastors?.name || "Indifférent"}</p>
               <div>
-                <p className="font-semibold mb-1">Motif:</p>
-                <p className="text-gray-700 bg-gray-50 p-3 rounded-lg">{selected.reason}</p>
+                <p className="font-semibold mb-1 text-gray-800 dark:text-white">Motif:</p>
+                <p className="text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-800 p-3 rounded-lg">{selected.reason}</p>
               </div>
             </div>
 
             <div className="flex justify-end gap-3 pt-4">
               <button
                 onClick={() => setSelected(null)}
-                className="px-4 py-2 rounded-lg border text-sm font-medium w-full sm:w-auto"
+                className="px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 w-full sm:w-auto"
               >
                 Fermer
               </button>

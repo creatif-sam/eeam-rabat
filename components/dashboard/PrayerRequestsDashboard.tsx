@@ -72,10 +72,10 @@ export default function PrayerRequestsDashboard() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-xl font-bold text-gray-800">
+          <h2 className="text-xl font-bold text-gray-800 dark:text-white">
             Demandes de prière
           </h2>
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-gray-500 dark:text-gray-400">
             Gestion et suivi des sujets de prière
           </p>
         </div>
@@ -85,7 +85,7 @@ export default function PrayerRequestsDashboard() {
           onChange={e =>
             setFilter(e.target.value as "all" | "confidential" | "public")
           }
-          className="px-3 py-2 border rounded-lg text-sm"
+          className="px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg text-sm bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 outline-none focus:border-cyan-400 transition-colors"
         >
           <option value="all">Toutes</option>
           <option value="confidential">Confidentielles</option>
@@ -94,9 +94,9 @@ export default function PrayerRequestsDashboard() {
       </div>
 
       {/* Table */}
-      <div className="bg-white border rounded-2xl overflow-hidden">
+      <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl overflow-hidden">
         <table className="min-w-full text-sm">
-          <thead className="bg-gray-50 text-gray-600">
+          <thead className="bg-gray-50 dark:bg-gray-700 text-gray-600 dark:text-gray-300">
             <tr>
               <th className="px-4 py-3 text-left">Nom</th>
               <th className="px-4 py-3 text-left">Sujet</th>
@@ -110,27 +110,27 @@ export default function PrayerRequestsDashboard() {
             {requests.map(req => (
               <tr
                 key={req.id}
-                className={`border-t ${
-                  req.processed ? "bg-green-50" : ""
+                className={`border-t border-gray-100 dark:border-gray-700 ${
+                  req.processed ? "bg-green-50 dark:bg-green-900/10" : "hover:bg-gray-50 dark:hover:bg-gray-700/50"
                 }`}
               >
-                <td className="px-4 py-3 font-medium">
+                <td className="px-4 py-3 font-medium text-gray-800 dark:text-gray-200">
                   {req.full_name}
                 </td>
-                <td className="px-4 py-3">
+                <td className="px-4 py-3 text-gray-700 dark:text-gray-300">
                   {req.subject}
                 </td>
-                <td className="px-4 py-3 text-center">
+                <td className="px-4 py-3 text-center text-gray-600 dark:text-gray-400">
                   {req.confidential && <Lock size={14} className="inline" />}
                 </td>
-                <td className="px-4 py-3">
+                <td className="px-4 py-3 text-gray-600 dark:text-gray-400">
                   {new Date(req.created_at).toLocaleDateString()}
                 </td>
                 <td className="px-4 py-3 text-right">
                   <div className="flex justify-end gap-3">
                     <button
                       onClick={() => setSelected(req)}
-                      className="p-2 border rounded-lg hover:bg-gray-100"
+                      className="p-2 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300"
                       title="Voir"
                     >
                       <Eye size={16} />
@@ -139,7 +139,7 @@ export default function PrayerRequestsDashboard() {
                     {!req.processed && (
                       <button
                         onClick={() => markProcessed(req.id)}
-                        className="p-2 border rounded-lg hover:bg-green-50"
+                        className="p-2 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-green-50 dark:hover:bg-green-900/20 text-gray-600 dark:text-gray-300"
                         title="Marquer comme traité"
                       >
                         <CheckCircle size={16} />
@@ -156,17 +156,17 @@ export default function PrayerRequestsDashboard() {
       {/* View modal */}
       {selected && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl w-full max-w-lg">
-            <div className="px-6 py-4 border-b">
-              <h3 className="font-semibold text-gray-800">
+          <div className="bg-white dark:bg-gray-900 rounded-xl w-full max-w-lg border border-gray-200 dark:border-gray-700 shadow-xl">
+            <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+              <h3 className="font-semibold text-gray-800 dark:text-white">
                 Sujet de prière
               </h3>
-              <p className="text-sm text-gray-500">
+              <p className="text-sm text-gray-500 dark:text-gray-400">
                 {selected.subject}
               </p>
             </div>
 
-            <div className="px-6 py-5 space-y-4 text-sm">
+            <div className="px-6 py-5 space-y-4 text-sm text-gray-800 dark:text-gray-200">
               <p>
                 <strong>Nom :</strong> {selected.full_name}
               </p>
@@ -182,10 +182,10 @@ export default function PrayerRequestsDashboard() {
               </p>
             </div>
 
-            <div className="px-6 py-4 border-t flex justify-end">
+            <div className="px-6 py-4 border-t border-gray-200 dark:border-gray-700 flex justify-end">
               <button
                 onClick={() => setSelected(null)}
-                className="px-4 py-2 border rounded-lg"
+                className="px-4 py-2 border border-gray-200 dark:border-gray-700 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 text-sm"
               >
                 Fermer
               </button>

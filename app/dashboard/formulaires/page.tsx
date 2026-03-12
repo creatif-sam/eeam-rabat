@@ -40,15 +40,15 @@ export default function FormulairesPage() {
   return (
     <div className="space-y-4 md:space-y-8">
       <div>
-        <h1 className="text-xl md:text-2xl font-bold text-gray-800">
+        <h1 className="text-xl md:text-2xl font-bold text-gray-800 dark:text-white">
           Formulaires
         </h1>
-        <p className="text-gray-600 text-sm">
+        <p className="text-gray-600 dark:text-gray-400 text-sm">
           Consultation et traitement des demandes
         </p>
       </div>
 
-      <div className="flex flex-wrap gap-2 md:gap-3 border-b pb-4">
+      <div className="flex flex-wrap gap-2 md:gap-3 border-b border-gray-200 dark:border-gray-700 pb-4">
         {tabs.map(tab => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.key;
@@ -60,7 +60,7 @@ export default function FormulairesPage() {
               className={`flex items-center gap-2 px-3 md:px-4 py-2 rounded-xl text-xs md:text-sm font-medium transition ${
                 isActive
                   ? "bg-cyan-600 text-white"
-                  : "bg-white border text-gray-700 hover:bg-gray-50"
+                  : "bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
               }`}
             >
               <Icon size={14} className="md:w-4 md:h-4" />
@@ -71,7 +71,7 @@ export default function FormulairesPage() {
         })}
       </div>
 
-      <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-4 md:p-6">
+      <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-800 p-4 md:p-6">
         {activeTab === "attendance" && <AttendanceDashboard />}
         {activeTab === "volunteer" && <VolunteerRequestsDashboard />}
         {activeTab === "pastoral" && <PastoralCounsellingList />}

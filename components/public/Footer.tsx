@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { Cookie, Shield, ExternalLink, MapPin, Mail, Heart, Church, BookOpen, Settings } from "lucide-react";
+import { MapPin, Mail, Shield, Heart, Phone, ExternalLink, Cookie, Settings } from "lucide-react";
 import { useState } from "react";
 import CookieSettingsModal from "@/components/CookieSettingsModal";
 
@@ -12,147 +12,144 @@ export default function Footer() {
 
   return (
     <>
-      <footer className="hidden md:block relative bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white overflow-hidden">
-        {/* Background Pattern */}
-        <div className="absolute inset-0 opacity-5">
-          <div className="absolute top-0 left-0 w-32 h-32 bg-cyan-500 rounded-full -translate-x-16 -translate-y-16"></div>
-          <div className="absolute top-20 right-20 w-24 h-24 bg-blue-500 rounded-full"></div>
-          <div className="absolute bottom-20 left-20 w-20 h-20 bg-indigo-500 rounded-full"></div>
+      <footer className="relative bg-gray-950 dark:bg-gray-950 text-white overflow-hidden">
+        {/* Top gradient border */}
+        <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-cyan-500 to-transparent" />
+
+        {/* Decorative blobs */}
+        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+          <div className="absolute -top-32 -left-32 w-96 h-96 bg-cyan-500/5 rounded-full blur-3xl" />
+          <div className="absolute -bottom-32 -right-32 w-96 h-96 bg-blue-500/5 rounded-full blur-3xl" />
         </div>
 
-        <div className="relative max-w-7xl mx-auto px-6 py-16">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12">
-            {/* Organization Info */}
+        <div className="relative max-w-7xl mx-auto px-6 pt-16 pb-10">
+
+          {/* ─── Main grid ─── */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 lg:gap-14 mb-14">
+
+            {/* Brand */}
             <div className="lg:col-span-2">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center shadow-lg overflow-hidden">
-                  <Image
-                    src="/images/eeam-logo.png"
-                    alt="EEAM Logo"
-                    width={48}
-                    height={48}
-                    className="object-contain"
-                  />
+              <div className="flex items-center gap-4 mb-6">
+                <div className="w-14 h-14 rounded-2xl bg-white flex items-center justify-center shadow-xl overflow-hidden flex-shrink-0">
+                  <Image src="/images/eeam-logo.png" alt="EEAM Logo" width={56} height={56} className="object-contain" />
                 </div>
                 <div>
-                  <h3 className="text-2xl font-bold bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">
+                  <h3 className="text-xl font-extrabold bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent leading-tight">
                     Église Évangélique Au Maroc
                   </h3>
-                  <p className="text-sm text-cyan-400 font-medium">Paroisse de Rabat</p>
+                  <p className="text-cyan-400 text-sm font-medium">Paroisse de Rabat &mdash; EEAM LEAD</p>
                 </div>
               </div>
 
-              <p className="text-gray-300 mb-6 leading-relaxed">
-                Technologie pour la gloire de Dieu.
-                <br />
-                <span className="text-cyan-400 italic">"1 Corinthiens 10:31"</span>
+              <p className="text-gray-400 leading-relaxed mb-6 max-w-sm">
+                Technologie et excellence au service de la gloire de Dieu.
               </p>
+              <blockquote className="border-l-2 border-cyan-500 pl-4 italic text-cyan-300/80 text-sm mb-6">
+                &ldquo;Soit que vous mangiez, soit que vous buviez, et quoi que vous fassiez,
+                faites tout pour la gloire de Dieu.&rdquo;
+                <cite className="not-italic text-cyan-400 text-xs block mt-1">&mdash; 1 Corinthiens 10:31</cite>
+              </blockquote>
 
-              <div className="space-y-3">
+              <div className="space-y-2.5">
+                <a href="tel:+212000000000" className="flex items-center gap-3 text-gray-400 hover:text-cyan-400 transition-colors group">
+                  <Phone size={16} className="text-cyan-500 flex-shrink-0" />
+                  <span className="group-hover:translate-x-0.5 transition-transform text-sm">+212 xxx xxx xxx</span>
+                </a>
+                <a href="mailto:cpeeamrabat@gmail.com" className="flex items-center gap-3 text-gray-400 hover:text-cyan-400 transition-colors group">
+                  <Mail size={16} className="text-cyan-500 flex-shrink-0" />
+                  <span className="group-hover:translate-x-0.5 transition-transform text-sm">cpeeamrabat@gmail.com</span>
+                </a>
                 <div className="flex items-center gap-3 text-gray-400">
-                  <MapPin size={18} className="text-cyan-400" />
-                  <span>Rabat, Maroc</span>
-                </div>
-                <div className="flex items-center gap-3 text-gray-400">
-                  <Mail size={18} className="text-cyan-400" />
-                  <span>cpeeamrabat@gmail.com</span>
+                  <MapPin size={16} className="text-cyan-500 flex-shrink-0" />
+                  <span className="text-sm">Rabat, Maroc</span>
                 </div>
               </div>
             </div>
 
-            {/* Quick Links */}
+            {/* Navigation */}
             <div>
-              <div className="flex items-center gap-2 mb-6">
-                <BookOpen size={20} className="text-cyan-400" />
-                <h4 className="text-lg font-semibold">Liens rapides</h4>
-              </div>
+              <h4 className="text-sm font-bold uppercase tracking-widest text-gray-300 mb-5">Navigation</h4>
               <ul className="space-y-3">
-                <li>
-                  <Link
-                    href="/"
-                    className="text-gray-300 hover:text-cyan-400 transition-all duration-200 flex items-center gap-2 group"
-                  >
-                    <span className="w-1.5 h-1.5 bg-cyan-400 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"></span>
-                    Accueil
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="/politique-de-confidentialite"
-                    className="text-gray-300 hover:text-cyan-400 transition-all duration-200 flex items-center gap-2 group"
-                  >
-                    <span className="w-1.5 h-1.5 bg-cyan-400 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"></span>
-                    Politique de confidentialité
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="/politique-cookies"
-                    className="text-gray-300 hover:text-cyan-400 transition-all duration-200 flex items-center gap-2 group"
-                  >
-                    <span className="w-1.5 h-1.5 bg-cyan-400 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"></span>
-                    Politique des cookies
-                  </Link>
-                </li>
+                {[
+                  { href: "/#home", label: "Accueil" },
+                  { href: "/#services", label: "Services" },
+                  { href: "/#calendar", label: "Calendrier" },
+                  { href: "/#events", label: "Événements" },
+                  { href: "/auth/login", label: "Connexion" },
+                  { href: "/auth/sign-up", label: "S’inscrire" },
+                ].map(({ href, label }) => (
+                  <li key={href}>
+                    <Link href={href}
+                      className="flex items-center gap-2 text-gray-400 hover:text-cyan-400 transition-colors text-sm group">
+                      <span className="w-1.5 h-1.5 rounded-full bg-cyan-500/50 group-hover:bg-cyan-400 transition-colors flex-shrink-0" />
+                      {label}
+                    </Link>
+                  </li>
+                ))}
               </ul>
             </div>
 
-            {/* Cookie Settings */}
+            {/* Legal & Settings */}
             <div>
-              <div className="flex items-center gap-2 mb-6">
-                <Settings size={20} className="text-cyan-400" />
-                <h4 className="text-lg font-semibold">Préférences</h4>
-              </div>
+              <h4 className="text-sm font-bold uppercase tracking-widest text-gray-300 mb-5">Légal & Paramètres</h4>
               <ul className="space-y-3">
                 <li>
-                  <button
-                    onClick={() => setShowCookieSettings(true)}
-                    className="text-gray-300 hover:text-cyan-400 transition-all duration-200 flex items-center gap-2 group w-full text-left"
-                  >
-                    <Cookie size={16} className="text-cyan-400" />
-                    <span className="group-hover:translate-x-1 transition-transform">Gérer les cookies</span>
+                  <Link href="/politique-de-confidentialite"
+                    className="flex items-center gap-2 text-gray-400 hover:text-cyan-400 transition-colors text-sm group">
+                    <Shield size={14} className="text-cyan-500 flex-shrink-0" />
+                    <span className="group-hover:translate-x-0.5 transition-transform">Politique de confidentialité</span>
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/politique-cookies"
+                    className="flex items-center gap-2 text-gray-400 hover:text-cyan-400 transition-colors text-sm group">
+                    <Cookie size={14} className="text-cyan-500 flex-shrink-0" />
+                    <span className="group-hover:translate-x-0.5 transition-transform">Politique des cookies</span>
+                  </Link>
+                </li>
+                <li>
+                  <button onClick={() => setShowCookieSettings(true)}
+                    className="flex items-center gap-2 text-gray-400 hover:text-cyan-400 transition-colors text-sm group w-full text-left">
+                    <Settings size={14} className="text-cyan-500 flex-shrink-0" />
+                    <span className="group-hover:translate-x-0.5 transition-transform">Gérer les cookies</span>
                   </button>
                 </li>
                 <li>
-                  <Link
-                    href="/politique-cookies"
-                    className="text-gray-300 hover:text-cyan-400 transition-all duration-200 flex items-center gap-2 group"
-                  >
-                    <Shield size={16} className="text-cyan-400" />
-                    <span className="group-hover:translate-x-1 transition-transform">Politique des cookies</span>
+                  <Link href="/politique-de-confidentialite"
+                    className="flex items-center gap-2 text-gray-400 hover:text-cyan-400 transition-colors text-sm group">
+                    <ExternalLink size={14} className="text-cyan-500 flex-shrink-0" />
+                    <span className="group-hover:translate-x-0.5 transition-transform">Conformité RGPD</span>
                   </Link>
                 </li>
               </ul>
+
+              {/* RGPD badge */}
+              <div className="mt-6 inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 text-xs font-medium">
+                <Shield size={12} />
+                Conforme RGPD
+              </div>
             </div>
           </div>
 
-          {/* Bottom Bar */}
-          <div className="border-t border-gray-700/50 mt-12 pt-8">
-            <div className="flex flex-col lg:flex-row justify-between items-center gap-6">
-              <p className="text-gray-400 text-sm text-center lg:text-left">
-                © {currentYear} Église Évangélique Au Maroc-Paroisse de Rabat. Tous droits réservés.
-              </p>
+          {/* ─── Divider ─── */}
+          <div className="border-t border-gray-800" />
 
-              <div className="flex flex-col sm:flex-row items-center gap-4 text-sm text-gray-400">
-                <div className="flex items-center gap-2">
-                  <Shield size={14} className="text-cyan-400" />
-                  <span>Conformément au RGPD</span>
-                </div>
-                <div className="hidden sm:block text-gray-600">•</div>
-                <div className="flex items-center gap-2">
-                  <Heart size={14} className="text-red-400 fill-current" />
-                  <span>Fait avec ❤️</span>
-                </div>
-              </div>
+          {/* ─── Bottom bar ─── */}
+          <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <p className="text-gray-500 text-sm text-center sm:text-left">
+              &copy; {currentYear} Église Évangélique Au Maroc — Paroisse de Rabat. Tous droits réservés.
+            </p>
+            <div className="flex items-center gap-2 text-gray-500 text-sm">
+              <span>Fait avec</span>
+              <Heart size={13} className="text-rose-400 fill-rose-400" />
+              <span>pour la gloire de Dieu</span>
             </div>
           </div>
         </div>
       </footer>
 
-      <CookieSettingsModal
-        isOpen={showCookieSettings}
-        onClose={() => setShowCookieSettings(false)}
-      />
+      <CookieSettingsModal isOpen={showCookieSettings} onClose={() => setShowCookieSettings(false)} />
     </>
   );
 }
+

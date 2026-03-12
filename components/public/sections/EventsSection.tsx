@@ -60,21 +60,21 @@ export default function EventsSection() {
 
   if (loading) {
     return (
-      <section className="bg-white rounded-2xl shadow-lg p-8">
-        Chargement des événements...
+      <section className="bg-white dark:bg-gray-900 rounded-2xl shadow-lg p-4 sm:p-8 border border-gray-100 dark:border-gray-800">
+        <p className="text-gray-500 dark:text-gray-400">Chargement des événements...</p>
       </section>
     );
   }
 
   return (
-    <section className="bg-white rounded-2xl shadow-lg p-8 mt-12">
-      <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-2">
+    <section className="bg-white dark:bg-gray-900 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-800 p-4 sm:p-8 mt-8 sm:mt-12">
+      <h2 className="text-xl sm:text-2xl font-bold text-gray-800 dark:text-white mb-4 sm:mb-6 flex items-center gap-2">
         <Calendar className="text-cyan-600" />
         Prochains événements
       </h2>
 
       {!events.length && (
-        <p className="text-sm text-gray-500">
+        <p className="text-sm text-gray-500 dark:text-gray-400">
           Aucun événement à venir pour le moment.
         </p>
       )}
@@ -83,17 +83,13 @@ export default function EventsSection() {
         {events.map(event => (
           <div
             key={event.id}
-            className="p-4 border border-gray-100 rounded-xl hover:shadow-md transition-all"
+            className="p-4 border border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 rounded-xl hover:shadow-md transition-all"
           >
-            <div
-              className={`w-full h-2 ${event.color} rounded-full mb-3`}
-            />
-
-            <h4 className="font-bold text-gray-800 mb-2">
+            <div className={`w-full h-2 ${event.color} rounded-full mb-3`} />
+            <h4 className="font-bold text-gray-800 dark:text-white mb-2">
               {event.title}
             </h4>
-
-            <div className="space-y-1 text-xs text-gray-600">
+            <div className="space-y-1 text-xs text-gray-600 dark:text-gray-400">
               <div className="flex items-center gap-2">
                 <Clock size={12} />
                 {event.date.toLocaleDateString("fr-FR", {
@@ -102,16 +98,9 @@ export default function EventsSection() {
                   month: "long"
                 })} · {event.start_time}
               </div>
-
               <div className="flex items-center gap-2">
-                {event.is_online ? (
-                  <Video size={12} />
-                ) : (
-                  <MapPin size={12} />
-                )}
-                {event.is_online
-                  ? "En ligne"
-                  : event.location}
+                {event.is_online ? <Video size={12} /> : <MapPin size={12} />}
+                {event.is_online ? "En ligne" : event.location}
               </div>
             </div>
           </div>
