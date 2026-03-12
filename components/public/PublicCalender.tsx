@@ -9,7 +9,8 @@ import {
   MapPin,
   X,
   ExternalLink,
-  Loader2
+  Loader2,
+  RefreshCw
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
@@ -22,8 +23,57 @@ type Event = {
   end_time: string;   // Format: HH:MM
   location: string;
   color: string;
+  is_recurring: boolean;
+  recurring_type: string | null;
+  recurring_end_date: string | null;
   date: Date;
 };
+
+function expandEventsForMonth(events: Event[], year: number, month: number): Event[] {
+  const monthStart = new Date(year, month, 1);
+  const monthEnd = new Date(year, month + 1, 0);
+  const result: Event[] = [];
+
+  for (const event of events) {
+    const isRecurring =
+      event.is_recurring &&
+      event.recurring_type &&
+      event.recurring_type !== "none";
+
+    if (!isRecurring) {
+      const eventDate = new Date(event.event_date);
+      if (eventDate >= monthStart && eventDate <= monthEnd) result.push(event);
+      continue;
+    }
+
+    const eventStart = new Date(event.event_date);
+    const recurEnd = event.recurring_end_date
+      ? new Date(event.recurring_end_date)
+      : monthEnd;
+
+    let current = new Date(eventStart);
+    while (current <= monthEnd && current <= recurEnd) {
+      if (current >= monthStart) {
+        result.push({
+          ...event,
+          id: `${event.id}_${current.toISOString().split("T")[0]}`,
+          date: new Date(current),
+          event_date: current.toISOString().split("T")[0],
+        });
+      }
+      const d = new Date(current);
+      switch (event.recurring_type) {
+        case "daily":   d.setDate(d.getDate() + 1); break;
+        case "weekly":  d.setDate(d.getDate() + 7); break;
+        case "monthly": d.setMonth(d.getMonth() + 1); break;
+        case "yearly":  d.setFullYear(d.getFullYear() + 1); break;
+        default: current = new Date(recurEnd.getTime() + 1); continue;
+      }
+      current = d;
+    }
+  }
+  return result;
+}
 
 export default function PublicCalendar() {
   const [events, setEvents] = useState<Event[]>([]);
@@ -43,7 +93,7 @@ export default function PublicCalendar() {
     const supabase = createClient();
     const { data, error } = await supabase
       .from("events")
-      .select("id,title,description,event_date,start_time,end_time,location,color");
+      .select("id,title,description,event_date,start_time,end_time,location,color,is_recurring,recurring_type,recurring_end_date");
 
     if (error) {
       console.error("Error fetching events:", error);
@@ -83,8 +133,10 @@ export default function PublicCalendar() {
     return { daysInMonth: lastDay.getDate(), startingDayOfWeek: firstDay.getDay() };
   };
 
+  const expandedEvents = expandEventsForMonth(events, currentDate.getFullYear(), currentDate.getMonth());
+
   const getEventsForDate = (date: Date) =>
-    events.filter(e => e.date.toDateString() === date.toDateString());
+    expandedEvents.filter(e => e.date.toDateString() === date.toDateString());
 
   const { daysInMonth, startingDayOfWeek } = getDaysInMonth(currentDate);
   const monthNames = ["Janvier","Février","Mars","Avril","Mai","Juin","Juillet","Août","Septembre","Octobre","Novembre","Décembre"];
@@ -106,6 +158,14 @@ export default function PublicCalendar() {
           <p className="text-gray-500 dark:text-gray-400 font-bold px-1">
             {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
           </p>
+        </div>
+
+        {/* Legend */}
+        <div className="flex items-center gap-2 text-xs text-gray-400 dark:text-gray-500 bg-gray-50 dark:bg-gray-800/60 border border-gray-100 dark:border-gray-700 rounded-2xl px-4 py-2">
+          <span className="w-2.5 h-2.5 rounded-full bg-blue-500 flex-shrink-0" />
+          <span className="font-medium">Couleur = événement</span>
+          <span className="mx-1 text-gray-300 dark:text-gray-600">·</span>
+          <span>Cliquez pour voir</span>
         </div>
 
         <div className="flex gap-3 bg-gray-50 dark:bg-gray-900 p-1.5 rounded-2xl border border-gray-100 dark:border-gray-800">
@@ -174,9 +234,14 @@ export default function PublicCalendar() {
                   <button
                     key={ev.id}
                     onClick={() => setSelectedEvent(ev)}
-                    className={`${ev.color} w-2 h-2 rounded-full flex-shrink-0`}
+                    className="relative flex-shrink-0"
                     title={ev.title}
-                  />
+                  >
+                    <span className={`${ev.color} w-2 h-2 rounded-full block`} />
+                    {ev.is_recurring && (
+                      <span className="absolute -top-1 -right-1 text-[6px] text-gray-400">↻</span>
+                    )}
+                  </button>
                 ))}
                 {dayEvents.length > 3 && (
                   <span className="text-[8px] text-gray-400 leading-none">+{dayEvents.length - 3}</span>
@@ -204,7 +269,7 @@ export default function PublicCalendar() {
 
             <div className="mb-8">
               <div className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest text-white mb-6 shadow-md ${selectedEvent.color}`}>
-                Événement Paroisse
+                {selectedEvent.is_recurring ? <><RefreshCw size={10} /> Récurrent</> : "Événement Paroisse"}
               </div>
               
               <h3 className="text-3xl sm:text-4xl font-black text-gray-900 dark:text-white leading-tight">
