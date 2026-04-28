@@ -19,9 +19,20 @@ export default async function AuthCheck() {
     .eq("id", user.id)
     .maybeSingle();
 
-  // Block unapproved users unless they are admin or pastor
+  // Block unapproved users unless they are admin/pastor.
+  // Some accounts may carry role in auth metadata, so we normalize and fallback.
+  const normalizeRole = (role: unknown) => {
+    if (typeof role !== "string") return null;
+    return role.trim().toLowerCase();
+  };
+
+  const roleFromProfile = normalizeRole(profile?.role);
+  const roleFromUserMetadata = normalizeRole((user.user_metadata as Record<string, unknown> | null)?.role);
+  const roleFromAppMetadata = normalizeRole((user.app_metadata as Record<string, unknown> | null)?.role);
+  const effectiveRole = roleFromProfile ?? roleFromUserMetadata ?? roleFromAppMetadata;
+
   const privilegedRoles = ["admin", "pastor", "corps_pastoral"];
-  const isPrivileged = profile?.role && privilegedRoles.includes(profile.role);
+  const isPrivileged = effectiveRole != null && privilegedRoles.includes(effectiveRole);
 
   if (!isPrivileged && !profile?.approved) {
     redirect("/auth/pending-approval");
