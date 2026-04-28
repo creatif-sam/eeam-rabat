@@ -84,7 +84,7 @@ export default function UsersAdminPanel({
       .eq("id", profileId)
 
     if (error) {
-      toast.error("Impossible de modifier l'approbation.")
+      toast.error(`Impossible de modifier l'approbation: ${error.message}`)
       setSavingId(null)
       return
     }
