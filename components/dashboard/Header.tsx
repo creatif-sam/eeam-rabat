@@ -210,8 +210,6 @@ export default function Header({ user }: { user: User }) {
             <div
               className="relative"
               ref={profileMenuRef}
-              onMouseEnter={() => setShowProfileMenu(true)}
-              onMouseLeave={() => setShowProfileMenu(false)}
             >
               <button
                 onClick={() => setShowProfileMenu(v => !v)}
