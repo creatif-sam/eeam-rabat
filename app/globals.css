@@ -66,3 +66,30 @@
     @apply bg-background text-foreground;
   }
 }
+
+@layer utilities {
+  /* Improve readability for legacy components that do not provide dark: text variants. */
+  .dark .text-gray-900,
+  .dark .text-gray-800,
+  .dark .text-slate-900,
+  .dark .text-slate-800 {
+    color: rgb(248 250 252) !important;
+  }
+
+  .dark .text-gray-700,
+  .dark .text-gray-600,
+  .dark .text-slate-700,
+  .dark .text-slate-600 {
+    color: rgb(226 232 240) !important;
+  }
+
+  .dark .text-gray-500,
+  .dark .text-slate-500 {
+    color: rgb(203 213 225) !important;
+  }
+
+  .dark input::placeholder,
+  .dark textarea::placeholder {
+    color: rgb(148 163 184);
+  }
+}

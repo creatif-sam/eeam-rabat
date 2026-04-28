@@ -13,13 +13,19 @@ export default async function AuthCheck() {
     redirect("/auth/login");
   }
 
-  // Profile is optional now
-  // We fetch it only for display purposes if needed
   const { data: profile } = await supabase
     .from("profiles")
     .select("*")
     .eq("id", user.id)
     .maybeSingle();
+
+  // Block unapproved users unless they are admin or pastor
+  const privilegedRoles = ["admin", "pastor", "corps_pastoral"];
+  const isPrivileged = profile?.role && privilegedRoles.includes(profile.role);
+
+  if (!isPrivileged && !profile?.approved) {
+    redirect("/auth/pending-approval");
+  }
 
   return { user, profile };
 }

@@ -120,10 +120,10 @@ export default function FormationsTab() {
   ];
 
   const statutBadge = (statut: string) => {
-    if (statut === "en_cours") return { label: "En cours", color: "bg-blue-100 text-blue-700 border-blue-200" };
-    if (statut === "a_venir") return { label: "À venir", color: "bg-purple-100 text-purple-700 border-purple-200" };
-    if (statut === "terminee") return { label: "Terminée", color: "bg-green-100 text-green-700 border-green-200" };
-    return { label: statut, color: "bg-gray-100 text-gray-700 border-gray-200" };
+    if (statut === "en_cours") return { label: "En cours", color: "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-800" };
+    if (statut === "a_venir") return { label: "À venir", color: "bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-800" };
+    if (statut === "terminee") return { label: "Terminée", color: "bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 border-green-200 dark:border-green-800" };
+    return { label: statut, color: "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-200 dark:border-gray-700" };
   };
 
   const filtered = formations.filter(f => {
@@ -136,15 +136,15 @@ export default function FormationsTab() {
   });
 
   return (
-    <div className="p-8 space-y-6 bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 min-h-screen">
+    <div className="space-y-6 min-h-screen">
 
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-800 mb-2">
+          <h1 className="text-3xl font-bold text-gray-800 dark:text-white mb-2">
             Gestion des Formations
           </h1>
-          <p className="text-gray-600">
+          <p className="text-gray-600 dark:text-gray-400">
             Formations et programmes de développement spirituel
           </p>
         </div>
@@ -168,7 +168,7 @@ export default function FormationsTab() {
       </div>
 
       {/* Filters */}
-      <div className="bg-white p-6 rounded-2xl shadow-sm flex justify-between flex-wrap gap-4">
+      <div className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 p-6 rounded-2xl shadow-sm flex justify-between flex-wrap gap-4">
         <div className="flex gap-2 flex-wrap">
           {categories.map(cat => (
             <button
@@ -177,7 +177,7 @@ export default function FormationsTab() {
               className={`px-4 py-2 rounded-lg font-medium ${
                 selectedCategory === cat.id
                   ? "bg-cyan-500 text-white"
-                  : "bg-gray-100 text-gray-600"
+                  : "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300"
               }`}
             >
               {cat.label}
@@ -191,7 +191,7 @@ export default function FormationsTab() {
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
             placeholder="Rechercher une formation"
-            className="pl-10 pr-4 py-2 border rounded-xl"
+            className="pl-10 pr-4 py-2 border border-gray-200 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500"
           />
         </div>
       </div>
@@ -201,7 +201,7 @@ export default function FormationsTab() {
         {filtered.map(f => {
           const badge = statutBadge(f.statut);
           return (
-            <div key={f.id} className="bg-white rounded-2xl shadow-lg overflow-hidden">
+            <div key={f.id} className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl shadow-lg overflow-hidden">
               <div className={`p-6 bg-gradient-to-r ${f.couleur}`}>
                 <span className={`px-3 py-1 text-xs rounded-full border ${badge.color}`}>
                   {badge.label}
@@ -219,12 +219,12 @@ export default function FormationsTab() {
                     />
                   )}
                   <div>
-                    <p className="text-xs text-gray-500">Formateur</p>
-                    <p className="font-semibold">{f.formateur_nom}</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">Formateur</p>
+                    <p className="font-semibold text-gray-900 dark:text-white">{f.formateur_nom}</p>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-3 text-sm text-gray-600">
+                <div className="grid grid-cols-2 gap-3 text-sm text-gray-600 dark:text-gray-300">
                   <span className="flex items-center gap-2">
                     <Clock size={14} /> {f.duree}
                   </span>
@@ -242,14 +242,14 @@ export default function FormationsTab() {
                 <div className="flex gap-2">
                   <button
                     onClick={() => setSelectedFormation(f)}
-                    className="flex-1 bg-cyan-50 text-cyan-600 py-2 rounded-xl flex items-center justify-center gap-2"
+                    className="flex-1 bg-cyan-50 dark:bg-cyan-900/20 text-cyan-600 dark:text-cyan-300 py-2 rounded-xl flex items-center justify-center gap-2"
                   >
                     <Eye size={16} />
                     Voir détails
                   </button>
                   <button
                     onClick={() => setEditingFormation(f)}
-                    className="bg-gray-50 px-4 rounded-xl"
+                    className="bg-gray-50 dark:bg-gray-800 px-4 rounded-xl text-gray-700 dark:text-gray-200"
                   >
                     <Edit size={16} />
                   </button>
@@ -263,7 +263,7 @@ export default function FormationsTab() {
       {/* Detail modal */}
       {selectedFormation && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+          <div className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
 
             <div className={`bg-gradient-to-r ${selectedFormation.couleur} p-6 text-white`}>
               <div className="flex justify-between">
@@ -282,30 +282,30 @@ export default function FormationsTab() {
 
             <div className="p-6 space-y-6">
               <div className="grid md:grid-cols-2 gap-4">
-                <div className="flex items-center gap-3 bg-blue-50 p-4 rounded-xl">
+                <div className="flex items-center gap-3 bg-blue-50 dark:bg-blue-900/20 p-4 rounded-xl">
                   <Calendar size={20} className="text-blue-600" />
                   <div>
-                    <p className="text-sm text-gray-600">Horaire</p>
-                    <p className="font-medium">{selectedFormation.horaire}</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">Horaire</p>
+                    <p className="font-medium text-gray-900 dark:text-white">{selectedFormation.horaire}</p>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-3 bg-purple-50 p-4 rounded-xl">
+                <div className="flex items-center gap-3 bg-purple-50 dark:bg-purple-900/20 p-4 rounded-xl">
                   {selectedFormation.en_ligne ? (
                     <Video size={20} className="text-purple-600" />
                   ) : (
                     <FileText size={20} className="text-purple-600" />
                   )}
                   <div>
-                    <p className="text-sm text-gray-600">Lieu</p>
-                    <p className="font-medium">{selectedFormation.lieu}</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">Lieu</p>
+                    <p className="font-medium text-gray-900 dark:text-white">{selectedFormation.lieu}</p>
                   </div>
                 </div>
               </div>
 
               <ModulesList formationId={selectedFormation.id} />
 
-              <div className="flex gap-3 pt-4 border-t">
+              <div className="flex gap-3 pt-4 border-t border-gray-200 dark:border-gray-800">
                 <button
                   onClick={() => setEditingFormation(selectedFormation)}
                   className="flex-1 px-6 py-3 bg-cyan-500 text-white rounded-xl"
@@ -335,12 +335,12 @@ export default function FormationsTab() {
 
 function Stat({ icon, label, value }: any) {
   return (
-    <div className="bg-white rounded-2xl p-6 shadow-sm">
+    <div className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl p-6 shadow-sm">
       <div className="w-12 h-12 bg-cyan-500 rounded-xl flex items-center justify-center text-white mb-4">
         {icon}
       </div>
-      <p className="text-sm text-gray-600">{label}</p>
-      <p className="text-3xl font-bold">{value}</p>
+      <p className="text-sm text-gray-600 dark:text-gray-400">{label}</p>
+      <p className="text-3xl font-bold text-gray-900 dark:text-white">{value}</p>
     </div>
   );
 }

@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { X, Trash2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import { toast } from "sonner";
 
 type Formation = {
   id: string;
@@ -70,21 +71,28 @@ export default function EditFormationModal({
   };
 
   const remove = async () => {
-    if (!confirm("Supprimer cette formation ?")) return;
-
-    await supabase.from("formations").delete().eq("id", formation.id);
-    onUpdated();
-    onClose();
+    toast("Supprimer cette formation ?", {
+      action: {
+        label: "Supprimer",
+        onClick: async () => {
+          await supabase.from("formations").delete().eq("id", formation.id);
+          toast.success("Formation supprimée");
+          onUpdated();
+          onClose();
+        }
+      },
+      cancel: { label: "Annuler", onClick: () => {} }
+    });
   };
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl shadow-2xl max-w-5xl w-full p-6">
+      <div className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl shadow-2xl max-w-5xl w-full p-6">
         <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold text-gray-800">
+          <h2 className="text-2xl font-bold text-gray-800 dark:text-white">
             Modifier la formation
           </h2>
-          <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-lg">
+          <button onClick={onClose} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg text-gray-700 dark:text-gray-200">
             <X />
           </button>
         </div>
@@ -92,13 +100,13 @@ export default function EditFormationModal({
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
 
           <input
-            className="border rounded-xl p-3 md:col-span-2 xl:col-span-3"
+            className="border border-gray-200 dark:border-gray-700 rounded-xl p-3 md:col-span-2 xl:col-span-3 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
             value={form.titre}
             onChange={e => setForm({ ...form, titre: e.target.value })}
           />
 
           <select
-            className="border rounded-xl p-3"
+            className="border border-gray-200 dark:border-gray-700 rounded-xl p-3 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
             value={form.categorie}
             onChange={e => setForm({ ...form, categorie: e.target.value })}
           >
@@ -110,14 +118,14 @@ export default function EditFormationModal({
           </select>
 
           <input
-            className="border rounded-xl p-3"
+            className="border border-gray-200 dark:border-gray-700 rounded-xl p-3 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
             value={form.duree}
             onChange={e => setForm({ ...form, duree: e.target.value })}
           />
 
           <input
             type="number"
-            className="border rounded-xl p-3"
+            className="border border-gray-200 dark:border-gray-700 rounded-xl p-3 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
             value={form.sessions_total}
             onChange={e =>
               setForm({
@@ -128,7 +136,7 @@ export default function EditFormationModal({
           />
 
           <textarea
-            className="border rounded-xl p-3 md:col-span-2 xl:col-span-3"
+            className="border border-gray-200 dark:border-gray-700 rounded-xl p-3 md:col-span-2 xl:col-span-3 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
             rows={3}
             value={form.description}
             onChange={e => setForm({ ...form, description: e.target.value })}
@@ -136,37 +144,37 @@ export default function EditFormationModal({
 
           <input
             type="date"
-            className="border rounded-xl p-3"
+            className="border border-gray-200 dark:border-gray-700 rounded-xl p-3 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
             value={form.date_debut}
             onChange={e => setForm({ ...form, date_debut: e.target.value })}
           />
 
           <input
             type="date"
-            className="border rounded-xl p-3"
+            className="border border-gray-200 dark:border-gray-700 rounded-xl p-3 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
             value={form.date_fin || ""}
             onChange={e => setForm({ ...form, date_fin: e.target.value })}
           />
 
           <input
-            className="border rounded-xl p-3"
+            className="border border-gray-200 dark:border-gray-700 rounded-xl p-3 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
             value={form.horaire}
             onChange={e => setForm({ ...form, horaire: e.target.value })}
           />
 
           <input
-            className="border rounded-xl p-3 md:col-span-2"
+            className="border border-gray-200 dark:border-gray-700 rounded-xl p-3 md:col-span-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
             value={form.lieu}
             onChange={e => setForm({ ...form, lieu: e.target.value })}
           />
 
           <input
-            className="border rounded-xl p-3"
+            className="border border-gray-200 dark:border-gray-700 rounded-xl p-3 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
             value={form.niveau}
             onChange={e => setForm({ ...form, niveau: e.target.value })}
           />
 
-          <label className="flex items-center gap-2 text-sm text-gray-700 xl:col-span-3">
+          <label className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300 xl:col-span-3">
             <input
               type="checkbox"
               checked={form.en_ligne}

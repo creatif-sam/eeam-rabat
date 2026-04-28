@@ -7,6 +7,7 @@ import {
   Calendar,
   GraduationCap,
   Users,
+  UserCog,
   Menu,
   X,
   ChevronRight,
@@ -15,29 +16,38 @@ import {
   FileText,
   MapPin,
   ClipboardList,
-  ListTodo
+  ListTodo,
+  Settings
 } from "lucide-react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { useSidebar } from "./SidebarContext"
 
-const menuItems = [
-  { label: "Accueil", icon: Home, route: "/dashboard" },
-  { label: "Baptêmes", icon: Droplet, route: "/dashboard/baptemes" },
-  { label: "Événements", icon: Calendar, route: "/dashboard/events" },
-  { label: "Planify", icon: ListTodo, route: "/dashboard/tasky" },
-  { label: "Formulaires", icon: ClipboardList, route: "/dashboard/formulaires" },
-  { label: "Finance", icon: DollarSign, route: "/dashboard/finances" },
-  { label: "Formations", icon: GraduationCap, route: "/dashboard/formations" },
-  { label: "Commissions", icon: Users, route: "/dashboard/groupes" },
-  { label: "Membres", icon: UsersRound, route: "/dashboard/membres" },
-  { label: "Rapports", icon: FileText, route: "/dashboard/rapports" },
-  { label: "Annexe de J5", icon: MapPin, route: "/dashboard/annexe-j5" }
+const allMenuItems = [
+  { label: "Accueil", icon: Home, route: "/dashboard", adminOnly: false },
+  { label: "Annexe de J5", icon: MapPin, route: "/dashboard/annexe-j5", adminOnly: false },
+  { label: "Baptêmes", icon: Droplet, route: "/dashboard/baptemes", adminOnly: false },
+  { label: "Commissions", icon: Users, route: "/dashboard/groupes", adminOnly: false },
+  { label: "Événements", icon: Calendar, route: "/dashboard/events", adminOnly: false },
+  { label: "Finance", icon: DollarSign, route: "/dashboard/finances", adminOnly: false },
+  { label: "Formations", icon: GraduationCap, route: "/dashboard/formations", adminOnly: false },
+  { label: "Formulaires", icon: ClipboardList, route: "/dashboard/formulaires", adminOnly: false },
+  { label: "Logs", icon: FileText, route: "/dashboard/logs", adminOnly: true },
+  { label: "Membres", icon: UsersRound, route: "/dashboard/membres", adminOnly: false },
+  { label: "Paramètres", icon: Settings, route: "/dashboard/settings", adminOnly: true },
+  { label: "Planify", icon: ListTodo, route: "/dashboard/tasky", adminOnly: false },
+  { label: "Rapports", icon: FileText, route: "/dashboard/rapports", adminOnly: false },
+  { label: "Utilisateurs", icon: UserCog, route: "/dashboard/users", adminOnly: true },
 ]
 
-export default function Sidebar() {
+const PRIVILEGED_ROLES = ["admin", "pastor"]
+
+export default function Sidebar({ role }: { role: string | null }) {
   const { isMobileOpen, setIsMobileOpen, isDesktopExpanded, toggleSidebar } = useSidebar()
   const pathname = usePathname()
+
+  const isPrivileged = role != null && PRIVILEGED_ROLES.includes(role)
+  const menuItems = allMenuItems.filter(item => !item.adminOnly || isPrivileged)
 
   // showLabel: true when sidebar is fully open (mobile overlay OR desktop expanded)
   const showLabel = isMobileOpen || isDesktopExpanded

@@ -1,6 +1,6 @@
 "use client"
 
-import { Bell, LogOut, CheckCheck, X, Info, AlertTriangle, CheckCircle2 } from "lucide-react"
+import { Bell, LogOut, CheckCheck, X, Info, AlertTriangle, CheckCircle2, Users } from "lucide-react"
 import { logout } from "@/app/auth/logout/actions"
 import Link from "next/link"
 import { useEffect, useState, useRef } from "react"
@@ -28,9 +28,12 @@ function formatRole(role?: string | null) {
 
   const map: Record<string, string> = {
     admin: "Administrateur",
+    pastor: "Pasteur",
+    treasurer: "Trésorier",
+    cp: "Membre CP",
     membre_cp: "Membre CP",
-    president_cp: "Président CP",
-    corps_pastoral: "Corps pastoral"
+    president_cp: "Membre CP",
+    corps_pastoral: "Pasteur"
   }
 
   return map[role] ?? role
@@ -41,7 +44,9 @@ export default function Header({ user }: { user: User }) {
   const [profile, setProfile] = useState<Profile | null>(null)
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [showNotifs, setShowNotifs] = useState(false)
+  const [showProfileMenu, setShowProfileMenu] = useState(false)
   const notifRef = useRef<HTMLDivElement>(null)
+  const profileMenuRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     async function loadProfile() {
@@ -91,6 +96,9 @@ export default function Header({ user }: { user: User }) {
     function handleClick(e: MouseEvent) {
       if (notifRef.current && !notifRef.current.contains(e.target as Node)) {
         setShowNotifs(false)
+      }
+      if (profileMenuRef.current && !profileMenuRef.current.contains(e.target as Node)) {
+        setShowProfileMenu(false)
       }
     }
     document.addEventListener("mousedown", handleClick)
@@ -199,27 +207,44 @@ export default function Header({ user }: { user: User }) {
               </p>
             </div>
 
-            <Link
-              href="/dashboard/profile"
-              className="w-9 h-9 md:w-11 md:h-11 rounded-full overflow-hidden shadow-lg border border-gray-200 dark:border-gray-700 hover:ring-2 hover:ring-cyan-500 transition flex items-center justify-center bg-gradient-to-br from-cyan-500 to-blue-600 text-white font-semibold text-sm md:text-base"
-              title="Voir le profil"
+            <div
+              className="relative"
+              ref={profileMenuRef}
+              onMouseEnter={() => setShowProfileMenu(true)}
+              onMouseLeave={() => setShowProfileMenu(false)}
             >
-              {profile?.avatar_url ? (
-                <img src={profile.avatar_url} alt={fullName} className="w-full h-full object-cover" />
-              ) : (
-                initials
-              )}
-            </Link>
-
-            <form action={logout}>
               <button
-                type="submit"
-                className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-300"
-                title="Déconnexion"
+                onClick={() => setShowProfileMenu(v => !v)}
+                className="w-9 h-9 md:w-11 md:h-11 rounded-full overflow-hidden shadow-lg border border-gray-200 dark:border-gray-700 hover:ring-2 hover:ring-cyan-500 transition flex items-center justify-center bg-gradient-to-br from-cyan-500 to-blue-600 text-white font-semibold text-sm md:text-base"
+                title="Menu profil"
               >
-                <LogOut size={16} />
+                {profile?.avatar_url ? (
+                  <img src={profile.avatar_url} alt={fullName} className="w-full h-full object-cover" />
+                ) : (
+                  initials
+                )}
               </button>
-            </form>
+
+              {showProfileMenu && (
+                <div className="absolute right-0 mt-2 w-44 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl z-50 overflow-hidden">
+                  <Link
+                    href="/dashboard/profile"
+                    onClick={() => setShowProfileMenu(false)}
+                    className="w-full px-3 py-2.5 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 flex items-center gap-2"
+                  >
+                    <Users size={14} /> Voir profil
+                  </Link>
+                  <form action={logout}>
+                    <button
+                      type="submit"
+                      className="w-full px-3 py-2.5 text-sm text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-900/20 flex items-center gap-2"
+                    >
+                      <LogOut size={14} /> Déconnexion
+                    </button>
+                  </form>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>

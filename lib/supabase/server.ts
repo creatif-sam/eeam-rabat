@@ -13,10 +13,18 @@ export async function createSupabaseServerClient() {
           return cookieStore.get(name)?.value
         },
         set(name: string, value: string, options: any) {
-          cookieStore.set({ name, value, ...options })
+          try {
+            cookieStore.set({ name, value, ...options })
+          } catch {
+            // Cookie writes are not allowed from all server contexts (e.g. Server Components).
+          }
         },
         remove(name: string, options: any) {
-          cookieStore.delete({ name, ...options })
+          try {
+            cookieStore.delete({ name, ...options })
+          } catch {
+            // Cookie deletes are not allowed from all server contexts (e.g. Server Components).
+          }
         }
       }
     }

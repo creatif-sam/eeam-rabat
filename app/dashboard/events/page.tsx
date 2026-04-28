@@ -132,14 +132,21 @@ export default function EventsTab() {
   };
 
   const deleteEvent = async (id: string) => {
-    if (!confirm("Supprimer cet événement ?")) return;
-    const supabase = createClient();
-    // Use base id (strip virtual suffix for recurring occurrences)
-    const baseId = id.includes("_") ? id.split("_")[0] : id;
-    await supabase.from("events").delete().eq("id", baseId);
-    setEvents(prev => prev.filter(e => e.id !== baseId && !e.id.startsWith(baseId + "_")));
-    setSelectedEvent(null);
-    toast.success("Événement supprimé");
+    toast("Supprimer cet événement ?", {
+      action: {
+        label: "Supprimer",
+        onClick: async () => {
+          const supabase = createClient();
+          // Use base id (strip virtual suffix for recurring occurrences)
+          const baseId = id.includes("_") ? id.split("_")[0] : id;
+          await supabase.from("events").delete().eq("id", baseId);
+          setEvents(prev => prev.filter(e => e.id !== baseId && !e.id.startsWith(baseId + "_")));
+          setSelectedEvent(null);
+          toast.success("Événement supprimé");
+        }
+      },
+      cancel: { label: "Annuler", onClick: () => {} }
+    });
   };
 
   const getDaysInMonth = (date: Date) => {

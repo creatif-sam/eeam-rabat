@@ -128,12 +128,19 @@ export default function TaskyPage() {
   }
 
   async function deleteProject(id: string) {
-    if (!confirm("Supprimer ce projet et toutes ses taches ?")) return;
-    await supabase.from("tasks").delete().eq("project_id", id);
-    await supabase.from("projects").delete().eq("id", id);
-    toast.success("Projet supprime");
-    if (activeProject === id) setActiveProject(null);
-    loadAll();
+    toast("Supprimer ce projet et toutes ses tâches ?", {
+      action: {
+        label: "Supprimer",
+        onClick: async () => {
+          await supabase.from("tasks").delete().eq("project_id", id);
+          await supabase.from("projects").delete().eq("id", id);
+          toast.success("Projet supprime");
+          if (activeProject === id) setActiveProject(null);
+          loadAll();
+        }
+      },
+      cancel: { label: "Annuler", onClick: () => {} }
+    });
   }
 
   async function sendTaskAssignmentEmail(assignedToId: string, taskTitle: string, projectName: string, priority: string, dueDate?: string) {
@@ -193,11 +200,18 @@ export default function TaskyPage() {
   }
 
   async function deleteTask(id: string) {
-    if (!confirm("Supprimer cette tache ?")) return;
-    await supabase.from("tasks").delete().eq("id", id);
-    setTasks(prev => prev.filter(t => t.id !== id));
-    setSelectedTask(null);
-    toast.success("Tache supprimee");
+    toast("Supprimer cette tâche ?", {
+      action: {
+        label: "Supprimer",
+        onClick: async () => {
+          await supabase.from("tasks").delete().eq("id", id);
+          setTasks(prev => prev.filter(t => t.id !== id));
+          setSelectedTask(null);
+          toast.success("Tache supprimee");
+        }
+      },
+      cancel: { label: "Annuler", onClick: () => {} }
+    });
   }
 
   async function saveEditTask() {
@@ -250,11 +264,11 @@ export default function TaskyPage() {
   const isOverdue = (due?: string) => due && new Date(due) < new Date();
 
   return (
-    <div className="flex h-[calc(100vh-5rem)] bg-gray-50 dark:bg-gray-950 overflow-hidden">
+    <div className="flex flex-col md:flex-row h-auto md:h-[calc(100vh-5rem)] bg-gray-50 dark:bg-gray-950 overflow-hidden">
 
       {/* Left sidebar */}
-      <aside className="w-56 shrink-0 border-r border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 flex flex-col">
-        <div className="px-4 py-4 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between">
+      <aside className="w-full md:w-56 shrink-0 border-b md:border-b-0 md:border-r border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 flex flex-col max-h-[42vh] md:max-h-none">
+        <div className="px-4 py-3 md:py-4 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between">
           <span className="text-xs font-semibold text-gray-400 uppercase tracking-widest">Projets</span>
           <button onClick={() => setShowProjectModal(true)} className="w-6 h-6 rounded-md bg-cyan-600 hover:bg-cyan-700 text-white flex items-center justify-center transition-colors">
             <Plus size={13} />
@@ -288,19 +302,19 @@ export default function TaskyPage() {
       <main className="flex-1 flex flex-col min-w-0 overflow-hidden">
 
         {/* Toolbar */}
-        <div className="h-14 shrink-0 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 px-5 flex items-center gap-3">
-          <h1 className="font-bold text-gray-900 dark:text-white text-sm flex items-center gap-2 mr-4">
+        <div className="shrink-0 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 px-3 md:px-5 py-3 flex flex-wrap items-center gap-2 md:gap-3">
+          <h1 className="font-bold text-gray-900 dark:text-white text-sm flex items-center gap-2 mr-0 md:mr-4 w-full md:w-auto">
             <FolderKanban size={16} className="text-cyan-600" />
             {projects.find(p => p.id === activeProject)?.name ?? "Selectionnez un projet"}
           </h1>
-          <div className="relative flex-1 max-w-xs">
+          <div className="relative flex-1 min-w-[180px] md:max-w-xs">
             <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
             <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Rechercher..."
               className="w-full pl-8 pr-3 py-1.5 text-sm bg-gray-100 dark:bg-gray-800 border border-transparent focus:border-cyan-400 focus:bg-white dark:focus:bg-gray-900 rounded-lg outline-none transition-all text-gray-700 dark:text-gray-300" />
           </div>
-          <div className="relative">
+          <div className="relative w-full sm:w-auto">
             <select value={filterPriority} onChange={e => setFilterPriority(e.target.value as any)}
-              className="text-xs pl-3 pr-7 py-1.5 bg-gray-100 dark:bg-gray-800 border border-transparent rounded-lg outline-none text-gray-600 dark:text-gray-300 appearance-none cursor-pointer">
+              className="w-full text-xs pl-3 pr-7 py-1.5 bg-gray-100 dark:bg-gray-800 border border-transparent rounded-lg outline-none text-gray-600 dark:text-gray-300 appearance-none cursor-pointer">
               <option value="all">Toutes priorites</option>
               <option value="high">Elevee</option>
               <option value="medium">Moyenne</option>
@@ -308,13 +322,13 @@ export default function TaskyPage() {
             </select>
             <ChevronDown size={11} className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
           </div>
-          <div className="flex items-center bg-gray-100 dark:bg-gray-800 rounded-lg p-0.5 ml-auto">
+          <div className="flex items-center bg-gray-100 dark:bg-gray-800 rounded-lg p-0.5 md:ml-auto">
             <button onClick={() => setViewMode("board")} className={`p-1.5 rounded-md transition-all ${viewMode === "board" ? "bg-white dark:bg-gray-700 shadow text-cyan-600" : "text-gray-500"}`}><LayoutGrid size={14} /></button>
             <button onClick={() => setViewMode("list")} className={`p-1.5 rounded-md transition-all ${viewMode === "list" ? "bg-white dark:bg-gray-700 shadow text-cyan-600" : "text-gray-500"}`}><List size={14} /></button>
           </div>
           {activeProject && (
             <button onClick={() => setShowTaskModal(true)}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-cyan-600 hover:bg-cyan-700 text-white text-sm font-medium rounded-lg transition-colors shadow-sm">
+              className="flex items-center justify-center gap-1.5 px-3 py-1.5 w-full sm:w-auto bg-cyan-600 hover:bg-cyan-700 text-white text-sm font-medium rounded-lg transition-colors shadow-sm">
               <Plus size={14} /> Tache
             </button>
           )}
@@ -328,13 +342,13 @@ export default function TaskyPage() {
             <button onClick={() => setShowProjectModal(true)} className="px-4 py-2 bg-cyan-600 text-white rounded-lg text-sm hover:bg-cyan-700 transition-colors">Nouveau projet</button>
           </div>
         ) : viewMode === "board" ? (
-          <div className="flex-1 overflow-x-auto p-5">
-            <div className="flex gap-4 h-full" style={{ minWidth: "900px" }}>
+          <div className="flex-1 overflow-y-auto md:overflow-x-auto p-3 md:p-5">
+            <div className="flex flex-col md:flex-row gap-4 h-auto md:h-full md:min-w-[900px]">
               {COLUMNS.map(col => {
                 const colTasks = projectTasks.filter(t => t.status === col.key);
                 const Icon = col.icon;
                 return (
-                  <div key={col.key} className="flex flex-col w-64 shrink-0">
+                  <div key={col.key} className="flex flex-col w-full md:w-64 shrink-0">
                     <div className={`flex items-center justify-between px-3 py-2.5 rounded-xl mb-3 ${col.bg}`}>
                       <div className="flex items-center gap-2">
                         <Icon size={14} className={col.color} />
@@ -346,7 +360,7 @@ export default function TaskyPage() {
                         <Plus size={12} />
                       </button>
                     </div>
-                    <div className="flex-1 space-y-2.5 overflow-y-auto pr-1">
+                    <div className="flex-1 space-y-2.5 overflow-y-visible md:overflow-y-auto pr-0 md:pr-1">
                       {colTasks.map(task => {
                         const profile = getProfile(task.assigned_to);
                         const overdue = isOverdue(task.due_date) && task.status !== "done";
@@ -392,9 +406,10 @@ export default function TaskyPage() {
             </div>
           </div>
         ) : (
-          <div className="flex-1 overflow-y-auto p-5">
+          <div className="flex-1 overflow-y-auto p-3 md:p-5">
             <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 overflow-hidden shadow-sm">
-              <table className="w-full text-sm">
+              <div className="overflow-x-auto">
+              <table className="w-full min-w-[760px] text-sm">
                 <thead>
                   <tr className="border-b border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50">
                     <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Tache</th>
@@ -445,6 +460,7 @@ export default function TaskyPage() {
                   })}
                 </tbody>
               </table>
+              </div>
             </div>
           </div>
         )}
@@ -454,8 +470,8 @@ export default function TaskyPage() {
       {selectedTask && (
         <div className="fixed inset-0 z-50 flex">
           <div className="flex-1 bg-black/40" onClick={() => { setSelectedTask(null); setEditingTask(null); }} />
-          <aside className="w-[480px] bg-white dark:bg-gray-900 shadow-2xl flex flex-col border-l border-gray-200 dark:border-gray-800 overflow-hidden">
-            <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between shrink-0">
+          <aside className="w-full sm:w-[480px] bg-white dark:bg-gray-900 shadow-2xl flex flex-col border-l border-gray-200 dark:border-gray-800 overflow-hidden">
+            <div className="px-4 sm:px-6 py-4 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between shrink-0">
               <div className="flex items-center gap-2">
                 <StatusBadge s={selectedTask.status} />
                 <PriorityBadge p={selectedTask.priority} />
@@ -467,7 +483,7 @@ export default function TaskyPage() {
               </div>
             </div>
 
-            <div className="flex-1 overflow-y-auto px-6 py-5 space-y-5">
+            <div className="flex-1 overflow-y-auto px-4 sm:px-6 py-5 space-y-5">
               {editingTask ? (
                 <input value={editingTask.title} onChange={e => setEditingTask({ ...editingTask, title: e.target.value })}
                   className="w-full text-xl font-bold bg-gray-50 dark:bg-gray-800 rounded-xl px-3 py-2 outline-none border border-cyan-400 text-gray-900 dark:text-white" />
@@ -475,7 +491,7 @@ export default function TaskyPage() {
                 <h2 className="text-xl font-bold text-gray-900 dark:text-white leading-snug">{selectedTask.title}</h2>
               )}
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-3">
                   <p className="text-[10px] text-gray-400 uppercase font-semibold tracking-wider mb-1.5">Statut</p>
                   {editingTask ? (
@@ -646,14 +662,14 @@ export default function TaskyPage() {
               <h2 className="font-bold text-gray-900 dark:text-white flex items-center gap-2"><Zap size={16} className="text-cyan-600" /> Nouvelle tache</h2>
               <button onClick={() => setShowTaskModal(false)} className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-400 transition-colors"><X size={16} /></button>
             </div>
-            <div className="p-6 space-y-4">
+            <div className="p-4 sm:p-6 space-y-4">
               <input value={taskForm.title} onChange={e => setTaskForm({ ...taskForm, title: e.target.value })}
                 placeholder="Titre de la tache *"
                 className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-sm outline-none focus:border-cyan-400 text-gray-800 dark:text-gray-200 font-medium" />
               <textarea value={taskForm.description} onChange={e => setTaskForm({ ...taskForm, description: e.target.value })}
                 rows={3} placeholder="Description (optionnel)"
                 className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-sm outline-none focus:border-cyan-400 text-gray-800 dark:text-gray-200 resize-none" />
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="text-xs font-semibold text-gray-500 mb-1.5 block">Statut</label>
                   <select value={taskForm.status} onChange={e => setTaskForm({ ...taskForm, status: e.target.value as Status })}

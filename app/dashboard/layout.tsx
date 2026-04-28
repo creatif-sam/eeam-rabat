@@ -14,8 +14,8 @@ export default function DashboardLayout({
     <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading...</div>}>
       <SidebarProvider>
         <AuthCheckWrapper>
-          {({ user }) => (
-            <DashboardContent user={user}>
+          {({ user, profile }) => (
+            <DashboardContent user={user} role={profile?.role ?? null}>
               {children}
             </DashboardContent>
           )}
@@ -25,7 +25,7 @@ export default function DashboardLayout({
   );
 }
 
-async function AuthCheckWrapper({ children }: { children: ({ user }: { user: any }) => React.ReactNode }) {
-  const { user } = await AuthCheck();
-  return children({ user });
+async function AuthCheckWrapper({ children }: { children: ({ user, profile }: { user: any; profile: any }) => React.ReactNode }) {
+  const { user, profile } = await AuthCheck();
+  return children({ user, profile });
 }

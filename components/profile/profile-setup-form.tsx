@@ -23,7 +23,6 @@ export default function ProfileSetupForm({
   const router = useRouter()
 
   const [fullName, setFullName] = useState(profile?.full_name ?? "")
-  const [role, setRole] = useState(profile?.role ?? "")
   const [phone, setPhone] = useState(profile?.phone ?? "")
   const [church, setChurch] = useState(profile?.church ?? "EEAM Rabat")
   const [isLoading, setIsLoading] = useState(false)
@@ -47,7 +46,6 @@ export default function ProfileSetupForm({
     const { error: upsertError } = await supabase.from("profiles").upsert({
       id: user.id,
       full_name: fullName,
-      role,
       phone,
       church,
       completed: true
@@ -77,20 +75,6 @@ export default function ProfileSetupForm({
           <div>
             <Label>Nom complet</Label>
             <Input value={fullName} onChange={e => setFullName(e.target.value)} />
-          </div>
-
-          <div>
-            <Label>Rôle</Label>
-            <select
-              value={role}
-              onChange={e => setRole(e.target.value)}
-              className="w-full border rounded-md px-3 py-2"
-            >
-              <option value="">Sélectionner</option>
-              <option value="admin">Administrateur</option>
-              <option value="cp">Conseil pastoral</option>
-              <option value="corps_pastoral">Corps pastoral</option>
-            </select>
           </div>
 
           <div>
