@@ -34,7 +34,9 @@ export default async function AuthCheck() {
   const privilegedRoles = ["admin", "pastor", "corps_pastoral"];
   const isPrivileged = effectiveRole != null && privilegedRoles.includes(effectiveRole);
 
-  if (!isPrivileged && !profile?.approved) {
+  // If no profile row exists at all, let them through (profile setup will handle it)
+  // Only redirect if profile exists AND they are not privileged AND not explicitly approved
+  if (profile !== null && !isPrivileged && !profile?.approved) {
     redirect("/auth/pending-approval");
   }
 
