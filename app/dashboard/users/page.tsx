@@ -1,5 +1,8 @@
 import { createSupabaseServerClient } from "@/lib/supabase/server"
 import UsersAdminPanel from "@/components/dashboard/UsersAdminPanel"
+import { redirect } from "next/navigation"
+
+const ADMIN_ROLES = ["admin", "pastor"]
 
 export default async function UsersPage() {
   const supabase = await createSupabaseServerClient()
@@ -9,7 +12,7 @@ export default async function UsersPage() {
   } = await supabase.auth.getUser()
 
   if (!user) {
-    return null
+    redirect("/auth/login")
   }
 
   const { data: existingProfile } = await supabase
@@ -19,11 +22,16 @@ export default async function UsersPage() {
     .maybeSingle()
 
   if (!existingProfile) {
-    // Insert only when missing, so we never overwrite an existing role.
     await supabase.from("profiles").insert({
       id: user.id,
       full_name: user.user_metadata?.full_name ?? null
     })
+  }
+
+  // Server-side role guard — non-admins cannot access this page
+  const rawRole = (existingProfile?.role ?? "").trim().toLowerCase()
+  if (!ADMIN_ROLES.includes(rawRole)) {
+    redirect("/dashboard")
   }
 
   const [{ data: currentProfile }, { data: profiles, error: profilesError }] = await Promise.all([

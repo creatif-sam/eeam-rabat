@@ -1,5 +1,6 @@
 import { Activity, Clock, FileText } from "lucide-react"
 import { createSupabaseServerClient } from "@/lib/supabase/server"
+import { redirect } from "next/navigation"
 
 type ActivityLog = {
   id: string
@@ -33,6 +34,20 @@ function formatAction(action: string) {
 
 export default async function LogsPage() {
   const supabase = await createSupabaseServerClient()
+
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) { redirect("/auth/login") }
+
+  const { data: currentProfile } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", user.id)
+    .maybeSingle()
+
+  const rawRole = (currentProfile?.role ?? "").trim().toLowerCase()
+  if (!["admin", "pastor"].includes(rawRole)) {
+    redirect("/dashboard")
+  }
 
   const { data: logs, error: logsError } = await supabase
     .from("activity_logs")
