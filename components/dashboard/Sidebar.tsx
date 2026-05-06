@@ -23,31 +23,34 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { useSidebar } from "./SidebarContext"
 
-const allMenuItems = [
-  { label: "Accueil", icon: Home, route: "/dashboard", adminOnly: false },
-  { label: "Annexe de J5", icon: MapPin, route: "/dashboard/annexe-j5", adminOnly: false },
-  { label: "Baptêmes", icon: Droplet, route: "/dashboard/baptemes", adminOnly: false },
-  { label: "Commissions", icon: Users, route: "/dashboard/groupes", adminOnly: false },
-  { label: "Événements", icon: Calendar, route: "/dashboard/events", adminOnly: false },
-  { label: "Finance", icon: DollarSign, route: "/dashboard/finances", adminOnly: false },
-  { label: "Formations", icon: GraduationCap, route: "/dashboard/formations", adminOnly: false },
-  { label: "Formulaires", icon: ClipboardList, route: "/dashboard/formulaires", adminOnly: false },
-  { label: "Logs", icon: FileText, route: "/dashboard/logs", adminOnly: true },
-  { label: "Membres", icon: UsersRound, route: "/dashboard/membres", adminOnly: false },
-  { label: "Paramètres", icon: Settings, route: "/dashboard/settings", adminOnly: true },
-  { label: "Planify", icon: ListTodo, route: "/dashboard/tasky", adminOnly: false },
-  { label: "Rapports", icon: FileText, route: "/dashboard/rapports", adminOnly: false },
-  { label: "Utilisateurs", icon: UserCog, route: "/dashboard/users", adminOnly: true },
-]
+const ADMIN_ROLES = ["admin", "pastor"]
+const PASTORAL_ROLES = ["admin", "pastor", "corps_pastoral"]
+const FINANCIAL_ROLES = ["admin", "pastor", "corps_pastoral", "treasurer"]
 
-const PRIVILEGED_ROLES = ["admin", "pastor"]
+const allMenuItems = [
+  { label: "Accueil", icon: Home, route: "/dashboard", roles: null },
+  { label: "Annexe de J5", icon: MapPin, route: "/dashboard/annexe-j5", roles: null },
+  { label: "Baptêmes", icon: Droplet, route: "/dashboard/baptemes", roles: PASTORAL_ROLES },
+  { label: "Commissions", icon: Users, route: "/dashboard/groupes", roles: null },
+  { label: "Événements", icon: Calendar, route: "/dashboard/events", roles: null },
+  { label: "Finance", icon: DollarSign, route: "/dashboard/finances", roles: FINANCIAL_ROLES },
+  { label: "Formations", icon: GraduationCap, route: "/dashboard/formations", roles: null },
+  { label: "Formulaires", icon: ClipboardList, route: "/dashboard/formulaires", roles: null },
+  { label: "Logs", icon: FileText, route: "/dashboard/logs", roles: ADMIN_ROLES },
+  { label: "Membres", icon: UsersRound, route: "/dashboard/membres", roles: PASTORAL_ROLES },
+  { label: "Paramètres", icon: Settings, route: "/dashboard/settings", roles: ADMIN_ROLES },
+  { label: "Planify", icon: ListTodo, route: "/dashboard/tasky", roles: PASTORAL_ROLES },
+  { label: "Rapports", icon: FileText, route: "/dashboard/rapports", roles: FINANCIAL_ROLES },
+  { label: "Utilisateurs", icon: UserCog, route: "/dashboard/users", roles: ADMIN_ROLES },
+]
 
 export default function Sidebar({ role }: { role: string | null }) {
   const { isMobileOpen, setIsMobileOpen, isDesktopExpanded, toggleSidebar } = useSidebar()
   const pathname = usePathname()
 
-  const isPrivileged = role != null && PRIVILEGED_ROLES.includes(role)
-  const menuItems = allMenuItems.filter(item => !item.adminOnly || isPrivileged)
+  const menuItems = allMenuItems.filter(item =>
+    item.roles === null || (role != null && item.roles.includes(role))
+  )
 
   // showLabel: true when sidebar is fully open (mobile overlay OR desktop expanded)
   const showLabel = isMobileOpen || isDesktopExpanded

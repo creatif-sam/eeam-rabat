@@ -17,6 +17,20 @@ type Counselling = {
   pastors: { name: string } | null;
 };
 
+async function sendConfirmationWhatsApp(item: Counselling) {
+  await fetch("/api/send-whatsapp", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      phone: item.phone,
+      full_name: item.full_name,
+      counselling_date: item.counselling_date,
+      counselling_time: item.counselling_time,
+      pastor_name: item.pastors?.name ?? null,
+    }),
+  });
+}
+
 async function sendConfirmationEmail(item: Counselling) {
   if (!item.email) return;
   const html = `
@@ -205,11 +219,17 @@ export default function PastoralCounsellingList() {
                               .from("pastoral_counselling")
                               .update({ confirmed: true })
                               .eq("id", item.id);
-                            await sendConfirmationEmail(item);
+                            await Promise.all([
+                              sendConfirmationEmail(item),
+                              sendConfirmationWhatsApp(item),
+                            ]);
+                            const channels: string[] = [];
+                            if (item.email) channels.push(`email (${item.email})`);
+                            if (item.phone) channels.push(`WhatsApp (${item.phone})`);
                             toast.success(
-                              item.email
-                                ? `Entretien confirmé — email envoyé à ${item.email}`
-                                : "Entretien confirmé (pas d’email renseigné)"
+                              channels.length > 0
+                                ? `Entretien confirmé — confirmation envoyée par ${channels.join(" et ")}`
+                                : "Entretien confirmé"
                             );
                             loadCounselling();
                           }}

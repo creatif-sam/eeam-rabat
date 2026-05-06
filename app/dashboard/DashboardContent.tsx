@@ -25,7 +25,7 @@ export default function DashboardContent({
         <Header user={user} />
         <main className="p-4 md:p-8 pt-16 md:pt-8 pb-24 md:pb-8">{children}</main>
       </div>
-      <MobileBottomNav />
+      <MobileBottomNav role={role} />
     </div>
   );
 }

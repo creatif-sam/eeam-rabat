@@ -42,7 +42,7 @@ export default function Footer() {
               </div>
 
               <p className="text-gray-400 leading-relaxed mb-6 max-w-sm">
-                Technologie et excellence au service de la gloire de Dieu.
+                Technologie au service de l&apos;évangile.
               </p>
               <blockquote className="border-l-2 border-cyan-500 pl-4 italic text-cyan-300/80 text-sm mb-6">
                 &ldquo;Soit que vous mangiez, soit que vous buviez, et quoi que vous fassiez,
@@ -51,9 +51,9 @@ export default function Footer() {
               </blockquote>
 
               <div className="space-y-2.5">
-                <a href="tel:+212000000000" className="flex items-center gap-3 text-gray-400 hover:text-cyan-400 transition-colors group">
+                <a href="tel:+212707507100" className="flex items-center gap-3 text-gray-400 hover:text-cyan-400 transition-colors group">
                   <Phone size={16} className="text-cyan-500 flex-shrink-0" />
-                  <span className="group-hover:translate-x-0.5 transition-transform text-sm">+212 xxx xxx xxx</span>
+                  <span className="group-hover:translate-x-0.5 transition-transform text-sm">+212 707 507 100</span>
                 </a>
                 <a href="mailto:cpeeamrabat@gmail.com" className="flex items-center gap-3 text-gray-400 hover:text-cyan-400 transition-colors group">
                   <Mail size={16} className="text-cyan-500 flex-shrink-0" />
@@ -152,4 +152,4 @@ export default function Footer() {
     </>
   );
 }
-
+
