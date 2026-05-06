@@ -31,7 +31,7 @@ export default async function AuthCheck() {
   const roleFromAppMetadata = normalizeRole((user.app_metadata as Record<string, unknown> | null)?.role);
   const effectiveRole = roleFromProfile ?? roleFromUserMetadata ?? roleFromAppMetadata;
 
-  const privilegedRoles = ["admin", "pastor", "corps_pastoral"];
+  const privilegedRoles = ["admin", "pastor", "treasurer"];
   const isPrivileged = effectiveRole != null && privilegedRoles.includes(effectiveRole);
 
   // If no profile row exists at all, let them through (profile setup will handle it)

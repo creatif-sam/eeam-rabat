@@ -4,8 +4,8 @@ import { Calendar, ClipboardList, Home, FileText, UsersRound } from "lucide-reac
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 
-const PASTORAL_ROLES = ["admin", "pastor", "corps_pastoral"]
-const FINANCIAL_ROLES = [...PASTORAL_ROLES, "treasurer"]
+const PASTORAL_ROLES = ["admin", "pastor"]
+const FINANCIAL_ROLES = ["admin", "pastor", "treasurer"]
 
 const ALL_NAV_ITEMS = [
   { label: "Accueil", route: "/dashboard", icon: Home, roles: null },

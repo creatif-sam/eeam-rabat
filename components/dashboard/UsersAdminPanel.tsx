@@ -112,7 +112,7 @@ export default function UsersAdminPanel({
     const configured = profiles.filter(profile => profile.completed).length
     const pending = profiles.filter(profile =>
       !profile.approved &&
-      !(["admin", "pastor", "corps_pastoral"].includes(profile.role ?? ""))
+      !(["admin", "pastor", "treasurer"].includes(profile.role ?? ""))
     ).length
 
     return {

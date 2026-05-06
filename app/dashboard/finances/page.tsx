@@ -40,6 +40,7 @@ const REVENUE_CATEGORY_LABELS: Record<string, string> = {
 export default function FinancesTab() {
   const supabase = createClient();
 
+  const [userRole, setUserRole] = useState<string | null>(null);
   const [selectedPeriod, setSelectedPeriod] = useState<Period>("month");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
@@ -51,6 +52,23 @@ export default function FinancesTab() {
 
   const [showCreate, setShowCreate] = useState(false);
   const [editing, setEditing] = useState<Transaction | null>(null);
+
+  useEffect(() => {
+    const fetchRole = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data } = await supabase
+          .from("profiles")
+          .select("role")
+          .eq("id", user.id)
+          .maybeSingle();
+        setUserRole(data?.role ?? null);
+      }
+    };
+    fetchRole();
+  }, []);
+
+  const canEdit = userRole === "treasurer";
 
   useEffect(() => {
     const now = new Date();
@@ -251,6 +269,7 @@ export default function FinancesTab() {
             <Download size={18} />
             Export essentiels
           </button>
+          {canEdit && (
           <button
             onClick={() => setShowCreate(true)}
             className="px-4 py-2 bg-gradient-to-r from-cyan-500 to-blue-600 text-white rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-cyan-500/30 text-sm sm:text-base"
@@ -258,6 +277,7 @@ export default function FinancesTab() {
             <Plus size={18} />
             Nouvelle transaction
           </button>
+          )}
         </div>
       </div>
 
@@ -451,12 +471,14 @@ export default function FinancesTab() {
                     {t.type === "revenu" ? "+" : "-"}
                     {formatCurrency(t.montant)}
                   </p>
+                  {canEdit && (
                   <button
                     onClick={() => setEditing(t)}
                     className="mt-2 p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
                   >
                     <Eye size={16} className="text-gray-400" />
                   </button>
+                  )}
                 </div>
               </div>
               <div className="flex justify-between items-center text-xs text-gray-600 dark:text-gray-400">
@@ -498,9 +520,11 @@ export default function FinancesTab() {
                     {formatCurrency(t.montant)}
                   </td>
                   <td className="px-4 py-3 text-center">
+                    {canEdit && (
                     <button onClick={() => setEditing(t)}>
                       <Eye size={18} className="text-gray-400" />
                     </button>
+                    )}
                   </td>
                 </tr>
               ))}

@@ -24,8 +24,8 @@ import { usePathname } from "next/navigation"
 import { useSidebar } from "./SidebarContext"
 
 const ADMIN_ROLES = ["admin", "pastor"]
-const PASTORAL_ROLES = ["admin", "pastor", "corps_pastoral"]
-const FINANCIAL_ROLES = ["admin", "pastor", "corps_pastoral", "treasurer"]
+const PASTORAL_ROLES = ["admin", "pastor"]
+const FINANCIAL_ROLES = ["admin", "pastor", "treasurer"]
 
 const allMenuItems = [
   { label: "Accueil", icon: Home, route: "/dashboard", roles: null },

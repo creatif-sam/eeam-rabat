@@ -3,7 +3,7 @@ import { createSupabaseServerClient } from "@/lib/supabase/server"
 import WelcomeMessageEditor from "@/components/WelcomeMessageEditor"
 import Link from "next/link"
 
-const ADMIN_ROLES = ["admin", "pastor", "corps_pastoral"]
+const ADMIN_ROLES = ["admin", "pastor"]
 
 export default async function DashboardHome() {
   const supabase = await createSupabaseServerClient()
