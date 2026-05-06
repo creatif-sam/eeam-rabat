@@ -1,6 +1,7 @@
 ﻿"use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { Lock, User, Users, HandHeart, FilePen, UserCheck, ClipboardList } from "lucide-react";
 import PrayerRequestForm from "@/components/public/PrayerRequests";
 
@@ -9,7 +10,6 @@ type ServicesGridProps = {
   onVolunteer: () => void;
   onJoinGroup: () => void;
   onRequest: () => void;
-  onPastoral: () => void;
   onAttendance: () => void;
 };
 
@@ -20,7 +20,6 @@ export default function ServicesGrid({
   onVolunteer,
   onJoinGroup,
   onRequest,
-  onPastoral,
   onAttendance
 }: ServicesGridProps) {
   const [showPrayerForm, setShowPrayerForm] = useState(false);
@@ -98,7 +97,7 @@ export default function ServicesGrid({
         </div>
 
         {/* Entretien Pastoral */}
-        <div onClick={onPastoral} className={cardClass}>
+        <Link href="/entretien-pastoral" className={cardClass}>
           <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-rose-500 to-pink-600 rounded-2xl flex items-center justify-center mb-3 sm:mb-4 group-hover:scale-110 transition-transform shadow-lg">
             <UserCheck className="text-xl sm:text-2xl text-white" />
           </div>
@@ -108,7 +107,7 @@ export default function ServicesGrid({
           <p className="text-gray-600 dark:text-gray-400 text-sm">
             Réservez un rendez vous avec nos pasteurs
           </p>
-        </div>
+        </Link>
 
         {/* Assiduité */}
         <div onClick={onAttendance} className={`relative ${cardClass}`}>

@@ -15,7 +15,6 @@ import MemberRegistrationForm from "@/components/public/MemberRegistrationForm";
 import VolunteerForm from "@/components/public/VolunteerForm";
 import JoinGroupForm from "@/components/public/JoinCommission";
 import RequestSubmissionForm from "@/components/public/RequestSubmissionForm";
-import PastoralMeetingForm from "@/components/public/CounsellingBooking";
 import AttendanceForm from "@/components/public/AttendanceForm";
 import PublicCalendar from "@/components/public/PublicCalender";
 import { LoginForm } from "@/components/login-form";
@@ -29,7 +28,6 @@ export default function HomePage() {
   const [volunteerOpen, setVolunteerOpen] = useState(false);
   const [joinGroupOpen, setJoinGroupOpen] = useState(false);
   const [requestOpen, setRequestOpen] = useState(false);
-  const [pastoralOpen, setPastoralOpen] = useState(false);
   const [attendanceOpen, setAttendanceOpen] = useState(false);
 
   useEffect(() => {
@@ -56,7 +54,6 @@ export default function HomePage() {
             onVolunteer={() => setVolunteerOpen(true)}
             onJoinGroup={() => setJoinGroupOpen(true)}
             onRequest={() => setRequestOpen(true)}
-            onPastoral={() => setPastoralOpen(true)}
             onAttendance={() => setAttendanceOpen(true)}
           />
         </div>
@@ -109,16 +106,6 @@ export default function HomePage() {
         headerClass="bg-gradient-to-r from-purple-500 to-violet-600"
       >
         <RequestSubmissionForm />
-      </BaseModal>
-
-      <BaseModal
-        open={pastoralOpen}
-        onClose={() => setPastoralOpen(false)}
-        title="Entretien Pastoral"
-        subtitle="Rencontrez nos pasteurs"
-        headerClass="bg-gradient-to-r from-green-500 to-emerald-600"
-      >
-        <PastoralMeetingForm />
       </BaseModal>
 
       <BaseModal
