@@ -10,6 +10,8 @@ const inputClass = "w-full px-4 py-3 rounded-xl border transition-all focus:outl
   "border-gray-200 dark:border-gray-700 placeholder:text-gray-400 dark:placeholder:text-gray-500 " +
   "focus:ring-cyan-500 dark:focus:ring-cyan-400";
 
+const labelClass = "block text-sm font-semibold text-gray-800 dark:text-gray-200 mb-1.5";
+
 export default function VolunteerForm() {
   const supabase = createClient();
 
@@ -79,20 +81,34 @@ export default function VolunteerForm() {
   return (
     <form onSubmit={handleSubmit} className="max-w-xl space-y-6">
       <div className="grid md:grid-cols-2 gap-4">
-        <input name="first_name" placeholder="Prénom" required value={form.first_name}
-          onChange={handleChange} className={inputClass} />
-        <input name="last_name" placeholder="Nom" required value={form.last_name}
+        <div>
+          <label className={labelClass}>Prénom *</label>
+          <input name="first_name" placeholder="Jean" required value={form.first_name}
+            onChange={handleChange} className={inputClass} />
+        </div>
+        <div>
+          <label className={labelClass}>Nom *</label>
+          <input name="last_name" placeholder="Dupont" required value={form.last_name}
+            onChange={handleChange} className={inputClass} />
+        </div>
+      </div>
+
+      <div>
+        <label className={labelClass}>Email <span className="font-normal text-gray-500 dark:text-gray-400">(optionnel)</span></label>
+        <input name="email" type="email" placeholder="email@exemple.com" value={form.email}
           onChange={handleChange} className={inputClass} />
       </div>
 
-      <input name="email" type="email" placeholder="Email" value={form.email}
-        onChange={handleChange} className={inputClass} />
+      <div>
+        <label className={labelClass}>Téléphone *</label>
+        <input name="phone" placeholder="+212 6XX XXX XXX" required value={form.phone}
+          onChange={handleChange} className={inputClass} />
+      </div>
 
-      <input name="phone" placeholder="Téléphone" required value={form.phone}
-        onChange={handleChange} className={inputClass} />
-
-      <select name="ministry" required value={form.ministry} onChange={handleChange} className={inputClass}>
-        <option value="">Ministère d’intérêt</option>
+      <div>
+        <label className={labelClass}>Ministère d&apos;intérêt *</label>
+        <select name="ministry" required value={form.ministry} onChange={handleChange} className={inputClass}>
+          <option value="">Sélectionner un ministère</option>
         <option value="Louange">Louange et Musique</option>
         <option value="Accueil">Accueil</option>
         <option value="Technique">Technique</option>
@@ -100,14 +116,18 @@ export default function VolunteerForm() {
         <option value="Jeunesse">Jeunesse</option>
         <option value="Intercession">Intercession</option>
         <option value="Médias">Médias</option>
-        <option value="Logistique">Logistique</option>
-      </select>
+          <option value="Logistique">Logistique</option>
+        </select>
+      </div>
 
-      <textarea name="skills" rows={3} placeholder="Compétences et talents" value={form.skills}
-        onChange={handleChange} className={inputClass} />
+      <div>
+        <label className={labelClass}>Compétences et talents</label>
+        <textarea name="skills" rows={3} placeholder="Décrivez vos compétences" value={form.skills}
+          onChange={handleChange} className={inputClass} />
+      </div>
 
       <div className="space-y-2">
-        <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Disponibilité</p>
+        <p className={labelClass}>Disponibilité</p>
         {["Dimanche", "Semaine", "Événements"].map(opt => (
           <label key={opt} className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300 cursor-pointer">
             <input type="checkbox" checked={form.availability.includes(opt)}

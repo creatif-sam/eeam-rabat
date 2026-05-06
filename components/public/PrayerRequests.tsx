@@ -58,6 +58,8 @@ export default function PrayerRequestForm() {
     "border-gray-200 dark:border-gray-700 placeholder:text-gray-400 dark:placeholder:text-gray-500 " +
     "focus:ring-rose-500 dark:focus:ring-rose-400 focus:border-rose-400";
 
+  const labelClass = "block text-sm font-semibold text-gray-800 dark:text-gray-200 mb-1.5";
+
   return (
     <form onSubmit={handleSubmit} className="space-y-5 max-w-xl">
       {/* Header */}
@@ -69,17 +71,29 @@ export default function PrayerRequestForm() {
         </div>
       </div>
 
-      <input name="name" required value={form.name} onChange={handleChange}
-        placeholder="Nom complet" className={inputClass} />
+      <div>
+        <label className={labelClass}>Nom complet *</label>
+        <input name="name" required value={form.name} onChange={handleChange}
+          placeholder="Jean Dupont" className={inputClass} />
+      </div>
 
-      <input type="email" name="email" value={form.email} onChange={handleChange}
-        placeholder="Email optionnel" className={inputClass} />
+      <div>
+        <label className={labelClass}>Email <span className="font-normal text-gray-500 dark:text-gray-400">(optionnel)</span></label>
+        <input type="email" name="email" value={form.email} onChange={handleChange}
+          placeholder="email@exemple.com" className={inputClass} />
+      </div>
 
-      <input name="subject" required value={form.subject} onChange={handleChange}
-        placeholder="Sujet de prière" className={inputClass} />
+      <div>
+        <label className={labelClass}>Sujet de prière *</label>
+        <input name="subject" required value={form.subject} onChange={handleChange}
+          placeholder="Exécution de l&apos;obéissance" className={inputClass} />
+      </div>
 
-      <textarea name="message" rows={5} required value={form.message} onChange={handleChange}
-        placeholder="Décrivez votre sujet de prière" className={inputClass} />
+      <div>
+        <label className={labelClass}>Message *</label>
+        <textarea name="message" rows={5} required value={form.message} onChange={handleChange}
+          placeholder="Décrivez votre sujet de prière" className={inputClass} />
+      </div>
 
       <label className="flex items-center gap-3 text-sm text-gray-700 dark:text-gray-300 cursor-pointer">
         <input type="checkbox" name="confidential" checked={form.confidential} onChange={handleChange}

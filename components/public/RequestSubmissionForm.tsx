@@ -12,6 +12,8 @@ const inputClass = "w-full px-4 py-3 rounded-xl border transition-all focus:outl
   "border-gray-200 dark:border-gray-700 placeholder:text-gray-400 dark:placeholder:text-gray-500 " +
   "focus:ring-rose-500 dark:focus:ring-rose-400";
 
+const labelClass = "block text-sm font-semibold text-gray-800 dark:text-gray-200 mb-1.5";
+
 export default function RequestSubmissionForm() {
   const supabase = createClient();
 
@@ -81,22 +83,34 @@ export default function RequestSubmissionForm() {
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4 max-w-xl">
-      <input name="full_name" value={form.full_name} onChange={handleChange}
-        className={inputClass} placeholder="Nom complet" required />
-      <input name="email" type="email" value={form.email} onChange={handleChange}
-        className={inputClass} placeholder="Email" required />
-      <select name="request_type" value={form.request_type} onChange={handleChange}
-        className={inputClass} required>
-        <option value="">Type de demande</option>
-        <option value="Budget">Budget</option>
-        <option value="Prière">Prière</option>
-        <option value="Matériel">Matériel</option>
-        <option value="Conseil spirituel">Conseil spirituel</option>
-        <option value="Service">Service</option>
-        <option value="Autre">Autre</option>
-      </select>
-      <textarea name="details" rows={5} value={form.details} onChange={handleChange}
-        className={inputClass} placeholder="Détails de la demande" required />
+      <div>
+        <label className={labelClass}>Nom complet *</label>
+        <input name="full_name" value={form.full_name} onChange={handleChange}
+          className={inputClass} placeholder="Jean Dupont" required />
+      </div>
+      <div>
+        <label className={labelClass}>Email *</label>
+        <input name="email" type="email" value={form.email} onChange={handleChange}
+          className={inputClass} placeholder="email@exemple.com" required />
+      </div>
+      <div>
+        <label className={labelClass}>Type de demande *</label>
+        <select name="request_type" value={form.request_type} onChange={handleChange}
+          className={inputClass} required>
+          <option value="">Sélectionner un type</option>
+          <option value="Budget">Budget</option>
+          <option value="Prière">Prière</option>
+          <option value="Matériel">Matériel</option>
+          <option value="Conseil spirituel">Conseil spirituel</option>
+          <option value="Service">Service</option>
+          <option value="Autre">Autre</option>
+        </select>
+      </div>
+      <div>
+        <label className={labelClass}>Détails de la demande *</label>
+        <textarea name="details" rows={5} value={form.details} onChange={handleChange}
+          className={inputClass} placeholder="Décrivez votre demande en détail" required />
+      </div>
       <button type="submit" disabled={loading}
         className="w-full px-6 py-3 bg-gradient-to-r from-rose-500 to-pink-600 text-white rounded-xl transition shadow-lg flex items-center justify-center gap-2 font-medium disabled:opacity-60">
         <Save size={18} />

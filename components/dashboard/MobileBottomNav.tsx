@@ -23,7 +23,7 @@ export default function MobileBottomNav({ role }: { role: string | null }) {
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-40 md:hidden bg-white/95 dark:bg-gray-900/95 backdrop-blur border-t border-gray-200 dark:border-gray-800 px-2 pb-[max(env(safe-area-inset-bottom),0.5rem)] pt-2">
-      <div style={{ display: "grid", gridTemplateColumns: `repeat(${navItems.length}, 1fr)`, gap: "0.25rem" }>
+      <div style={{ display: "grid", gridTemplateColumns: `repeat(${navItems.length}, 1fr)`, gap: "0.25rem" }}>
         {navItems.map(item => {
           const Icon = item.icon
           const isActive = pathname === item.route
