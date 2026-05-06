@@ -11,8 +11,8 @@ const ALL_NAV_ITEMS = [
   { label: "Accueil", route: "/dashboard", icon: Home, roles: null },
   { label: "Événements", route: "/dashboard/events", icon: Calendar, roles: null },
   { label: "Formulaires", route: "/dashboard/formulaires", icon: ClipboardList, roles: null },
-  { label: "Rapports", route: "/dashboard/rapports", icon: FileText, roles: FINANCIAL_ROLES },
-  { label: "Membres", route: "/dashboard/membres", icon: UsersRound, roles: PASTORAL_ROLES },
+  { label: "Rapports", route: "/dashboard/rapports", icon: FileText, roles: null },
+  { label: "Membres", route: "/dashboard/membres", icon: UsersRound, roles: null },
 ]
 
 type NavItem = (typeof ALL_NAV_ITEMS)[number]

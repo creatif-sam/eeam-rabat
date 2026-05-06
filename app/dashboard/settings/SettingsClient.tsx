@@ -149,18 +149,6 @@ export default function SettingsClient({
             </div>
           </div>
 
-          {/* SQL hint */}
-          <div className="mx-6 mb-6 px-4 py-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-xl">
-            <p className="text-xs text-amber-700 dark:text-amber-400 font-medium mb-1">
-              Prérequis Supabase
-            </p>
-            <p className="text-xs text-amber-600 dark:text-amber-500">
-              Exécutez ce SQL dans l'éditeur Supabase pour créer la table nécessaire :
-            </p>
-            <code className="mt-2 block text-xs bg-amber-100 dark:bg-amber-900/40 text-amber-800 dark:text-amber-300 px-3 py-2 rounded-lg font-mono whitespace-pre-wrap">
-              {`CREATE TABLE IF NOT EXISTS app_settings (\n  key TEXT PRIMARY KEY,\n  value TEXT,\n  updated_at TIMESTAMPTZ DEFAULT now()\n);\nALTER TABLE app_settings ENABLE ROW LEVEL SECURITY;\nCREATE POLICY "admin_manage_settings" ON app_settings\n  FOR ALL USING (\n    EXISTS (\n      SELECT 1 FROM profiles\n      WHERE id = auth.uid()\n      AND role IN ('admin', 'pastor')\n    )\n  );`}
-            </code>
-          </div>
         </div>
       ) : (
         <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-12 text-center">

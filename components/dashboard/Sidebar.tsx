@@ -30,17 +30,17 @@ const FINANCIAL_ROLES = ["admin", "pastor", "treasurer"]
 const allMenuItems = [
   { label: "Accueil", icon: Home, route: "/dashboard", roles: null },
   { label: "Annexe de J5", icon: MapPin, route: "/dashboard/annexe-j5", roles: null },
-  { label: "Baptêmes", icon: Droplet, route: "/dashboard/baptemes", roles: PASTORAL_ROLES },
+  { label: "Baptêmes", icon: Droplet, route: "/dashboard/baptemes", roles: null },
   { label: "Commissions", icon: Users, route: "/dashboard/groupes", roles: null },
   { label: "Événements", icon: Calendar, route: "/dashboard/events", roles: null },
   { label: "Finance", icon: DollarSign, route: "/dashboard/finances", roles: FINANCIAL_ROLES },
   { label: "Formations", icon: GraduationCap, route: "/dashboard/formations", roles: null },
   { label: "Formulaires", icon: ClipboardList, route: "/dashboard/formulaires", roles: null },
   { label: "Logs", icon: FileText, route: "/dashboard/logs", roles: ADMIN_ROLES },
-  { label: "Membres", icon: UsersRound, route: "/dashboard/membres", roles: PASTORAL_ROLES },
+  { label: "Membres", icon: UsersRound, route: "/dashboard/membres", roles: null },
   { label: "Paramètres", icon: Settings, route: "/dashboard/settings", roles: ADMIN_ROLES },
-  { label: "Planify", icon: ListTodo, route: "/dashboard/tasky", roles: PASTORAL_ROLES },
-  { label: "Rapports", icon: FileText, route: "/dashboard/rapports", roles: FINANCIAL_ROLES },
+  { label: "Planify", icon: ListTodo, route: "/dashboard/tasky", roles: null },
+  { label: "Rapports", icon: FileText, route: "/dashboard/rapports", roles: null },
   { label: "Utilisateurs", icon: UserCog, route: "/dashboard/users", roles: ADMIN_ROLES },
 ]
 
