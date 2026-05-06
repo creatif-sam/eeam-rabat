@@ -1,5 +1,6 @@
 "use client"
 
+import React from "react"
 import { Calendar, ClipboardList, Home, FileText, UsersRound } from "lucide-react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
@@ -7,7 +8,7 @@ import { usePathname } from "next/navigation"
 const PASTORAL_ROLES = ["admin", "pastor"]
 const FINANCIAL_ROLES = ["admin", "pastor", "treasurer"]
 
-const ALL_NAV_ITEMS = [
+const ALL_NAV_ITEMS: { label: string; route: string; icon: React.ElementType; roles: string[] | null }[] = [
   { label: "Accueil", route: "/dashboard", icon: Home, roles: null },
   { label: "Événements", route: "/dashboard/events", icon: Calendar, roles: null },
   { label: "Formulaires", route: "/dashboard/formulaires", icon: ClipboardList, roles: null },
