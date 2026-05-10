@@ -17,7 +17,8 @@ import {
   MapPin,
   ClipboardList,
   ListTodo,
-  Settings
+  Settings,
+  BookOpen
 } from "lucide-react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
@@ -41,6 +42,7 @@ const allMenuItems = [
   { label: "Paramètres", icon: Settings, route: "/dashboard/settings", roles: ADMIN_ROLES },
   { label: "Planify", icon: ListTodo, route: "/dashboard/tasky", roles: null },
   { label: "Rapports", icon: FileText, route: "/dashboard/rapports", roles: null },
+  { label: "Ressources", icon: BookOpen, route: "/dashboard/ressources", roles: null },
   { label: "Utilisateurs", icon: UserCog, route: "/dashboard/users", roles: ADMIN_ROLES },
 ]
 

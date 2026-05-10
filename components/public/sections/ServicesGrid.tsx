@@ -129,11 +129,14 @@ export default function ServicesGrid({
 
       {/* Prayer Request Modal */}
       {showPrayerForm && (
-        <div className="fixed inset-0 bg-black/50 dark:bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 w-full max-w-xl relative border border-gray-100 dark:border-gray-800 shadow-2xl">
+        <div
+          className="fixed inset-0 bg-black/50 dark:bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4 overflow-y-auto"
+          onClick={(e) => { if (e.target === e.currentTarget) setShowPrayerForm(false); }}
+        >
+          <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 w-full max-w-xl relative border border-gray-100 dark:border-gray-800 shadow-2xl my-auto max-h-[90vh] overflow-y-auto">
             <button
               onClick={() => setShowPrayerForm(false)}
-              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 text-xl font-bold transition-colors"
+              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 text-xl font-bold transition-colors z-10"
             >
               ✕
             </button>

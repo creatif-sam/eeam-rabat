@@ -61,7 +61,7 @@ export default function PrayerRequestForm() {
   const labelClass = "block text-sm font-semibold text-gray-800 dark:text-gray-200 mb-1.5";
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-5 max-w-xl">
+    <form onSubmit={handleSubmit} className="space-y-5 w-full">
       {/* Header */}
       <div className="flex items-start gap-3 bg-rose-50 dark:bg-rose-900/20 border border-rose-200 dark:border-rose-800 rounded-xl p-4">
         <Heart className="text-rose-600 dark:text-rose-400 mt-0.5" size={20} />

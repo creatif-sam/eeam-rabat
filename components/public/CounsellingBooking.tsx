@@ -148,7 +148,7 @@ export default function PastoralCounsellingForm() {
         <Calendar className="text-cyan-600 dark:text-cyan-400 mt-0.5 shrink-0" size={20} />
         <div className="text-sm text-cyan-800 dark:text-cyan-300">
           <p className="font-semibold">Horaires des entretiens pastoraux</p>
-          <p>Mercredi et vendredi à partir de 16h. Samedi de 10h à 16h.</p>
+          <p>Mercredi et vendredi à partir de 16h30. Samedi de 10h à 16h.</p>
         </div>
       </div>
 
