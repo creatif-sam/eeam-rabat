@@ -71,28 +71,52 @@ export default function PastoralCounsellingList() {
   }, []);
 
   const loadCounselling = async () => {
-    const { data } = await supabase
+    // Try with `confirmed` column first; fall back to base fields if column missing
+    const baseFields = `
+      id,
+      counselling_date,
+      counselling_time,
+      full_name,
+      phone,
+      email,
+      reason,
+      pastors(name)
+    `;
+
+    let rawData: Record<string, unknown>[] | null = null;
+
+    const withConfirmed = await supabase
       .from("pastoral_counselling")
-      .select(`
-        id,
-        counselling_date,
-        counselling_time,
-        full_name,
-        phone,
-        email,
-        reason,
-        confirmed,
-        pastors(name)
-      `)
+      .select(`confirmed, ${baseFields}`)
       .order("counselling_date", { ascending: true })
       .order("counselling_time", { ascending: true });
 
-    const transformedData = (data || []).map(item => ({
-      ...item,
-      pastors: item.pastors && (item.pastors as unknown[]).length > 0
-        ? { name: (item.pastors as { name: string }[])[0].name }
-        : null,
-    }));
+    if (!withConfirmed.error) {
+      rawData = withConfirmed.data as Record<string, unknown>[];
+    } else {
+      const fallback = await supabase
+        .from("pastoral_counselling")
+        .select(baseFields)
+        .order("counselling_date", { ascending: true })
+        .order("counselling_time", { ascending: true });
+      rawData = (fallback.data ?? []) as Record<string, unknown>[];
+    }
+
+    const transformedData: Counselling[] = (rawData ?? []).map(item => {
+      const p = item.pastors as { name: string }[] | { name: string } | null;
+      const pastor = Array.isArray(p) ? (p.length > 0 ? { name: p[0].name } : null) : p ?? null;
+      return {
+        id: item.id as string,
+        counselling_date: item.counselling_date as string,
+        counselling_time: item.counselling_time as string,
+        full_name: item.full_name as string,
+        phone: item.phone as string,
+        email: item.email as string | null,
+        reason: item.reason as string,
+        confirmed: item.confirmed as boolean | undefined,
+        pastors: pastor,
+      };
+    });
 
     setData(transformedData);
     setLoading(false);
