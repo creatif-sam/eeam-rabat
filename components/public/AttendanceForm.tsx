@@ -120,16 +120,16 @@ export default function AttendanceForm() {
         <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-rose-500 to-pink-600 flex items-center justify-center shadow-lg">
           <Lock className="text-white" size={28} />
         </div>
-        <h2 className="text-xl font-bold text-gray-800 dark:text-white">AccÃ¨s sÃ©curisÃ©</h2>
+        <h2 className="text-xl font-bold text-gray-800 dark:text-white">Accès sécurisé</h2>
         <p className="text-sm text-gray-600 dark:text-gray-400 text-center max-w-sm">
-          Cette section est rÃ©servÃ©e aux responsables autorisÃ©s.
+          Cette section est réservée aux responsables autorisés.
           Veuillez saisir le mot de passe pour continuer.
         </p>
         <div className="w-full max-w-xs space-y-1">
           <label className={labelClass}>Mot de passe</label>
           <input
             type="password"
-            placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢"
+            placeholder="mot de passe donné par le CP/mentor"
             value={password}
             onChange={e => setPassword(e.target.value)}
             onKeyDown={e => e.key === "Enter" && handleUnlock()}
@@ -140,7 +140,7 @@ export default function AttendanceForm() {
           onClick={handleUnlock}
           className="px-6 py-3 bg-gradient-to-r from-rose-500 to-pink-600 text-white rounded-xl shadow font-medium hover:from-rose-600 hover:to-pink-700 transition"
         >
-          DÃ©verrouiller
+          Déverrouiller
         </button>
       </div>
     );
@@ -152,8 +152,8 @@ export default function AttendanceForm() {
       <div className="flex items-center gap-3 bg-cyan-50 dark:bg-cyan-900/20 border border-cyan-200 dark:border-cyan-800 rounded-xl p-4">
         <CalendarDays className="text-cyan-600 dark:text-cyan-400" size={20} />
         <div className="text-sm text-cyan-800 dark:text-cyan-300">
-          <p className="font-semibold">Saisie de l&apos;assiduitÃ©</p>
-          <p>Enregistrement des prÃ©sences par type de service</p>
+          <p className="font-semibold">Saisie de l&apos;assiduité</p>
+          <p>Enregistrement des présences par type de service</p>
         </div>
       </div>
 
@@ -165,7 +165,7 @@ export default function AttendanceForm() {
           onChange={e => handleChange("service_type_id", e.target.value)}
           className={inputClass}
         >
-          <option value="">SÃ©lectionner le type de service</option>
+          <option value="">Sélectionner le type de service</option>
           {serviceTypes.map(s => (
             <option key={s.id} value={s.id}>{s.name}</option>
           ))}
@@ -184,7 +184,7 @@ export default function AttendanceForm() {
 
       <div className="grid md:grid-cols-2 gap-4">
         {[
-          ["culte", "Culte GÃ©nÃ©ral"],
+          ["culte", "Culte Général"],
           ["hommes", "Hommes"],
           ["femmes", "Femmes"],
           ["enfants", "Enfants"]

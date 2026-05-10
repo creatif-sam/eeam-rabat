@@ -55,7 +55,7 @@ export default function VerseOfTheDay() {
 
   if (loading) {
     return (
-      <div className="fixed bottom-4 right-4 z-40 max-w-xs bg-white/95 backdrop-blur-sm rounded-2xl shadow-lg border border-gray-200 p-4 text-sm text-gray-500">
+      <div className="fixed bottom-4 left-4 right-4 sm:left-auto sm:right-4 sm:max-w-xs z-40 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-4 text-sm text-gray-500 dark:text-gray-400">
         Chargement du verset du jour…
       </div>
     );
@@ -64,13 +64,13 @@ export default function VerseOfTheDay() {
   if (!verse || isClosed) return null;
 
   return (
-    <div className="fixed bottom-4 right-4 z-40 max-w-xs bg-white/95 backdrop-blur-sm rounded-2xl shadow-lg border border-gray-200 p-4">
+    <div className="fixed bottom-4 left-4 right-4 sm:left-auto sm:right-4 sm:max-w-xs z-40 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-4">
       <button
         onClick={handleClose}
-        className="absolute top-2 right-2 w-6 h-6 flex items-center justify-center rounded-full bg-gray-100 hover:bg-gray-200 transition-colors"
+        className="absolute top-2 right-2 w-6 h-6 flex items-center justify-center rounded-full bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
         aria-label="Fermer le verset du jour"
       >
-        <X size={14} className="text-gray-600" />
+        <X size={14} className="text-gray-600 dark:text-gray-300" />
       </button>
 
       <div className="flex items-start gap-3 pr-8">
@@ -80,17 +80,17 @@ export default function VerseOfTheDay() {
 
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-2">
-            <Quote size={14} className="text-cyan-600" />
-            <span className="text-xs font-semibold text-cyan-600 uppercase tracking-wide">
+            <Quote size={14} className="text-cyan-600 dark:text-cyan-400" />
+            <span className="text-xs font-semibold text-cyan-600 dark:text-cyan-400 uppercase tracking-wide">
               Verset du jour
             </span>
           </div>
 
-          <blockquote className="text-sm text-gray-700 leading-relaxed mb-2 italic">
+          <blockquote className="text-sm text-gray-700 dark:text-gray-200 leading-relaxed mb-2 italic">
             "{verse.text}"
           </blockquote>
 
-          <cite className="text-xs text-gray-500 font-medium">
+          <cite className="text-xs text-gray-500 dark:text-gray-400 font-medium">
             {verse.reference}
           </cite>
         </div>

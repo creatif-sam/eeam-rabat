@@ -310,7 +310,7 @@ export default function PublicCalendar() {
                 href={getGoogleCalendarUrl(selectedEvent)}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center justify-center gap-3 w-full py-5 px-6 rounded-2xl bg-primary text-white font-black text-lg shadow-xl shadow-primary/20 hover:shadow-primary/40 hover:-translate-y-1 transition-all"
+                className="flex items-center justify-center gap-3 w-full py-5 px-6 rounded-2xl bg-cyan-600 hover:bg-cyan-700 text-white font-black text-lg shadow-xl shadow-cyan-600/20 hover:shadow-cyan-600/40 hover:-translate-y-1 transition-all"
               >
                 <ExternalLink size={20} />
                 Ajouter à mon Agenda

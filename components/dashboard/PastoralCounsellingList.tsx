@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { Eye, CheckCircle } from "lucide-react";
+import { Eye, CheckCircle, Search, FileDown, X } from "lucide-react";
 import { toast } from "sonner";
 
 type Counselling = {
@@ -14,6 +14,7 @@ type Counselling = {
   email: string | null;
   reason: string;
   confirmed?: boolean;
+  confirmed_by_name?: string | null;
   pastors: { name: string } | null;
 };
 
@@ -62,9 +63,14 @@ export default function PastoralCounsellingList() {
   const [data, setData] = useState<Counselling[]>([]);
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState<Counselling | null>(null);
+  const [currentUserName, setCurrentUserName] = useState<string | null>(null);
+  const [search, setSearch] = useState("");
+  const [filterMonth, setFilterMonth] = useState("");
+  const [filterDate, setFilterDate] = useState("");
 
   useEffect(() => {
     loadCounselling();
+    loadCurrentUser();
   }, []);
 
   const loadCounselling = async () => {
@@ -79,6 +85,8 @@ export default function PastoralCounsellingList() {
         phone,
         email,
         reason,
+        confirmed,
+        confirmed_by_name,
         pastors(name)
         `
       )
@@ -95,7 +103,80 @@ export default function PastoralCounsellingList() {
     setLoading(false);
   };
 
-  const groupedByDate = data.reduce<Record<string, Counselling[]>>(
+  const loadCurrentUser = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("full_name")
+      .eq("id", user.id)
+      .single();
+    setCurrentUserName(profile?.full_name ?? user.email ?? null);
+  };
+
+  const handleConfirm = async (item: Counselling) => {
+    await supabase
+      .from("pastoral_counselling")
+      .update({ confirmed: true, confirmed_by_name: currentUserName })
+      .eq("id", item.id);
+    await Promise.all([
+      sendConfirmationEmail(item),
+      sendConfirmationWhatsApp(item),
+    ]);
+    const channels: string[] = [];
+    if (item.email) channels.push(`email (${item.email})`);
+    if (item.phone) channels.push(`WhatsApp (${item.phone})`);
+    toast.success(
+      channels.length > 0
+        ? `Entretien confirmé — confirmation envoyée par ${channels.join(" et ")}`
+        : "Entretien confirmé"
+    );
+    loadCounselling();
+  };
+
+  const filteredData = useMemo(() => {
+    return data.filter(item => {
+      const nameMatch = item.full_name.toLowerCase().includes(search.toLowerCase());
+      const monthMatch = filterMonth ? item.counselling_date.slice(0, 7) === filterMonth : true;
+      const dateMatch = filterDate ? item.counselling_date === filterDate : true;
+      return nameMatch && monthMatch && dateMatch;
+    });
+  }, [data, search, filterMonth, filterDate]);
+
+  const exportDayPDF = (date: string, items: Counselling[]) => {
+    const fmtDate = new Date(date + "T00:00:00").toLocaleDateString("fr-FR", {
+      weekday: "long", year: "numeric", month: "long", day: "numeric",
+    });
+    const rows = items.map((item, i) => `
+      <tr style="border-bottom:1px solid #e5e7eb">
+        <td style="padding:8px 12px">${i + 1}</td>
+        <td style="padding:8px 12px">${item.counselling_time}</td>
+        <td style="padding:8px 12px;font-weight:600">${item.full_name}</td>
+        <td style="padding:8px 12px">${item.phone ?? "—"}</td>
+        <td style="padding:8px 12px">${item.email ?? "—"}</td>
+        <td style="padding:8px 12px">${item.pastors?.name ?? "Indifférent"}</td>
+        <td style="padding:8px 12px">${item.reason}</td>
+        <td style="padding:8px 12px;color:${item.confirmed ? "#16a34a" : "#dc2626"}">${item.confirmed ? `✓ Confirmé${item.confirmed_by_name ? ` (${item.confirmed_by_name})` : ""}` : "En attente"}</td>
+      </tr>`).join("");
+    const html = `<!DOCTYPE html><html><head><meta charset="utf-8">
+      <title>Entretiens pastoraux — ${fmtDate}</title>
+      <style>body{font-family:sans-serif;padding:32px;color:#111}h1{color:#0e7490;font-size:20px;margin-bottom:4px}p.sub{color:#6b7280;font-size:13px;margin-bottom:24px}table{width:100%;border-collapse:collapse;font-size:13px}thead{background:#f0f9ff}th{padding:10px 12px;text-align:left;color:#0e7490;font-weight:600;border-bottom:2px solid #bae6fd}tr:nth-child(even){background:#f9fafb}footer{margin-top:32px;font-size:11px;color:#9ca3af;border-top:1px solid #e5e7eb;padding-top:12px}</style>
+      </head><body>
+      <h1>Entretiens pastoraux</h1>
+      <p class="sub">${fmtDate} — ${items.length} entretien${items.length > 1 ? "s" : ""}</p>
+      <table><thead><tr><th>N°</th><th>Heure</th><th>Nom</th><th>Téléphone</th><th>Email</th><th>Pasteur</th><th>Motif</th><th>Statut</th></tr></thead>
+      <tbody>${rows}</tbody></table>
+      <footer>Généré le ${new Date().toLocaleDateString("fr-FR")} — Église EEAM Rabat</footer>
+      </body></html>`;
+    const win = window.open("", "_blank");
+    if (!win) return;
+    win.document.write(html);
+    win.document.close();
+    win.focus();
+    setTimeout(() => { win.print(); }, 400);
+  };
+
+  const groupedByDate = filteredData.reduce<Record<string, Counselling[]>>(
     (acc, item) => {
       acc[item.counselling_date] = acc[item.counselling_date] || [];
       acc[item.counselling_date].push(item);
@@ -112,13 +193,71 @@ export default function PastoralCounsellingList() {
     return <p className="text-gray-500">Aucun entretien programmé</p>;
   }
 
+  const hasActiveFilter = search || filterMonth || filterDate;
+
   return (
-    <div className="space-y-6 md:space-y-10">
+    <div className="space-y-6 md:space-y-8">
+
+      {/* ── Filter bar ────────────────────────────────────────────────────── */}
+      <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 flex-wrap">
+        {/* Search by name */}
+        <div className="relative flex-1 min-w-[160px]">
+          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+          <input
+            type="text"
+            placeholder="Rechercher un nom…"
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            className="w-full pl-8 pr-3 py-2 text-sm rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-cyan-500"
+          />
+        </div>
+
+        {/* Filter by month */}
+        <input
+          type="month"
+          value={filterMonth}
+          onChange={e => { setFilterMonth(e.target.value); setFilterDate(""); }}
+          className="px-3 py-2 text-sm rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-cyan-500"
+          title="Filtrer par mois"
+        />
+
+        {/* Filter by date */}
+        <input
+          type="date"
+          value={filterDate}
+          onChange={e => { setFilterDate(e.target.value); setFilterMonth(""); }}
+          className="px-3 py-2 text-sm rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-cyan-500"
+          title="Filtrer par date"
+        />
+
+        {/* Clear filters */}
+        {hasActiveFilter && (
+          <button
+            onClick={() => { setSearch(""); setFilterMonth(""); setFilterDate(""); }}
+            className="flex items-center gap-1 px-3 py-2 text-sm rounded-lg border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+          >
+            <X size={13} /> Effacer
+          </button>
+        )}
+      </div>
+
+      {!Object.keys(groupedByDate).length && (
+        <p className="text-sm text-gray-500 dark:text-gray-400">Aucun résultat pour ces filtres.</p>
+      )}
       {Object.entries(groupedByDate).map(([date, items]) => (
         <div key={date} className="space-y-4">
-          <h3 className="text-lg font-semibold text-gray-800 dark:text-white">
-            {date}
-          </h3>
+          <div className="flex items-center justify-between gap-3">
+            <h3 className="text-lg font-semibold text-gray-800 dark:text-white">
+              {new Date(date + "T00:00:00").toLocaleDateString("fr-FR", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}
+            </h3>
+            <button
+              onClick={() => exportDayPDF(date, items)}
+              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-cyan-600 hover:bg-cyan-700 text-white shrink-0"
+              title="Exporter PDF de la journée"
+            >
+              <FileDown size={13} /> PDF
+            </button>
+          </div>
 
           {/* Mobile Card View */}
           <div className="block md:hidden space-y-3">
@@ -153,6 +292,26 @@ export default function PastoralCounsellingList() {
                 </div>
                 <div className="mt-3 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
                   <p className="text-sm text-gray-700 dark:text-gray-300">{item.reason}</p>
+                </div>
+                <div className="mt-3">
+                  {item.confirmed ? (
+                    <div className="flex flex-col items-center gap-0.5">
+                      <span className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 text-xs font-medium w-full justify-center">
+                        <CheckCircle size={13} /> Confirmé
+                      </span>
+                      {item.confirmed_by_name && (
+                        <p className="text-xs text-gray-400 dark:text-gray-500">par {item.confirmed_by_name}</p>
+                      )}
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => handleConfirm(item)}
+                      className="flex items-center justify-center gap-1.5 w-full px-3 py-2 rounded-lg bg-green-600 text-white text-xs font-medium hover:bg-green-700 active:bg-green-800 transition-colors"
+                    >
+                      <CheckCircle size={14} />
+                      Confirmer l'entretien
+                    </button>
+                  )}
                 </div>
               </div>
             ))}
@@ -213,31 +372,24 @@ export default function PastoralCounsellingList() {
                           <Eye size={16} />
                         </button>
 
-                        <button
-                          onClick={async () => {
-                            await supabase
-                              .from("pastoral_counselling")
-                              .update({ confirmed: true })
-                              .eq("id", item.id);
-                            await Promise.all([
-                              sendConfirmationEmail(item),
-                              sendConfirmationWhatsApp(item),
-                            ]);
-                            const channels: string[] = [];
-                            if (item.email) channels.push(`email (${item.email})`);
-                            if (item.phone) channels.push(`WhatsApp (${item.phone})`);
-                            toast.success(
-                              channels.length > 0
-                                ? `Entretien confirmé — confirmation envoyée par ${channels.join(" et ")}`
-                                : "Entretien confirmé"
-                            );
-                            loadCounselling();
-                          }}
-                          className="flex items-center gap-1 px-3 py-2 rounded-lg bg-green-600 text-white text-xs font-medium hover:bg-green-700"
-                        >
-                          <CheckCircle size={14} />
-                          Confirmer
-                        </button>
+                        {item.confirmed ? (
+                          <div className="flex flex-col items-end gap-0.5">
+                            <span className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 text-xs font-medium">
+                              <CheckCircle size={13} /> Confirmé
+                            </span>
+                            {item.confirmed_by_name && (
+                              <p className="text-xs text-gray-400 dark:text-gray-500">par {item.confirmed_by_name}</p>
+                            )}
+                          </div>
+                        ) : (
+                          <button
+                            onClick={() => handleConfirm(item)}
+                            className="flex items-center gap-1 px-3 py-2 rounded-lg bg-green-600 text-white text-xs font-medium hover:bg-green-700"
+                          >
+                            <CheckCircle size={14} />
+                            Confirmer
+                          </button>
+                        )}
                       </div>
                     </td>
                   </tr>
