@@ -14,7 +14,6 @@ type Counselling = {
   email: string | null;
   reason: string;
   confirmed?: boolean;
-  confirmed_by_name?: string | null;
   pastors: { name: string } | null;
 };
 
@@ -63,59 +62,33 @@ export default function PastoralCounsellingList() {
   const [data, setData] = useState<Counselling[]>([]);
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState<Counselling | null>(null);
-  const [currentUserName, setCurrentUserName] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [filterMonth, setFilterMonth] = useState("");
   const [filterDate, setFilterDate] = useState("");
 
   useEffect(() => {
     loadCounselling();
-    loadCurrentUser();
   }, []);
 
   const loadCounselling = async () => {
-    const selectFields = `
-      id,
-      counselling_date,
-      counselling_time,
-      full_name,
-      phone,
-      email,
-      reason,
-      confirmed,
-      confirmed_by_name,
-      pastors(name)
-    `;
-
-    let { data, error } = await supabase
+    const { data } = await supabase
       .from("pastoral_counselling")
-      .select(selectFields)
+      .select(`
+        id,
+        counselling_date,
+        counselling_time,
+        full_name,
+        phone,
+        email,
+        reason,
+        confirmed,
+        pastors(name)
+      `)
       .order("counselling_date", { ascending: true })
       .order("counselling_time", { ascending: true });
 
-    // If confirmed_by_name column doesn't exist yet (migration not yet run), fall back
-    if (error) {
-      const fallback = await supabase
-        .from("pastoral_counselling")
-        .select(`
-          id,
-          counselling_date,
-          counselling_time,
-          full_name,
-          phone,
-          email,
-          reason,
-          confirmed,
-          pastors(name)
-        `)
-        .order("counselling_date", { ascending: true })
-        .order("counselling_time", { ascending: true });
-      data = fallback.data as typeof data;
-    }
-
     const transformedData = (data || []).map(item => ({
       ...item,
-      confirmed_by_name: (item as Record<string, unknown>).confirmed_by_name as string | null ?? null,
       pastors: item.pastors && (item.pastors as unknown[]).length > 0
         ? { name: (item.pastors as { name: string }[])[0].name }
         : null,
@@ -125,21 +98,10 @@ export default function PastoralCounsellingList() {
     setLoading(false);
   };
 
-  const loadCurrentUser = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("full_name")
-      .eq("id", user.id)
-      .single();
-    setCurrentUserName(profile?.full_name ?? user.email ?? null);
-  };
-
   const handleConfirm = async (item: Counselling) => {
     await supabase
       .from("pastoral_counselling")
-      .update({ confirmed: true, confirmed_by_name: currentUserName })
+      .update({ confirmed: true })
       .eq("id", item.id);
     await Promise.all([
       sendConfirmationEmail(item),
@@ -178,7 +140,7 @@ export default function PastoralCounsellingList() {
         <td style="padding:8px 12px">${item.email ?? "—"}</td>
         <td style="padding:8px 12px">${item.pastors?.name ?? "Indifférent"}</td>
         <td style="padding:8px 12px">${item.reason}</td>
-        <td style="padding:8px 12px;color:${item.confirmed ? "#16a34a" : "#dc2626"}">${item.confirmed ? `✓ Confirmé${item.confirmed_by_name ? ` (${item.confirmed_by_name})` : ""}` : "En attente"}</td>
+        <td style="padding:8px 12px;color:${item.confirmed ? "#16a34a" : "#dc2626"}">${item.confirmed ? "✓ Confirmé" : "En attente"}</td>
       </tr>`).join("");
     const html = `<!DOCTYPE html><html><head><meta charset="utf-8">
       <title>Entretiens pastoraux — ${fmtDate}</title>
@@ -317,14 +279,9 @@ export default function PastoralCounsellingList() {
                 </div>
                 <div className="mt-3">
                   {item.confirmed ? (
-                    <div className="flex flex-col items-center gap-0.5">
-                      <span className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 text-xs font-medium w-full justify-center">
-                        <CheckCircle size={13} /> Confirmé
-                      </span>
-                      {item.confirmed_by_name && (
-                        <p className="text-xs text-gray-400 dark:text-gray-500">par {item.confirmed_by_name}</p>
-                      )}
-                    </div>
+                    <span className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 text-xs font-medium w-full justify-center">
+                      <CheckCircle size={13} /> Confirmé
+                    </span>
                   ) : (
                     <button
                       onClick={() => handleConfirm(item)}
@@ -395,14 +352,9 @@ export default function PastoralCounsellingList() {
                         </button>
 
                         {item.confirmed ? (
-                          <div className="flex flex-col items-end gap-0.5">
-                            <span className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 text-xs font-medium">
-                              <CheckCircle size={13} /> Confirmé
-                            </span>
-                            {item.confirmed_by_name && (
-                              <p className="text-xs text-gray-400 dark:text-gray-500">par {item.confirmed_by_name}</p>
-                            )}
-                          </div>
+                          <span className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 text-xs font-medium">
+                            <CheckCircle size={13} /> Confirmé
+                          </span>
                         ) : (
                           <button
                             onClick={() => handleConfirm(item)}
