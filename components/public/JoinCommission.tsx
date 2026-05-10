@@ -63,7 +63,7 @@ export default function GroupJoinForm() {
       <div>
         <label className={labelClass}>Nom complet *</label>
         <input name="full_name" value={form.full_name} onChange={handleChange}
-          className={inputClass} placeholder="Jean Dupont" required />
+          className={inputClass} placeholder="aude nana" required />
       </div>
       <div>
         <label className={labelClass}>Téléphone *</label>

@@ -155,7 +155,7 @@ export default function PastoralCounsellingForm() {
       <div>
         <label className={labelClass}>Nom complet *</label>
         <input name="full_name" value={form.full_name} onChange={handleChange}
-          className={inputClass} placeholder="Jean Dupont" required />
+          className={inputClass} placeholder="Dior Masrané" required />
       </div>
 
       <div>
@@ -167,7 +167,7 @@ export default function PastoralCounsellingForm() {
       <div>
         <label className={labelClass}>Email <span className="font-normal text-gray-500 dark:text-gray-400">(optionnel)</span></label>
         <input name="email" type="email" value={form.email} onChange={handleChange}
-          className={inputClass} placeholder="email@exemple.com" />
+          className={inputClass} placeholder="dior@exemple.com" />
       </div>
 
       <div>

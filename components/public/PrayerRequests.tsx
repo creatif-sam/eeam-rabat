@@ -74,13 +74,13 @@ export default function PrayerRequestForm() {
       <div>
         <label className={labelClass}>Nom complet *</label>
         <input name="name" required value={form.name} onChange={handleChange}
-          placeholder="Jean Dupont" className={inputClass} />
+          placeholder="Aude Nana" className={inputClass} />
       </div>
 
       <div>
         <label className={labelClass}>Email <span className="font-normal text-gray-500 dark:text-gray-400">(optionnel)</span></label>
         <input type="email" name="email" value={form.email} onChange={handleChange}
-          placeholder="email@exemple.com" className={inputClass} />
+          placeholder="aude@exemple.com" className={inputClass} />
       </div>
 
       <div>
