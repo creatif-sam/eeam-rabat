@@ -74,29 +74,51 @@ export default function PastoralCounsellingList() {
   }, []);
 
   const loadCounselling = async () => {
-    const { data } = await supabase
+    const selectFields = `
+      id,
+      counselling_date,
+      counselling_time,
+      full_name,
+      phone,
+      email,
+      reason,
+      confirmed,
+      confirmed_by_name,
+      pastors(name)
+    `;
+
+    let { data, error } = await supabase
       .from("pastoral_counselling")
-      .select(
-        `
-        id,
-        counselling_date,
-        counselling_time,
-        full_name,
-        phone,
-        email,
-        reason,
-        confirmed,
-        confirmed_by_name,
-        pastors(name)
-        `
-      )
+      .select(selectFields)
       .order("counselling_date", { ascending: true })
       .order("counselling_time", { ascending: true });
 
-    // Transform the data to match the expected type
+    // If confirmed_by_name column doesn't exist yet (migration not yet run), fall back
+    if (error) {
+      const fallback = await supabase
+        .from("pastoral_counselling")
+        .select(`
+          id,
+          counselling_date,
+          counselling_time,
+          full_name,
+          phone,
+          email,
+          reason,
+          confirmed,
+          pastors(name)
+        `)
+        .order("counselling_date", { ascending: true })
+        .order("counselling_time", { ascending: true });
+      data = fallback.data;
+    }
+
     const transformedData = (data || []).map(item => ({
       ...item,
-      pastors: item.pastors && item.pastors.length > 0 ? { name: item.pastors[0].name } : null
+      confirmed_by_name: (item as Record<string, unknown>).confirmed_by_name as string | null ?? null,
+      pastors: item.pastors && (item.pastors as unknown[]).length > 0
+        ? { name: (item.pastors as { name: string }[])[0].name }
+        : null,
     }));
 
     setData(transformedData);
