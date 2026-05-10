@@ -110,7 +110,7 @@ export default function PastoralCounsellingList() {
         `)
         .order("counselling_date", { ascending: true })
         .order("counselling_time", { ascending: true });
-      data = fallback.data;
+      data = fallback.data as typeof data;
     }
 
     const transformedData = (data || []).map(item => ({
