@@ -30,7 +30,9 @@ ALTER TABLE public.purchases
 
 -- Positive-amount constraint (nulls allowed = amount not recorded)
 ALTER TABLE public.purchases
-  ADD CONSTRAINT IF NOT EXISTS purchases_amount_positive
+  DROP CONSTRAINT IF EXISTS purchases_amount_positive;
+ALTER TABLE public.purchases
+  ADD CONSTRAINT purchases_amount_positive
     CHECK (amount IS NULL OR amount > 0);
 
 -- Replace SELECT policy to hide soft-deleted rows
