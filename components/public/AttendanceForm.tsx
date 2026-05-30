@@ -101,7 +101,7 @@ export default function AttendanceForm() {
       return;
     }
 
-    toast.success("DonnÃ©es d'assiduitÃ© enregistrÃ©es avec succÃ¨s !");
+    toast.success("Données d'assiduité enregistrées avec succè¨s !");
     setAttendance(prev => ({
       ...prev,
       culte: "",

@@ -4,6 +4,14 @@ import Header from "@/components/dashboard/Header";
 import MobileBottomNav from "@/components/dashboard/MobileBottomNav";
 import Sidebar from "@/components/dashboard/Sidebar";
 import { useSidebar } from "@/components/dashboard/SidebarContext";
+import type { User } from "@supabase/supabase-js";
+
+type Profile = {
+  role: string | null;
+  full_name: string | null;
+  avatar_url: string | null;
+  approved: boolean;
+};
 
 export default function DashboardContent({
   children,
@@ -11,7 +19,7 @@ export default function DashboardContent({
   role
 }: {
   children: React.ReactNode;
-  user: any;
+  user: User;
   role: string | null;
 }) {
   const { isDesktopExpanded } = useSidebar();

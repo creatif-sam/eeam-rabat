@@ -29,7 +29,7 @@ export default function CommissionRequestsDashboard() {
   const load = async () => {
     let query = supabase
       .from("commission_requests")
-      .select("*")
+      .select("id, full_name, email, request_type, details, processed, created_at")
       .order("created_at", { ascending: false });
 
     if (filter !== "all") {

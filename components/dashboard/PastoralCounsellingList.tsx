@@ -33,15 +33,18 @@ async function sendConfirmationWhatsApp(item: Counselling) {
 
 async function sendConfirmationEmail(item: Counselling) {
   if (!item.email) return;
+  // Escape user-supplied values to prevent XSS in email HTML
+  const esc = (s: string) =>
+    s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
   const html = `
     <div style="font-family:sans-serif;max-width:520px;margin:auto;padding:32px 24px;background:#f9fafb;border-radius:12px">
       <h2 style="color:#0e7490;margin-bottom:8px">✅ Entretien pastoral confirmé</h2>
-      <p style="color:#374151;margin-bottom:16px">Bonjour <strong>${item.full_name}</strong>,</p>
+      <p style="color:#374151;margin-bottom:16px">Bonjour <strong>${esc(item.full_name)}</strong>,</p>
       <p style="color:#374151">Votre entretien pastoral a été <strong>confirmé</strong>.</p>
       <div style="background:#fff;border:1px solid #e5e7eb;border-radius:8px;padding:16px;margin:20px 0">
         <p style="margin:4px 0;color:#374151"><strong>Date :</strong> ${new Date(item.counselling_date).toLocaleDateString("fr-FR", { weekday:"long", year:"numeric", month:"long", day:"numeric" })}</p>
-        <p style="margin:4px 0;color:#374151"><strong>Heure :</strong> ${item.counselling_time}</p>
-        ${item.pastors ? `<p style="margin:4px 0;color:#374151"><strong>Pasteur :</strong> ${item.pastors.name}</p>` : ""}
+        <p style="margin:4px 0;color:#374151"><strong>Heure :</strong> ${esc(item.counselling_time)}</p>
+        ${item.pastors ? `<p style="margin:4px 0;color:#374151"><strong>Pasteur :</strong> ${esc(item.pastors.name)}</p>` : ""}
       </div>
       <p style="color:#6b7280;font-size:13px">En cas de besoin, n’hésitez pas à nous contacter.</p>
       <p style="color:#6b7280;font-size:13px;margin-top:24px">Église EEAM — Rabat</p>

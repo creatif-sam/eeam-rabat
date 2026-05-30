@@ -125,15 +125,18 @@ export default function ResourcesDocsPage({ role }: { role: string | null }) {
   });
 
   const handleDownload = async (resource: Resource) => {
-    const { data } = supabase.storage
+    // Bucket is private — create a short-lived signed URL (60 s is enough to open the tab)
+    const { data, error } = await supabase.storage
       .from("documents")
-      .getPublicUrl(resource.file_path);
-    window.open(data.publicUrl, "_blank");
-    // Increment download counter
-    await supabase
-      .from("resources")
-      .update({ download_count: resource.download_count + 1 })
-      .eq("id", resource.id);
+      .createSignedUrl(resource.file_path, 60);
+    if (error || !data?.signedUrl) {
+      toast.error("Impossible de générer le lien de téléchargement.");
+      return;
+    }
+    window.open(data.signedUrl, "_blank");
+    // Increment download counter via RPC (SECURITY DEFINER) so any
+    // authenticated member can do it without needing UPDATE on resources.
+    await supabase.rpc("increment_download_count", { resource_id: resource.id });
     setResources((prev) =>
       prev.map((r) =>
         r.id === resource.id

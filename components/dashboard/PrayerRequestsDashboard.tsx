@@ -34,7 +34,7 @@ export default function PrayerRequestsDashboard() {
 
     let query = supabase
       .from("prayer_requests")
-      .select("*")
+      .select("id, full_name, email, subject, message, confidential, processed, created_at")
       .order("created_at", { ascending: false });
 
     if (filter === "confidential") {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Save, Calendar } from "lucide-react";
 import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
@@ -27,6 +27,8 @@ export default function PastoralCounsellingForm() {
   const [dateError, setDateError] = useState("");
   const [queueCount, setQueueCount] = useState<number | null>(null);
   const [submitted, setSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [phoneError, setPhoneError] = useState("");
 
   const [form, setForm] = useState({
     full_name: "",
@@ -36,9 +38,27 @@ export default function PastoralCounsellingForm() {
     reason: ""
   });
 
+  const fetchPastors = useCallback(async () => {
+    const { data } = await supabase
+      .from("pastors")
+      .select("id,name")
+      .eq("active", true)
+      .order("name");
+    setPastors(data || []);
+  }, [supabase]);
+
+  const fetchQueueCount = useCallback(async (selectedDate: string, selectedTime: string) => {
+    const { count } = await supabase
+      .from("pastoral_counselling")
+      .select("id", { count: "exact", head: true })
+      .eq("counselling_date", selectedDate)
+      .eq("counselling_time", selectedTime);
+    setQueueCount(count || 0);
+  }, [supabase]);
+
   useEffect(() => {
     fetchPastors();
-  }, []);
+  }, [fetchPastors]);
 
   useEffect(() => {
     if (date && time) {
@@ -46,25 +66,7 @@ export default function PastoralCounsellingForm() {
     } else {
       setQueueCount(null);
     }
-  }, [date, time]);
-
-  const fetchPastors = async () => {
-    const { data } = await supabase
-      .from("pastors")
-      .select("id,name")
-      .eq("active", true)
-      .order("name");
-    setPastors(data || []);
-  };
-
-  const fetchQueueCount = async (selectedDate: string, selectedTime: string) => {
-    const { count } = await supabase
-      .from("pastoral_counselling")
-      .select("id", { count: "exact", head: true })
-      .eq("counselling_date", selectedDate)
-      .eq("counselling_time", selectedTime);
-    setQueueCount(count || 0);
-  };
+  }, [date, time, fetchQueueCount]);
 
   const generateTimes = (start: string, end: string) => {
     const times: string[] = [];
@@ -78,10 +80,14 @@ export default function PastoralCounsellingForm() {
     return times;
   };
 
+  // today's date string (YYYY-MM-DD) used as min for the date picker
+  const todayStr = useMemo(() => new Date().toISOString().split("T")[0], []);
+
   const getAvailableTimes = () => {
     if (!date) return [];
     const day = new Date(date).getDay();
-    if (day === 2 || day === 5) return generateTimes("16:00", "19:00");
+    // 3 = Wednesday, 5 = Friday, 6 = Saturday
+    if (day === 3 || day === 5) return generateTimes("16:00", "19:00");
     if (day === 6) return generateTimes("10:00", "16:00");
     return [];
   };
@@ -91,21 +97,31 @@ export default function PastoralCounsellingForm() {
     setTime("");
     setDateError("");
     const day = new Date(value).getDay();
-    if (![2, 5, 6].includes(day)) {
-      setDateError("Les entretiens sont disponibles uniquement les mardis, vendredis et samedis.");
+    if (![3, 5, 6].includes(day)) {
+      setDateError("Les entretiens sont disponibles uniquement les mercredis, vendredis et samedis.");
     }
+  };
+
+  // Validates a Moroccan mobile number: +212/00212/0 followed by 6 or 7 then 8 digits
+  const validatePhone = (value: string) => {
+    const stripped = value.replace(/[\s\-\(\)\.]/g, "");
+    const valid = /^(\+212|00212|0)[67]\d{8}$|^[67]\d{8}$/.test(stripped);
+    setPhoneError(valid ? "" : "Numéro invalide. Format attendu : +212 6XX XXX XXX");
   };
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
   ) => {
-    setForm(prev => ({ ...prev, [e.target.name]: e.target.value }));
+    const { name, value } = e.target;
+    setForm(prev => ({ ...prev, [name]: value }));
+    if (name === "phone") validatePhone(value);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (dateError || !date || !time) return;
+    if (dateError || phoneError || !date || !time || isSubmitting) return;
 
+    setIsSubmitting(true);
     const { error: insertError } = await supabase
       .from("pastoral_counselling")
       .insert({
@@ -117,6 +133,7 @@ export default function PastoralCounsellingForm() {
         counselling_time: time,
         reason: form.reason
       });
+    setIsSubmitting(false);
 
     if (insertError) {
       toast.error("Une erreur est survenue. Veuillez réessayer.");
@@ -148,7 +165,7 @@ export default function PastoralCounsellingForm() {
         <Calendar className="text-cyan-600 dark:text-cyan-400 mt-0.5 shrink-0" size={20} />
         <div className="text-sm text-cyan-800 dark:text-cyan-300">
           <p className="font-semibold">Horaires des entretiens pastoraux</p>
-          <p>Mercredi et vendredi à partir de 16h30. Samedi de 10h à 16h.</p>
+          <p>Mercredi et vendredi de 16h00 à 19h00. Samedi de 10h à 16h.</p>
         </div>
       </div>
 
@@ -160,8 +177,19 @@ export default function PastoralCounsellingForm() {
 
       <div>
         <label className={labelClass}>Téléphone *</label>
-        <input name="phone" type="tel" value={form.phone} onChange={handleChange}
-          className={inputClass} placeholder="+212 6XX XXX XXX" required />
+        <input
+          name="phone"
+          type="tel"
+          value={form.phone}
+          onChange={handleChange}
+          onBlur={() => form.phone && validatePhone(form.phone)}
+          className={`${inputClass} ${phoneError ? "border-rose-400 dark:border-rose-500 focus:ring-rose-500" : ""}`}
+          placeholder="+212 6XX XXX XXX"
+          required
+        />
+        {phoneError && (
+          <p className="mt-1.5 text-sm text-rose-600 dark:text-rose-400">{phoneError}</p>
+        )}
       </div>
 
       <div>
@@ -184,6 +212,7 @@ export default function PastoralCounsellingForm() {
           type="date"
           value={date}
           onChange={e => handleDateChange(e.target.value)}
+          min={todayStr}
           className={`${inputClass} ${dateError ? "border-rose-400 dark:border-rose-500 focus:ring-rose-500" : ""}`}
           required
         />
@@ -219,15 +248,15 @@ export default function PastoralCounsellingForm() {
 
       <button
         type="submit"
-        disabled={!!dateError}
+        disabled={!!dateError || !!phoneError || isSubmitting}
         className={`w-full px-6 py-3 rounded-xl font-medium flex items-center justify-center gap-2 transition shadow-lg ${
-          dateError
+          dateError || phoneError || isSubmitting
             ? "bg-gray-300 dark:bg-gray-700 text-gray-600 dark:text-gray-400 cursor-not-allowed"
             : "bg-gradient-to-r from-cyan-500 to-blue-600 text-white hover:from-cyan-600 hover:to-blue-700"
         }`}
       >
         <Save size={18} />
-        Réserver l&apos;entretien
+        {isSubmitting ? "Envoi en cours…" : "Réserver l\u2019entretien"}
       </button>
     </form>
   );

@@ -34,7 +34,7 @@ export default function VolunteerRequestsDashboard() {
   const load = async () => {
     const { data } = await supabase
       .from("volunteer_requests")
-      .select("*")
+      .select("id, first_name, last_name, email, phone, ministry, skills, availability, processed, created_at")
       .order("created_at", { ascending: false });
 
     setData(data || []);
