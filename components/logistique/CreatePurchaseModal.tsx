@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { X, Upload } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
@@ -31,8 +31,11 @@ export default function CreatePurchaseModal({
   const supabase = createClient();
   const [submitting, setSubmitting] = useState(false);
   const [receiptFile, setReceiptFile] = useState<File | null>(null);
+  const [inventoryItems, setInventoryItems] = useState<{ id: string; name: string; category: string }[]>([]);
   const [form, setForm] = useState({
     item_name: "",
+    item_id: "",
+    status: "pending",
     amount: "",
     currency: "MAD",
     bought_by: "",
@@ -40,6 +43,15 @@ export default function CreatePurchaseModal({
     category: "Autre",
     notes: "",
   });
+
+  useEffect(() => {
+    supabase
+      .from("logistics_items")
+      .select("id, name, category")
+      .order("category")
+      .order("name")
+      .then(({ data }) => setInventoryItems(data || []));
+  }, [supabase]);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
@@ -83,11 +95,13 @@ export default function CreatePurchaseModal({
 
     const { error } = await supabase.from("purchases").insert({
       item_name: form.item_name.trim(),
+      item_id: form.item_id || null,
       amount: form.amount ? parseFloat(form.amount) : null,
       currency: form.currency,
       bought_by: form.bought_by.trim(),
       purchase_date: form.purchase_date,
       category: form.category,
+      status: form.status,
       notes: form.notes.trim() || null,
       receipt_url,
       created_by: user?.id ?? null,
@@ -131,6 +145,27 @@ export default function CreatePurchaseModal({
               className={inputClass}
               placeholder="ex. Câble HDMI, Chaises×10…"
             />
+          </div>
+
+          <div>
+            <label className={labelClass}>Lier à un équipement (optionnel)</label>
+            <select name="item_id" value={form.item_id} onChange={handleChange} className={inputClass}>
+              <option value="">— Aucun lien —</option>
+              {inventoryItems.map(it => (
+                <option key={it.id} value={it.id}>
+                  {it.name} ({it.category})
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label className={labelClass}>Statut</label>
+            <select name="status" value={form.status} onChange={handleChange} className={inputClass}>
+              <option value="draft">Brouillon</option>
+              <option value="pending">En attente d&apos;approbation</option>
+              <option value="approved">Déjà approuvé</option>
+            </select>
           </div>
 
           <div className="grid grid-cols-2 gap-3">

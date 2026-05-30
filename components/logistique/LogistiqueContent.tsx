@@ -1,11 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { Package, ShoppingCart } from "lucide-react";
+import { Package, ShoppingCart, Handshake } from "lucide-react";
 import LogisticsTab from "./LogisticsTab";
 import AchatsTab from "./AchatsTab";
+import LoansTab from "./LoansTab";
 
-type Tab = "logistique" | "achats";
+type Tab = "logistique" | "achats" | "prets";
 
 export default function LogistiqueContent() {
   const [activeTab, setActiveTab] = useState<Tab>("logistique");
@@ -32,7 +33,7 @@ export default function LogistiqueContent() {
           }`}
         >
           <Package size={16} />
-          Logistique ✍️
+          Inventaire
         </button>
         <button
           onClick={() => setActiveTab("achats")}
@@ -43,11 +44,24 @@ export default function LogistiqueContent() {
           }`}
         >
           <ShoppingCart size={16} />
-          Achats 🛒
+          Achats
+        </button>
+        <button
+          onClick={() => setActiveTab("prets")}
+          className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+            activeTab === "prets"
+              ? "bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 shadow-sm"
+              : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200"
+          }`}
+        >
+          <Handshake size={16} />
+          Prêts
         </button>
       </div>
 
-      {activeTab === "logistique" ? <LogisticsTab /> : <AchatsTab />}
+      {activeTab === "logistique" && <LogisticsTab />}
+      {activeTab === "achats" && <AchatsTab />}
+      {activeTab === "prets" && <LoansTab />}
     </div>
   );
 }

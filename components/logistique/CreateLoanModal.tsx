@@ -1,24 +1,16 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { X } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
 
-const CATEGORIES = [
-  "Mobilier",
-  "Audiovisuel",
-  "Informatique",
-  "Cuisine",
-  "Bureau",
-  "Autre",
-];
-
-const CONDITIONS = [
-  { value: "bon", label: "Bon état" },
-  { value: "moyen", label: "État moyen" },
-  { value: "mauvais", label: "Mauvais état" },
-];
+type ItemOption = {
+  id: string;
+  name: string;
+  category: string;
+  quantity: number;
+};
 
 const inputClass =
   "w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-gray-700 " +
@@ -27,7 +19,7 @@ const inputClass =
 
 const labelClass = "block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1";
 
-export default function CreateItemModal({
+export default function CreateLoanModal({
   onClose,
   onCreated,
 }: {
@@ -36,50 +28,69 @@ export default function CreateItemModal({
 }) {
   const supabase = createClient();
   const [submitting, setSubmitting] = useState(false);
+  const [items, setItems] = useState<ItemOption[]>([]);
   const [form, setForm] = useState({
-    name: "",
-    category: "Mobilier",
-    quantity: "1",
-    min_quantity: "0",
-    condition: "bon",
-    location: "",
+    item_id: "",
+    lent_to: "",
+    quantity_lent: "1",
+    lent_at: new Date().toISOString().split("T")[0],
+    expected_return: "",
     notes: "",
   });
+
+  useEffect(() => {
+    supabase
+      .from("logistics_items")
+      .select("id, name, category, quantity")
+      .order("category")
+      .order("name")
+      .then(({ data }) => setItems(data || []));
+  }, [supabase]);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
   ) => setForm(prev => ({ ...prev, [e.target.name]: e.target.value }));
 
   const submit = async () => {
-    if (!form.name.trim()) {
-      toast.error("Le nom est requis.");
+    if (!form.item_id) {
+      toast.error("Sélectionnez un équipement.");
       return;
     }
-    const qty = parseInt(form.quantity, 10);
+    if (!form.lent_to.trim()) {
+      toast.error("Veuillez indiquer à qui l'équipement est prêté.");
+      return;
+    }
+    const qty = parseInt(form.quantity_lent, 10);
     if (isNaN(qty) || qty < 1) {
       toast.error("La quantité doit être au moins 1.");
       return;
     }
+    if (!form.lent_at) {
+      toast.error("La date de prêt est requise.");
+      return;
+    }
+
     setSubmitting(true);
     const {
       data: { user },
     } = await supabase.auth.getUser();
-    const { error } = await supabase.from("logistics_items").insert({
-      name: form.name.trim(),
-      category: form.category,
-      quantity: qty,
-      min_quantity: parseInt(form.min_quantity, 10) || 0,
-      condition: form.condition,
-      location: form.location.trim() || null,
+
+    const { error } = await supabase.from("loans").insert({
+      item_id: form.item_id,
+      lent_to: form.lent_to.trim(),
+      quantity_lent: qty,
+      lent_at: form.lent_at,
+      expected_return: form.expected_return || null,
       notes: form.notes.trim() || null,
       created_by: user?.id ?? null,
     });
+
     setSubmitting(false);
     if (error) {
-      toast.error("Erreur lors de la création.");
+      toast.error("Erreur lors de l'enregistrement du prêt.");
       return;
     }
-    toast.success("Équipement ajouté.");
+    toast.success("Prêt enregistré.");
     onCreated();
   };
 
@@ -89,7 +100,7 @@ export default function CreateItemModal({
         {/* Header */}
         <div className="flex items-center justify-between p-5 border-b border-gray-100 dark:border-gray-800">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-            Ajouter un équipement
+            Enregistrer un prêt
           </h2>
           <button
             onClick={onClose}
@@ -102,76 +113,67 @@ export default function CreateItemModal({
         {/* Body */}
         <div className="p-5 space-y-4">
           <div>
-            <label className={labelClass}>Nom *</label>
-            <input
-              name="name"
-              value={form.name}
-              onChange={handleChange}
-              className={inputClass}
-              placeholder="ex. Chaise pliante, Microphone sans fil…"
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className={labelClass}>Catégorie</label>
-              <select name="category" value={form.category} onChange={handleChange} className={inputClass}>
-                {CATEGORIES.map(c => (
-                  <option key={c} value={c}>{c}</option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className={labelClass}>Quantité</label>
-              <input
-                name="quantity"
-                type="number"
-                min="1"
-                value={form.quantity}
-                onChange={handleChange}
-                className={inputClass}
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className={labelClass}>Qté min. (alerte stock)</label>
-              <input
-                name="min_quantity"
-                type="number"
-                min="0"
-                value={form.min_quantity}
-                onChange={handleChange}
-                className={inputClass}
-              />
-            </div>
-            <div>
-              <label className={labelClass}>État</label>
-              <select name="condition" value={form.condition} onChange={handleChange} className={inputClass}>
-                {CONDITIONS.map(c => (
-                  <option key={c.value} value={c.value}>{c.label}</option>
-                ))}
-              </select>
-            </div>
+            <label className={labelClass}>Équipement *</label>
+            <select name="item_id" value={form.item_id} onChange={handleChange} className={inputClass}>
+              <option value="">— Sélectionner un équipement —</option>
+              {items.map(it => (
+                <option key={it.id} value={it.id}>
+                  {it.name} ({it.category}) — Qté disponible : {it.quantity}
+                </option>
+              ))}
+            </select>
           </div>
 
           <div>
-            <label className={labelClass}>Emplacement</label>
+            <label className={labelClass}>Prêté à *</label>
             <input
-              name="location"
-              value={form.location}
+              name="lent_to"
+              value={form.lent_to}
               onChange={handleChange}
               className={inputClass}
-              placeholder="ex. Salle principale"
+              placeholder="Nom de la personne ou du groupe"
             />
+          </div>
+
+          <div className="grid grid-cols-3 gap-3">
+            <div>
+              <label className={labelClass}>Quantité</label>
+              <input
+                name="quantity_lent"
+                type="number"
+                min="1"
+                value={form.quantity_lent}
+                onChange={handleChange}
+                className={inputClass}
+              />
+            </div>
+            <div>
+              <label className={labelClass}>Date prêt *</label>
+              <input
+                name="lent_at"
+                type="date"
+                value={form.lent_at}
+                onChange={handleChange}
+                className={inputClass}
+              />
+            </div>
+            <div>
+              <label className={labelClass}>Retour prévu</label>
+              <input
+                name="expected_return"
+                type="date"
+                value={form.expected_return}
+                onChange={handleChange}
+                className={inputClass}
+              />
+            </div>
           </div>
 
           <div>
             <label className={labelClass}>Notes</label>
             <textarea
               name="notes"
-              rows={3}
+              rows={2}
               value={form.notes}
               onChange={handleChange}
               className={inputClass}
