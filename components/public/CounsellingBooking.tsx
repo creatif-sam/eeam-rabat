@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Save, Calendar } from "lucide-react";
+import { Save, Calendar, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
 
@@ -18,6 +18,30 @@ const inputClass =
 
 const labelClass = "block text-sm font-semibold text-gray-800 dark:text-gray-200 mb-1.5";
 
+const MAX_PER_SLOT = 5;
+const MAX_REASON_LENGTH = 600;
+
+/** Next N valid counselling dates (Wed=3, Fri=5, Sat=6) starting from today */
+function getNextAvailableDates(count = 5): string[] {
+  const dates: string[] = [];
+  const d = new Date();
+  d.setHours(0, 0, 0, 0);
+  while (dates.length < count) {
+    if ([3, 5, 6].includes(d.getDay())) {
+      dates.push(d.toISOString().split("T")[0]);
+    }
+    d.setDate(d.getDate() + 1);
+  }
+  return dates;
+}
+
+/** Format a YYYY-MM-DD string as e.g. "Mer 4/6" */
+function formatChipDate(dateStr: string): string {
+  const d = new Date(dateStr + "T00:00:00");
+  const dayNames = ["Dim", "Lun", "Mar", "Mer", "Jeu", "Ven", "Sam"];
+  return `${dayNames[d.getDay()]} ${d.getDate()}/${d.getMonth() + 1}`;
+}
+
 export default function PastoralCounsellingForm() {
   const supabase = createClient();
 
@@ -25,10 +49,12 @@ export default function PastoralCounsellingForm() {
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
   const [dateError, setDateError] = useState("");
-  const [queueCount, setQueueCount] = useState<number | null>(null);
+  const [slotCounts, setSlotCounts] = useState<Record<string, number>>({});
   const [submitted, setSubmitted] = useState(false);
+  const [bookingRef, setBookingRef] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [phoneError, setPhoneError] = useState("");
+  const [honeypot, setHoneypot] = useState("");
 
   const [form, setForm] = useState({
     full_name: "",
@@ -47,13 +73,16 @@ export default function PastoralCounsellingForm() {
     setPastors(data || []);
   }, [supabase]);
 
-  const fetchQueueCount = useCallback(async (selectedDate: string, selectedTime: string) => {
-    const { count } = await supabase
+  const fetchSlotCounts = useCallback(async (selectedDate: string) => {
+    const { data } = await supabase
       .from("pastoral_counselling")
-      .select("id", { count: "exact", head: true })
-      .eq("counselling_date", selectedDate)
-      .eq("counselling_time", selectedTime);
-    setQueueCount(count || 0);
+      .select("counselling_time")
+      .eq("counselling_date", selectedDate);
+    const counts: Record<string, number> = {};
+    for (const row of data || []) {
+      counts[row.counselling_time] = (counts[row.counselling_time] || 0) + 1;
+    }
+    setSlotCounts(counts);
   }, [supabase]);
 
   useEffect(() => {
@@ -61,12 +90,9 @@ export default function PastoralCounsellingForm() {
   }, [fetchPastors]);
 
   useEffect(() => {
-    if (date && time) {
-      fetchQueueCount(date, time);
-    } else {
-      setQueueCount(null);
-    }
-  }, [date, time, fetchQueueCount]);
+    if (date) fetchSlotCounts(date);
+    else setSlotCounts({});
+  }, [date, fetchSlotCounts]);
 
   const generateTimes = (start: string, end: string) => {
     const times: string[] = [];
@@ -82,10 +108,11 @@ export default function PastoralCounsellingForm() {
 
   // today's date string (YYYY-MM-DD) used as min for the date picker
   const todayStr = useMemo(() => new Date().toISOString().split("T")[0], []);
+  const nextDates = useMemo(() => getNextAvailableDates(5), []);
 
   const getAvailableTimes = () => {
     if (!date) return [];
-    const day = new Date(date).getDay();
+    const day = new Date(date + "T00:00:00").getDay();
     // 3 = Wednesday, 5 = Friday, 6 = Saturday
     if (day === 3 || day === 5) return generateTimes("16:00", "19:00");
     if (day === 6) return generateTimes("10:00", "16:00");
@@ -96,7 +123,7 @@ export default function PastoralCounsellingForm() {
     setDate(value);
     setTime("");
     setDateError("");
-    const day = new Date(value).getDay();
+    const day = new Date(value + "T00:00:00").getDay();
     if (![3, 5, 6].includes(day)) {
       setDateError("Les entretiens sont disponibles uniquement les mercredis, vendredis et samedis.");
     }
@@ -113,6 +140,7 @@ export default function PastoralCounsellingForm() {
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
   ) => {
     const { name, value } = e.target;
+    if (name === "reason" && value.length > MAX_REASON_LENGTH) return;
     setForm(prev => ({ ...prev, [name]: value }));
     if (name === "phone") validatePhone(value);
   };
@@ -120,8 +148,30 @@ export default function PastoralCounsellingForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (dateError || phoneError || !date || !time || isSubmitting) return;
+    if (honeypot) return;
 
     setIsSubmitting(true);
+
+    // Duplicate booking check
+    const { count: dupCount } = await supabase
+      .from("pastoral_counselling")
+      .select("id", { count: "exact", head: true })
+      .eq("phone", form.phone)
+      .eq("counselling_date", date);
+
+    if ((dupCount ?? 0) > 0) {
+      toast.error("Un rendez-vous existe déjà pour ce numéro à cette date.");
+      setIsSubmitting(false);
+      return;
+    }
+
+    // Re-check capacity in case slot filled since page load
+    if ((slotCounts[time] ?? 0) >= MAX_PER_SLOT) {
+      toast.error("Ce créneau est complet. Veuillez en choisir un autre.");
+      setIsSubmitting(false);
+      return;
+    }
+
     const { error: insertError } = await supabase
       .from("pastoral_counselling")
       .insert({
@@ -131,8 +181,9 @@ export default function PastoralCounsellingForm() {
         pastor_id: form.pastor_id || null,
         counselling_date: date,
         counselling_time: time,
-        reason: form.reason
+        reason: form.reason,
       });
+
     setIsSubmitting(false);
 
     if (insertError) {
@@ -140,6 +191,7 @@ export default function PastoralCounsellingForm() {
       return;
     }
 
+    setBookingRef(`EP-${new Date().getFullYear()}-${String(Math.floor(Math.random() * 99999)).padStart(5, "0")}`);
     setSubmitted(true);
   };
 
@@ -147,20 +199,38 @@ export default function PastoralCounsellingForm() {
     return (
       <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-2xl p-6 text-center space-y-3">
         <div className="w-12 h-12 rounded-full bg-green-100 dark:bg-green-800/40 flex items-center justify-center mx-auto">
-          <Save className="text-green-600 dark:text-green-400" size={22} />
+          <CheckCircle2 className="text-green-600 dark:text-green-400" size={24} />
         </div>
         <h3 className="text-lg font-semibold text-green-800 dark:text-green-200">Réservation envoyée</h3>
+        {bookingRef && (
+          <p className="text-sm font-mono bg-green-100 dark:bg-green-800/30 rounded-lg px-3 py-1.5 inline-block text-green-700 dark:text-green-300">
+            Référence : {bookingRef}
+          </p>
+        )}
         <p className="text-sm text-green-700 dark:text-green-300">
-          Votre réservation a bien été envoyée. Vous recevrez une confirmation par WhatsApp ou email.
+          Conservez cette référence. Vous serez contacté(e) pour confirmation.
         </p>
       </div>
     );
   }
 
   const availableTimes = getAvailableTimes();
+  const queueCount = time ? (slotCounts[time] ?? 0) : null;
 
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
+      {/* Honeypot – hidden from real users, bots fill it */}
+      <input
+        type="text"
+        name="website"
+        value={honeypot}
+        onChange={e => setHoneypot(e.target.value)}
+        tabIndex={-1}
+        autoComplete="off"
+        aria-hidden="true"
+        style={{ display: "none" }}
+      />
+
       <div className="flex gap-3 bg-cyan-50 dark:bg-cyan-900/20 border border-cyan-200 dark:border-cyan-800 rounded-xl p-4">
         <Calendar className="text-cyan-600 dark:text-cyan-400 mt-0.5 shrink-0" size={20} />
         <div className="text-sm text-cyan-800 dark:text-cyan-300">
@@ -208,6 +278,22 @@ export default function PastoralCounsellingForm() {
 
       <div>
         <label className={labelClass}>Date souhaitée *</label>
+        <div className="flex flex-wrap gap-2 mb-2">
+          {nextDates.map(d => (
+            <button
+              key={d}
+              type="button"
+              onClick={() => handleDateChange(d)}
+              className={`px-3 py-1 rounded-full text-xs font-medium border transition-colors ${
+                date === d
+                  ? "bg-cyan-500 text-white border-cyan-500"
+                  : "bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-600 hover:border-cyan-400"
+              }`}
+            >
+              {formatChipDate(d)}
+            </button>
+          ))}
+        </div>
         <input
           type="date"
           value={date}
@@ -231,17 +317,31 @@ export default function PastoralCounsellingForm() {
           disabled={!availableTimes.length}
         >
           <option value="">Sélectionner une heure</option>
-          {availableTimes.map(t => <option key={t} value={t}>{t}</option>)}
+          {availableTimes.map(t => {
+            const count = slotCounts[t] ?? 0;
+            const full = count >= MAX_PER_SLOT;
+            return (
+              <option key={t} value={t} disabled={full}>
+                {full ? `${t} — Complet` : count > 0 ? `${t} — ${count}/${MAX_PER_SLOT} pris` : t}
+              </option>
+            );
+          })}
         </select>
-        {queueCount !== null && (
-          <p className="mt-1.5 text-sm text-gray-500 dark:text-gray-400">
-            {queueCount} personne{queueCount > 1 ? "s" : ""} ont déjà choisi ce créneau avant vous.
+        {queueCount !== null && queueCount > 0 && (
+          <p className={`mt-1.5 text-sm ${queueCount >= MAX_PER_SLOT - 1 ? "text-amber-600 dark:text-amber-400" : "text-gray-500 dark:text-gray-400"}`}>
+            {queueCount} personne{queueCount > 1 ? "s" : ""} ont déjà choisi ce créneau.
+            {queueCount >= MAX_PER_SLOT - 1 ? " Dépêchez-vous !" : ""}
           </p>
         )}
       </div>
 
       <div>
-        <label className={labelClass}>Motif de l&apos;entretien *</label>
+        <div className="flex justify-between items-baseline mb-1.5">
+          <label className="block text-sm font-semibold text-gray-800 dark:text-gray-200">Motif de l&apos;entretien *</label>
+          <span className={`text-xs ${form.reason.length > MAX_REASON_LENGTH * 0.9 ? "text-amber-500" : "text-gray-400 dark:text-gray-500"}`}>
+            {form.reason.length}/{MAX_REASON_LENGTH}
+          </span>
+        </div>
         <textarea name="reason" rows={4} value={form.reason} onChange={handleChange}
           className={inputClass} placeholder="Décrivez brièvement le motif" required />
       </div>

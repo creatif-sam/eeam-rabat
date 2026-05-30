@@ -18,7 +18,8 @@ import {
   ClipboardList,
   ListTodo,
   Settings,
-  BookOpen
+  BookOpen,
+  Package
 } from "lucide-react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
@@ -37,6 +38,7 @@ const allMenuItems = [
   { label: "Finance", icon: DollarSign, route: "/dashboard/finances", roles: FINANCIAL_ROLES },
   { label: "Formations", icon: GraduationCap, route: "/dashboard/formations", roles: null },
   { label: "Formulaires", icon: ClipboardList, route: "/dashboard/formulaires", roles: null },
+  { label: "Logistique", icon: Package, route: "/dashboard/logistique", roles: ADMIN_ROLES },
   { label: "Logs", icon: FileText, route: "/dashboard/logs", roles: ADMIN_ROLES },
   { label: "Membres", icon: UsersRound, route: "/dashboard/membres", roles: null },
   { label: "Paramètres", icon: Settings, route: "/dashboard/settings", roles: ADMIN_ROLES },
