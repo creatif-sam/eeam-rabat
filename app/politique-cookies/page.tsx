@@ -193,8 +193,8 @@ export default function CookiePolicyPage() {
 
           <div className="bg-gray-50 rounded-lg p-4">
             <p className="text-gray-800">
-              <strong>Email :</strong> contact@eeam.ma<br />
-              <strong>Téléphone :</strong> +212 XXX XXX XXX<br />
+              <strong>Email :</strong> cpeeamrabat@gmail.com<br />
+              <strong>Téléphone :</strong> +212 707507100<br />
               <strong>Adresse :</strong> Rabat, Maroc
             </p>
           </div>

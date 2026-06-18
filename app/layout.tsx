@@ -2,6 +2,7 @@ import type { Metadata } from "next"
 import Script from "next/script"
 import "./globals.css"
 import ClientProviders from "@/components/ClientProviders"
+import WhatsAppButton from "@/components/WhatsAppButton"
 
 const defaultUrl = process.env.VERCEL_URL
   ? `https://${process.env.VERCEL_URL}`
@@ -39,6 +40,8 @@ export default function RootLayout({
         <ClientProviders>
           {children}
         </ClientProviders>
+
+        <WhatsAppButton />
 
         <Script id="pwa-push" strategy="afterInteractive">
           {`
