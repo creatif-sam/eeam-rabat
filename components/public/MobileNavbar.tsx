@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { Home, Users, Calendar, Clock, ChevronUp, LogIn, UserPlus } from "lucide-react";
 
 interface MobileNavbarProps {
@@ -12,6 +13,7 @@ interface MobileNavbarProps {
 
 export default function MobileNavbar({ onNavigate, onLogin, onSignUp, onMember }: MobileNavbarProps) {
   const [isExpanded, setIsExpanded] = useState(false);
+  const router = useRouter();
 
   const navItems = [
     { id: "home", label: "Accueil", icon: Home, color: "text-blue-600" },
@@ -65,7 +67,7 @@ export default function MobileNavbar({ onNavigate, onLogin, onSignUp, onMember }
             <div className="grid grid-cols-2 gap-2">
               <button
                 onClick={() => {
-                  if (onLogin) onLogin();
+                  onLogin ? onLogin() : router.push("/auth/login");
                   setIsExpanded(false);
                 }}
                 className="flex items-center justify-center gap-2 p-3 bg-gradient-to-r from-cyan-500 to-blue-600 text-white rounded-lg text-sm font-medium"

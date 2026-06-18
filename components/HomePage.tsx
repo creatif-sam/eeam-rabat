@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 import Header from "@/components/public/layout/Header";
 import WelcomeSection from "@/components/public/sections/WelcomeSection";
@@ -17,12 +17,11 @@ import JoinGroupForm from "@/components/public/JoinCommission";
 import RequestSubmissionForm from "@/components/public/RequestSubmissionForm";
 import AttendanceForm from "@/components/public/AttendanceForm";
 import PublicCalendar from "@/components/public/PublicCalender";
-import { LoginForm } from "@/components/login-form";
 import { SignUpForm } from "@/components/sign-up-form";
 
 export default function HomePage() {
+  const router = useRouter();
   const searchParams = useSearchParams();
-  const [loginOpen, setLoginOpen] = useState(false);
   const [signUpOpen, setSignUpOpen] = useState(false);
   const [memberOpen, setMemberOpen] = useState(false);
   const [volunteerOpen, setVolunteerOpen] = useState(false);
@@ -33,15 +32,15 @@ export default function HomePage() {
   useEffect(() => {
     const modal = searchParams.get('modal');
     if (modal === 'login') {
-      setLoginOpen(true);
+      router.replace("/auth/login");
     } else if (modal === 'signup') {
       setSignUpOpen(true);
     }
-  }, [searchParams]);
+  }, [searchParams, router]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950 transition-colors duration-300">
-      <Header onLogin={() => setLoginOpen(true)} onSignUp={() => setSignUpOpen(true)} />
+      <Header onSignUp={() => setSignUpOpen(true)} />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
         <div id="home">
@@ -119,16 +118,6 @@ export default function HomePage() {
       </BaseModal>
 
       <BaseModal
-        open={loginOpen}
-        onClose={() => setLoginOpen(false)}
-        title="Connexion"
-        subtitle="Accédez à votre compte"
-        headerClass="bg-gradient-to-r from-cyan-500 to-blue-600"
-      >
-        <LoginForm />
-      </BaseModal>
-
-      <BaseModal
         open={signUpOpen}
         onClose={() => setSignUpOpen(false)}
         title="Créer un compte"
@@ -145,7 +134,6 @@ export default function HomePage() {
             element.scrollIntoView({ behavior: "smooth" });
           }
         }}
-        onLogin={() => setLoginOpen(true)}
         onSignUp={() => setSignUpOpen(true)}
         onMember={() => setMemberOpen(true)}
       />

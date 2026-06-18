@@ -114,8 +114,7 @@ export default function PastoralCounsellingForm() {
     if (!date) return [];
     const day = new Date(date + "T00:00:00").getDay();
     // 3 = Wednesday, 5 = Friday, 6 = Saturday
-    if (day === 3 || day === 5) return generateTimes("16:00", "19:00");
-    if (day === 6) return generateTimes("10:00", "16:00");
+    if (day === 3 || day === 5 || day === 6) return generateTimes("16:30", "19:00");
     return [];
   };
 
@@ -235,7 +234,7 @@ export default function PastoralCounsellingForm() {
         <Calendar className="text-cyan-600 dark:text-cyan-400 mt-0.5 shrink-0" size={20} />
         <div className="text-sm text-cyan-800 dark:text-cyan-300">
           <p className="font-semibold">Horaires des entretiens pastoraux</p>
-          <p>Mercredi et vendredi de 16h00 à 19h00. Samedi de 10h à 16h.</p>
+          <p>Mercredi, vendredi et samedi de 16h30 à 19h00.</p>
         </div>
       </div>
 
