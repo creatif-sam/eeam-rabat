@@ -14,7 +14,15 @@ export async function createSupabaseServerClient() {
         },
         set(name: string, value: string, options: any) {
           try {
-            cookieStore.set({ name, value, ...options })
+            cookieStore.set({
+              name,
+              value,
+              ...options,
+              httpOnly: true,
+              sameSite: "lax",
+              secure: process.env.NODE_ENV === "production",
+              maxAge: Math.min(options?.maxAge ?? Infinity, 8 * 60 * 60),
+            })
           } catch {
             // Cookie writes are not allowed from all server contexts (e.g. Server Components).
           }

@@ -31,7 +31,13 @@ export async function updateSession(request: NextRequest) {
             request,
           });
           cookiesToSet.forEach(({ name, value, options }) =>
-            supabaseResponse.cookies.set(name, value, options),
+            supabaseResponse.cookies.set(name, value, {
+              ...options,
+              httpOnly: true,
+              sameSite: "lax",
+              secure: process.env.NODE_ENV === "production",
+              maxAge: Math.min(options?.maxAge ?? Infinity, 8 * 60 * 60),
+            }),
           );
         },
       },
