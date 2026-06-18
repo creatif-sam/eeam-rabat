@@ -78,6 +78,7 @@ export default function SessionDetailHeader({
           </button>
           <button
             onClick={onClose}
+            aria-label="Fermer"
             className="p-1.5 rounded-lg bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-400 transition-colors"
           >
             <X size={14} />

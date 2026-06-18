@@ -2,10 +2,12 @@
 
 import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { toast } from "sonner";
 
 export default function EditModuleModal({ module, onClose, onUpdated }: any) {
   const supabase = createClient();
   const [form, setForm] = useState<any>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     if (module) setForm(module);
@@ -14,7 +16,10 @@ export default function EditModuleModal({ module, onClose, onUpdated }: any) {
   if (!form) return null;
 
   const save = async () => {
-    await supabase
+    if (isSubmitting) return;
+    setIsSubmitting(true);
+
+    const { error } = await supabase
       .from("formation_modules")
       .update({
         titre: form.titre,
@@ -23,14 +28,38 @@ export default function EditModuleModal({ module, onClose, onUpdated }: any) {
       })
       .eq("id", form.id);
 
+    setIsSubmitting(false);
+
+    if (error) {
+      toast.error("Impossible de mettre à jour le module.");
+      return;
+    }
+
     onUpdated();
     onClose();
   };
 
-  const remove = async () => {
-    await supabase.from("formation_modules").delete().eq("id", form.id);
-    onUpdated();
-    onClose();
+  const remove = () => {
+    if (isSubmitting) return;
+    toast("Supprimer ce module ?", {
+      action: {
+        label: "Supprimer",
+        onClick: async () => {
+          setIsSubmitting(true);
+          const { error } = await supabase.from("formation_modules").delete().eq("id", form.id);
+          setIsSubmitting(false);
+
+          if (error) {
+            toast.error("Impossible de supprimer le module.");
+            return;
+          }
+
+          onUpdated();
+          onClose();
+        }
+      },
+      cancel: { label: "Annuler", onClick: () => {} }
+    });
   };
 
   return (
@@ -64,15 +93,17 @@ export default function EditModuleModal({ module, onClose, onUpdated }: any) {
         <div className="flex gap-3">
           <button
             onClick={remove}
-            className="flex-1 bg-red-500 text-white py-3 rounded-xl"
+            disabled={isSubmitting}
+            className="flex-1 bg-red-500 text-white py-3 rounded-xl disabled:opacity-50"
           >
             Supprimer
           </button>
           <button
             onClick={save}
-            className="flex-1 bg-cyan-500 text-white py-3 rounded-xl"
+            disabled={isSubmitting}
+            className="flex-1 bg-cyan-500 text-white py-3 rounded-xl disabled:opacity-50"
           >
-            Enregistrer
+            {isSubmitting ? "Enregistrement..." : "Enregistrer"}
           </button>
         </div>
       </div>

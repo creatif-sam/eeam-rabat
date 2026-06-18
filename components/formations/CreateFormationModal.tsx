@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { X } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import { toast } from "sonner";
 
 type Props = {
   open: boolean;
@@ -40,11 +41,12 @@ export default function CreateFormationModal({ open, onClose, onCreated }: Props
     } = await supabase.auth.getUser();
 
     if (!user) {
+      toast.error("Utilisateur non connecté.");
       setLoading(false);
       return;
     }
 
-    await supabase.from("formations").insert({
+    const { error } = await supabase.from("formations").insert({
       ...form,
       statut: "a_venir",
       taux_reussite: 0,
@@ -53,6 +55,12 @@ export default function CreateFormationModal({ open, onClose, onCreated }: Props
     });
 
     setLoading(false);
+
+    if (error) {
+      toast.error("Impossible de créer la formation.");
+      return;
+    }
+
     onCreated();
     onClose();
   };
@@ -62,7 +70,7 @@ export default function CreateFormationModal({ open, onClose, onCreated }: Props
       <div className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 rounded-2xl shadow-2xl max-w-3xl w-full p-6">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-2xl font-bold text-gray-800 dark:text-white">Nouvelle formation</h2>
-          <button onClick={onClose} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg text-gray-700 dark:text-gray-200">
+          <button onClick={onClose} aria-label="Fermer" className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg text-gray-700 dark:text-gray-200">
             <X />
           </button>
         </div>

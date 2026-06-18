@@ -30,12 +30,15 @@ export default function LoansTab() {
 
   const fetchLoans = useCallback(async () => {
     setLoading(true);
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from("loans")
       .select(
         "id, item_id, lent_to, quantity_lent, lent_at, expected_return, returned_at, notes, created_at, logistics_items(name, category)"
       )
       .order("lent_at", { ascending: false });
+    if (error) {
+      toast.error("Impossible de charger les prêts.");
+    }
     const normalized = (data ?? []).map((loan) => ({
       ...loan,
       logistics_items: Array.isArray(loan.logistics_items)
@@ -76,12 +79,19 @@ export default function LoansTab() {
     fetchLoans();
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm("Supprimer ce prêt ?")) return;
-    const { error } = await supabase.from("loans").delete().eq("id", id);
-    if (error) { toast.error("Erreur lors de la suppression."); return; }
-    toast.success("Prêt supprimé.");
-    fetchLoans();
+  const handleDelete = (id: string) => {
+    toast("Supprimer ce prêt ?", {
+      action: {
+        label: "Supprimer",
+        onClick: async () => {
+          const { error } = await supabase.from("loans").delete().eq("id", id);
+          if (error) { toast.error("Erreur lors de la suppression."); return; }
+          toast.success("Prêt supprimé.");
+          fetchLoans();
+        }
+      },
+      cancel: { label: "Annuler", onClick: () => {} }
+    });
   };
 
   const filtered = loans.filter(l => {
@@ -169,7 +179,9 @@ export default function LoansTab() {
 
       {/* Table */}
       {loading ? (
-        <div className="text-center py-12 text-gray-400">Chargement…</div>
+        <div className="flex items-center justify-center py-16">
+          <div className="w-10 h-10 border-4 border-cyan-200 border-t-cyan-600 rounded-full animate-spin"></div>
+        </div>
       ) : filtered.length === 0 ? (
         <div className="text-center py-16">
           <Handshake size={40} className="mx-auto mb-3 text-gray-300 dark:text-gray-600" />

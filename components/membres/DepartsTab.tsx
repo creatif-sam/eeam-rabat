@@ -154,8 +154,12 @@ export default function DepartsTab() {
   };
 
   const handleDelete = async (id: string) => {
-    await supabase.from("member_departures").delete().eq("id", id);
+    const { error: deleteError } = await supabase.from("member_departures").delete().eq("id", id);
     setConfirmDelete(null);
+    if (deleteError) {
+      setError(deleteError.message);
+      return;
+    }
     fetchData();
   };
 

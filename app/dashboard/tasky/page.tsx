@@ -133,7 +133,11 @@ export default function TaskyPage() {
         label: "Supprimer",
         onClick: async () => {
           await supabase.from("tasks").delete().eq("project_id", id);
-          await supabase.from("projects").delete().eq("id", id);
+          const { error } = await supabase.from("projects").delete().eq("id", id);
+          if (error) {
+            toast.error("Impossible de supprimer le projet.");
+            return;
+          }
           toast.success("Projet supprime");
           if (activeProject === id) setActiveProject(null);
           loadAll();
@@ -193,7 +197,11 @@ export default function TaskyPage() {
   }
 
   async function moveTask(id: string, status: Status) {
-    await supabase.from("tasks").update({ status }).eq("id", id);
+    const { error } = await supabase.from("tasks").update({ status }).eq("id", id);
+    if (error) {
+      toast.error("Impossible de déplacer la tâche.");
+      return;
+    }
     setTasks(prev => prev.map(t => t.id === id ? { ...t, status } : t));
     const col = COLUMNS.find(c => c.key === status)!;
     toast.success(`Deplace vers "${col.label}"`);
@@ -204,7 +212,11 @@ export default function TaskyPage() {
       action: {
         label: "Supprimer",
         onClick: async () => {
-          await supabase.from("tasks").delete().eq("id", id);
+          const { error } = await supabase.from("tasks").delete().eq("id", id);
+          if (error) {
+            toast.error("Impossible de supprimer la tâche.");
+            return;
+          }
           setTasks(prev => prev.filter(t => t.id !== id));
           setSelectedTask(null);
           toast.success("Tache supprimee");
@@ -270,7 +282,7 @@ export default function TaskyPage() {
       <aside className="w-full md:w-56 shrink-0 border-b md:border-b-0 md:border-r border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 flex flex-col max-h-[42vh] md:max-h-none">
         <div className="px-4 py-3 md:py-4 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between">
           <span className="text-xs font-semibold text-gray-400 uppercase tracking-widest">Projets</span>
-          <button onClick={() => setShowProjectModal(true)} className="w-6 h-6 rounded-md bg-cyan-600 hover:bg-cyan-700 text-white flex items-center justify-center transition-colors">
+          <button onClick={() => setShowProjectModal(true)} aria-label="Nouveau projet" className="w-6 h-6 rounded-md bg-cyan-600 hover:bg-cyan-700 text-white flex items-center justify-center transition-colors">
             <Plus size={13} />
           </button>
         </div>
@@ -290,7 +302,7 @@ export default function TaskyPage() {
                 <span className="truncate flex-1 text-left">{p.name}</span>
                 <span className="text-xs text-gray-400 font-normal">{tasks.filter(t => t.project_id === p.id).length}</span>
               </button>
-              <button onClick={() => deleteProject(p.id)} className="absolute right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 p-1 rounded text-gray-400 hover:text-rose-500 transition-all">
+              <button onClick={() => deleteProject(p.id)} aria-label="Supprimer le projet" className="absolute right-2 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 p-1 rounded text-gray-400 hover:text-rose-500 transition-all">
                 <Trash2 size={12} />
               </button>
             </div>
@@ -323,8 +335,8 @@ export default function TaskyPage() {
             <ChevronDown size={11} className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
           </div>
           <div className="flex items-center bg-gray-100 dark:bg-gray-800 rounded-lg p-0.5 md:ml-auto">
-            <button onClick={() => setViewMode("board")} className={`p-1.5 rounded-md transition-all ${viewMode === "board" ? "bg-white dark:bg-gray-700 shadow text-cyan-600" : "text-gray-500"}`}><LayoutGrid size={14} /></button>
-            <button onClick={() => setViewMode("list")} className={`p-1.5 rounded-md transition-all ${viewMode === "list" ? "bg-white dark:bg-gray-700 shadow text-cyan-600" : "text-gray-500"}`}><List size={14} /></button>
+            <button onClick={() => setViewMode("board")} aria-label="Affichage tableau" className={`p-1.5 rounded-md transition-all ${viewMode === "board" ? "bg-white dark:bg-gray-700 shadow text-cyan-600" : "text-gray-500"}`}><LayoutGrid size={14} /></button>
+            <button onClick={() => setViewMode("list")} aria-label="Affichage liste" className={`p-1.5 rounded-md transition-all ${viewMode === "list" ? "bg-white dark:bg-gray-700 shadow text-cyan-600" : "text-gray-500"}`}><List size={14} /></button>
           </div>
           {activeProject && (
             <button onClick={() => setShowTaskModal(true)}
@@ -356,6 +368,7 @@ export default function TaskyPage() {
                         <span className="ml-1 text-xs bg-white/70 dark:bg-gray-900/50 px-1.5 py-0.5 rounded-full font-bold text-gray-600 dark:text-gray-400">{colTasks.length}</span>
                       </div>
                       <button onClick={() => { setTaskForm(prev => ({ ...prev, status: col.key })); setShowTaskModal(true); }}
+                        aria-label="Ajouter une tâche"
                         className={`w-5 h-5 rounded flex items-center justify-center hover:bg-white/50 transition-colors ${col.color}`}>
                         <Plus size={12} />
                       </button>
@@ -370,6 +383,7 @@ export default function TaskyPage() {
                             <div className="flex items-start justify-between gap-2 mb-2">
                               <p className="text-sm font-medium text-gray-800 dark:text-gray-200 leading-snug line-clamp-2">{task.title}</p>
                               <button onClick={e => { e.stopPropagation(); deleteTask(task.id); }}
+                                aria-label="Supprimer la tâche"
                                 className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-rose-50 text-gray-400 hover:text-rose-500 transition-all shrink-0">
                                 <Trash2 size={12} />
                               </button>
@@ -451,7 +465,7 @@ export default function TaskyPage() {
                             : <span className="text-gray-300 text-xs">-</span>}
                         </td>
                         <td className="px-4 py-3">
-                          <button onClick={e => { e.stopPropagation(); deleteTask(task.id); }} className="p-1 rounded hover:bg-rose-50 text-gray-300 hover:text-rose-500 transition-all">
+                          <button onClick={e => { e.stopPropagation(); deleteTask(task.id); }} aria-label="Supprimer la tâche" className="p-1 rounded hover:bg-rose-50 text-gray-300 hover:text-rose-500 transition-all">
                             <Trash2 size={13} />
                           </button>
                         </td>
@@ -477,9 +491,9 @@ export default function TaskyPage() {
                 <PriorityBadge p={selectedTask.priority} />
               </div>
               <div className="flex items-center gap-1">
-                <button onClick={() => setEditingTask({ ...selectedTask })} className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500 transition-colors"><Pencil size={14} /></button>
-                <button onClick={() => deleteTask(selectedTask.id)} className="p-1.5 rounded-lg hover:bg-rose-50 text-gray-500 hover:text-rose-500 transition-colors"><Trash2 size={14} /></button>
-                <button onClick={() => { setSelectedTask(null); setEditingTask(null); }} className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500 transition-colors"><X size={16} /></button>
+                <button onClick={() => setEditingTask({ ...selectedTask })} aria-label="Modifier la tâche" className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500 transition-colors"><Pencil size={14} /></button>
+                <button onClick={() => deleteTask(selectedTask.id)} aria-label="Supprimer la tâche" className="p-1.5 rounded-lg hover:bg-rose-50 text-gray-500 hover:text-rose-500 transition-colors"><Trash2 size={14} /></button>
+                <button onClick={() => { setSelectedTask(null); setEditingTask(null); }} aria-label="Fermer" className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500 transition-colors"><X size={16} /></button>
               </div>
             </div>
 
@@ -625,7 +639,7 @@ export default function TaskyPage() {
           <div className="w-full max-w-md bg-white dark:bg-gray-900 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-800 overflow-hidden">
             <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between">
               <h2 className="font-bold text-gray-900 dark:text-white flex items-center gap-2"><FolderKanban size={16} className="text-cyan-600" /> Nouveau projet</h2>
-              <button onClick={() => setShowProjectModal(false)} className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-400 transition-colors"><X size={16} /></button>
+              <button onClick={() => setShowProjectModal(false)} aria-label="Fermer" className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-400 transition-colors"><X size={16} /></button>
             </div>
             <div className="p-6 space-y-4">
               <div>
@@ -660,7 +674,7 @@ export default function TaskyPage() {
           <div className="w-full max-w-lg bg-white dark:bg-gray-900 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-800 overflow-hidden">
             <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between">
               <h2 className="font-bold text-gray-900 dark:text-white flex items-center gap-2"><Zap size={16} className="text-cyan-600" /> Nouvelle tache</h2>
-              <button onClick={() => setShowTaskModal(false)} className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-400 transition-colors"><X size={16} /></button>
+              <button onClick={() => setShowTaskModal(false)} aria-label="Fermer" className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-400 transition-colors"><X size={16} /></button>
             </div>
             <div className="p-4 sm:p-6 space-y-4">
               <input value={taskForm.title} onChange={e => setTaskForm({ ...taskForm, title: e.target.value })}

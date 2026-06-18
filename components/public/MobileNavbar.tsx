@@ -92,6 +92,8 @@ export default function MobileNavbar({ onNavigate, onLogin, onSignUp, onMember }
         {/* Expand/Collapse Button */}
         <button
           onClick={() => setIsExpanded(!isExpanded)}
+          aria-label={isExpanded ? "Réduire le menu" : "Plus d'options"}
+          aria-expanded={isExpanded}
           className="absolute -top-4 left-1/2 transform -translate-x-1/2 w-8 h-8 bg-white border border-gray-200 rounded-full shadow-lg flex items-center justify-center"
         >
           <ChevronUp

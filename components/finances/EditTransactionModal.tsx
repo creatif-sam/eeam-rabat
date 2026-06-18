@@ -28,7 +28,11 @@ export default function EditTransactionModal({
     montant: String(transaction.montant ?? "")
   });
 
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const save = async () => {
+    if (isSubmitting) return;
+
     if (!form.montant || Number(form.montant) <= 0) {
       toast.error("Veuillez saisir un montant valide.");
       return;
@@ -60,10 +64,19 @@ export default function EditTransactionModal({
       vendeur: null
     };
 
-    await supabase
+    setIsSubmitting(true);
+
+    const { error } = await supabase
       .from("transactions_financieres")
       .update(payload)
       .eq("id", transaction.id);
+
+    setIsSubmitting(false);
+
+    if (error) {
+      toast.error("Impossible de mettre à jour la transaction.");
+      return;
+    }
 
     onUpdated();
     onClose();
@@ -173,13 +186,14 @@ export default function EditTransactionModal({
         )}
 
         <div className="flex flex-col sm:flex-row gap-3 pt-4">
-          <button onClick={onClose} className="flex-1 bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 py-3 rounded-xl">
+          <button onClick={onClose} disabled={isSubmitting} className="flex-1 bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 py-3 rounded-xl disabled:opacity-50">
             Annuler
           </button>
           <button
             onClick={save}
-            className="flex-1 bg-gradient-to-r from-cyan-500 to-blue-600 text-white py-3 rounded-xl shadow-lg shadow-cyan-500/30">
-            Enregistrer
+            disabled={isSubmitting}
+            className="flex-1 bg-gradient-to-r from-cyan-500 to-blue-600 text-white py-3 rounded-xl shadow-lg shadow-cyan-500/30 disabled:opacity-50">
+            {isSubmitting ? "Enregistrement..." : "Enregistrer"}
           </button>
         </div>
       </div>

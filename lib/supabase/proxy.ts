@@ -64,7 +64,12 @@ export async function updateSession(request: NextRequest) {
   ) {
     // no user, potentially respond by redirecting the user to the login page
     const url = request.nextUrl.clone();
+    const hadSessionCookie = request.cookies.getAll().some((c) => c.name.startsWith("sb-"));
     url.pathname = "/auth/login";
+    url.search = "";
+    if (hadSessionCookie) {
+      url.searchParams.set("reason", "session_expired");
+    }
     return NextResponse.redirect(url);
   }
 

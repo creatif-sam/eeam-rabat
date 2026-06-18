@@ -121,7 +121,11 @@ export default function BaptemesTab() {
   };
 
   const removeAttendee = async (id: string) => {
-    await supabase.from("baptism_attendees").delete().eq("id", id);
+    const { error } = await supabase.from("baptism_attendees").delete().eq("id", id);
+    if (error) {
+      toast.error("Impossible de retirer le participant.");
+      return;
+    }
     setAttendees(prev => prev.filter(a => a.id !== id));
     setPresenceRecords(prev => prev.filter(r => r.attendee_id !== id));
     toast.success("Participant retiré");

@@ -46,7 +46,7 @@ export default function EditFormationModal({
   const submit = async () => {
     setLoading(true);
 
-    await supabase
+    const { error } = await supabase
       .from("formations")
       .update({
         titre: form.titre,
@@ -66,6 +66,12 @@ export default function EditFormationModal({
       .eq("id", formation.id);
 
     setLoading(false);
+
+    if (error) {
+      toast.error("Impossible de mettre à jour la formation.");
+      return;
+    }
+
     onUpdated();
     onClose();
   };
@@ -75,7 +81,11 @@ export default function EditFormationModal({
       action: {
         label: "Supprimer",
         onClick: async () => {
-          await supabase.from("formations").delete().eq("id", formation.id);
+          const { error } = await supabase.from("formations").delete().eq("id", formation.id);
+          if (error) {
+            toast.error("Impossible de supprimer la formation.");
+            return;
+          }
           toast.success("Formation supprimée");
           onUpdated();
           onClose();
@@ -92,7 +102,7 @@ export default function EditFormationModal({
           <h2 className="text-2xl font-bold text-gray-800 dark:text-white">
             Modifier la formation
           </h2>
-          <button onClick={onClose} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg text-gray-700 dark:text-gray-200">
+          <button onClick={onClose} aria-label="Fermer" className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg text-gray-700 dark:text-gray-200">
             <X />
           </button>
         </div>

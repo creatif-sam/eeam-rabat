@@ -12,9 +12,11 @@ import {
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import Link from "next/link"
-import { useState } from "react"
+import { useEffect, useState } from "react"
+import { useSearchParams } from "next/navigation"
 import { login } from "@/app/auth/login/actions"
 import { Mail, Lock, Eye, EyeOff } from "lucide-react"
+import { toast } from "sonner"
 
 export function LoginForm({
   className,
@@ -23,6 +25,13 @@ export function LoginForm({
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
+  const searchParams = useSearchParams()
+
+  useEffect(() => {
+    if (searchParams.get("reason") === "session_expired") {
+      toast.info("Votre session a expiré. Veuillez vous reconnecter.")
+    }
+  }, [searchParams])
 
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>

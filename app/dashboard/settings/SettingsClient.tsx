@@ -103,6 +103,7 @@ export default function SettingsClient({
                 <button
                   type="button"
                   onClick={() => setShowAttendance(v => !v)}
+                  aria-label={showAttendance ? "Masquer le mot de passe" : "Afficher le mot de passe"}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
                 >
                   {showAttendance ? <EyeOff size={16} /> : <Eye size={16} />}
@@ -129,6 +130,7 @@ export default function SettingsClient({
                 <button
                   type="button"
                   onClick={() => setShowResponsable(v => !v)}
+                  aria-label={showResponsable ? "Masquer le mot de passe" : "Afficher le mot de passe"}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
                 >
                   {showResponsable ? <EyeOff size={16} /> : <Eye size={16} />}

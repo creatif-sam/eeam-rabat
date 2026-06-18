@@ -101,6 +101,7 @@ export default function Sidebar({ role }: { role: string | null }) {
             onClick={toggleSidebar}
             className="p-2 rounded-lg hover:bg-white/20 transition-colors text-white flex-shrink-0"
             title={showLabel ? "Réduire" : "Développer"}
+            aria-label={showLabel ? "Réduire le menu" : "Développer le menu"}
           >
             {showLabel ? <X size={18} /> : <Menu size={18} />}
           </button>

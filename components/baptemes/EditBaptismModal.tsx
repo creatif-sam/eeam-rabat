@@ -49,7 +49,7 @@ export default function EditBaptismModal({ baptism, onClose, onUpdated }: Props)
       <div className="bg-white dark:bg-gray-900 rounded-2xl max-w-xl w-full max-h-[90vh] overflow-y-auto p-5 md:p-6 space-y-4 border border-gray-200 dark:border-gray-800 shadow-2xl">
         <div className="flex justify-between items-start">
           <h2 className="text-xl font-bold text-gray-900 dark:text-white">Modifier la demande</h2>
-          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-400 transition-colors"><X size={18} /></button>
+          <button onClick={onClose} aria-label="Fermer" className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-400 transition-colors"><X size={18} /></button>
         </div>
 
         <div className="space-y-3">

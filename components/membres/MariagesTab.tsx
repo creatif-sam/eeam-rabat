@@ -190,8 +190,12 @@ export default function MariagesTab() {
   };
 
   const handleDelete = async (id: string) => {
-    await supabase.from("member_marriages").delete().eq("id", id);
+    const { error: deleteError } = await supabase.from("member_marriages").delete().eq("id", id);
     setConfirmDelete(null);
+    if (deleteError) {
+      setError(deleteError.message);
+      return;
+    }
     fetchData();
   };
 

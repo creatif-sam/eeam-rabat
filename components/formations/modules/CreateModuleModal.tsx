@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { toast } from "sonner";
 
 export default function CreateModuleModal({
   open,
@@ -12,14 +13,27 @@ export default function CreateModuleModal({
   const supabase = createClient();
   const [titre, setTitre] = useState("");
   const [description, setDescription] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   if (!open) return null;
 
   const submit = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
+    if (isSubmitting) return;
+    if (!titre.trim()) {
+      toast.error("Veuillez saisir un titre.");
+      return;
+    }
 
-    await supabase.from("formation_modules").insert({
+    setIsSubmitting(true);
+
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      toast.error("Utilisateur non connecté.");
+      setIsSubmitting(false);
+      return;
+    }
+
+    const { error } = await supabase.from("formation_modules").insert({
       formation_id: formationId,
       titre,
       description,
@@ -27,6 +41,13 @@ export default function CreateModuleModal({
       creator_id: user.id,
       creator_email: user.email
     });
+
+    setIsSubmitting(false);
+
+    if (error) {
+      toast.error("Impossible de créer le module.");
+      return;
+    }
 
     setTitre("");
     setDescription("");
@@ -54,14 +75,15 @@ export default function CreateModuleModal({
         />
 
         <div className="flex gap-3">
-          <button onClick={onClose} className="flex-1 bg-gray-100 py-3 rounded-xl">
+          <button onClick={onClose} disabled={isSubmitting} className="flex-1 bg-gray-100 py-3 rounded-xl disabled:opacity-50">
             Annuler
           </button>
           <button
             onClick={submit}
-            className="flex-1 bg-cyan-500 text-white py-3 rounded-xl"
+            disabled={isSubmitting}
+            className="flex-1 bg-cyan-500 text-white py-3 rounded-xl disabled:opacity-50"
           >
-            Créer
+            {isSubmitting ? "Création..." : "Créer"}
           </button>
         </div>
       </div>

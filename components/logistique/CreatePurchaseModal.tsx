@@ -128,6 +128,7 @@ export default function CreatePurchaseModal({
           </h2>
           <button
             onClick={onClose}
+            aria-label="Fermer"
             className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
           >
             <X size={18} />

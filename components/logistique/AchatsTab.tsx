@@ -90,18 +90,25 @@ export default function AchatsTab() {
     fetchPurchases();
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm("Archiver cet achat ?")) return;
-    const { error } = await supabase
-      .from("purchases")
-      .update({ deleted_at: new Date().toISOString() })
-      .eq("id", id);
-    if (error) {
-      toast.error("Erreur lors de l'archivage.");
-      return;
-    }
-    toast.success("Achat archivé.");
-    fetchPurchases();
+  const handleDelete = (id: string) => {
+    toast("Archiver cet achat ?", {
+      action: {
+        label: "Archiver",
+        onClick: async () => {
+          const { error } = await supabase
+            .from("purchases")
+            .update({ deleted_at: new Date().toISOString() })
+            .eq("id", id);
+          if (error) {
+            toast.error("Erreur lors de l'archivage.");
+            return;
+          }
+          toast.success("Achat archivé.");
+          fetchPurchases();
+        }
+      },
+      cancel: { label: "Annuler", onClick: () => {} }
+    });
   };
 
   const openReceipt = async (path: string) => {

@@ -13,6 +13,15 @@ import {
   RefreshCw
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import { toast } from "sonner";
+
+// Parses a "YYYY-MM-DD" string as a local calendar date (avoids the UTC
+// midnight shift that `new Date("YYYY-MM-DD")` introduces for timezones
+// behind UTC, which can place an event on the wrong day in the grid).
+function parseLocalDate(dateStr: string): Date {
+  const [y, m, d] = dateStr.split("-").map(Number);
+  return new Date(y, m - 1, d);
+}
 
 type Event = {
   id: string;
@@ -41,14 +50,14 @@ function expandEventsForMonth(events: Event[], year: number, month: number): Eve
       event.recurring_type !== "none";
 
     if (!isRecurring) {
-      const eventDate = new Date(event.event_date);
+      const eventDate = parseLocalDate(event.event_date);
       if (eventDate >= monthStart && eventDate <= monthEnd) result.push(event);
       continue;
     }
 
-    const eventStart = new Date(event.event_date);
+    const eventStart = parseLocalDate(event.event_date);
     const recurEnd = event.recurring_end_date
-      ? new Date(event.recurring_end_date)
+      ? parseLocalDate(event.recurring_end_date)
       : monthEnd;
 
     let current = new Date(eventStart);
@@ -81,6 +90,7 @@ export default function PublicCalendar() {
   const [currentDate, setCurrentDate] = useState<Date | null>(null);
   const [today, setToday] = useState<Date | null>(null);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
+  const [dayEventsList, setDayEventsList] = useState<Event[] | null>(null);
 
   useEffect(() => {
     const now = new Date();
@@ -91,14 +101,23 @@ export default function PublicCalendar() {
 
   const fetchEvents = async () => {
     const supabase = createClient();
+    const twoYearsAgo = new Date();
+    twoYearsAgo.setFullYear(twoYearsAgo.getFullYear() - 2);
+    const cutoff = twoYearsAgo.toISOString().split("T")[0];
+
     const { data, error } = await supabase
       .from("events")
-      .select("id,title,description,event_date,start_time,end_time,location,color,is_recurring,recurring_type,recurring_end_date");
+      .select("id,title,description,event_date,start_time,end_time,location,color,is_recurring,recurring_type,recurring_end_date")
+      // Keep recent/future one-off events plus all recurring events
+      // (a recurring series can still be active today even if it started
+      // years ago, so it must not be excluded by the date cutoff).
+      .or(`event_date.gte.${cutoff},is_recurring.eq.true`);
 
     if (error) {
       console.error("Error fetching events:", error);
+      toast.error("Impossible de charger le calendrier des événements.");
     } else if (data) {
-      setEvents(data.map(e => ({ ...e, date: new Date(e.event_date) })));
+      setEvents(data.map(e => ({ ...e, date: parseLocalDate(e.event_date) })));
     }
     setLoading(false);
   };
@@ -110,10 +129,12 @@ export default function PublicCalendar() {
     const fmtStart = event.start_time.replace(/:/g, "");
     const fmtEnd = event.end_time.replace(/:/g, "");
     
-    // Note: This assumes local time. For UTC, append 'Z'
     const dates = `${fmtDate}T${fmtStart}00/${fmtDate}T${fmtEnd}00`;
-    
-    return `${base}&text=${encodeURIComponent(event.title)}&dates=${dates}&details=${encodeURIComponent(event.description || "")}&location=${encodeURIComponent(event.location)}`;
+
+    // ctz tells Google Calendar to interpret the date/time above as
+    // Morocco local time instead of UTC, otherwise the saved event shows
+    // up at the wrong hour in the visitor's calendar.
+    return `${base}&text=${encodeURIComponent(event.title)}&dates=${dates}&ctz=${encodeURIComponent("Africa/Casablanca")}&details=${encodeURIComponent(event.description || "")}&location=${encodeURIComponent(event.location)}`;
   };
 
   if (loading || !currentDate || !today) {
@@ -171,12 +192,20 @@ export default function PublicCalendar() {
         <div className="flex gap-3 bg-gray-50 dark:bg-gray-900 p-1.5 rounded-2xl border border-gray-100 dark:border-gray-800">
           <button
             onClick={() => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1))}
+            aria-label="Mois précédent"
             className="p-3 rounded-xl hover:bg-white dark:hover:bg-gray-800 text-gray-600 dark:text-gray-300 hover:shadow-sm transition-all"
           >
             <ChevronLeft size={24} />
           </button>
           <button
+            onClick={() => setCurrentDate(new Date(today.getFullYear(), today.getMonth(), 1))}
+            className="px-4 rounded-xl hover:bg-white dark:hover:bg-gray-800 text-gray-600 dark:text-gray-300 hover:shadow-sm transition-all text-sm font-bold"
+          >
+            Aujourd&apos;hui
+          </button>
+          <button
             onClick={() => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1))}
+            aria-label="Mois suivant"
             className="p-3 rounded-xl hover:bg-white dark:hover:bg-gray-800 text-gray-600 dark:text-gray-300 hover:shadow-sm transition-all"
           >
             <ChevronRight size={24} />
@@ -244,7 +273,12 @@ export default function PublicCalendar() {
                   </button>
                 ))}
                 {dayEvents.length > 3 && (
-                  <span className="text-[8px] text-gray-400 leading-none">+{dayEvents.length - 3}</span>
+                  <button
+                    onClick={() => setDayEventsList(dayEvents)}
+                    className="text-[8px] text-gray-400 leading-none underline"
+                  >
+                    +{dayEvents.length - 3}
+                  </button>
                 )}
               </div>
             </div>
@@ -260,8 +294,9 @@ export default function PublicCalendar() {
             {/* Decorative background element */}
             <div className={`absolute top-0 left-0 w-full h-2 ${selectedEvent.color}`} />
 
-            <button 
+            <button
               onClick={() => setSelectedEvent(null)}
+              aria-label="Fermer"
               className="absolute top-8 right-8 p-2.5 rounded-2xl bg-gray-50 dark:bg-gray-800 text-gray-500 hover:text-gray-900 dark:hover:text-white transition-all hover:rotate-90"
             >
               <X size={20} />
@@ -322,6 +357,35 @@ export default function PublicCalendar() {
               >
                 Retour au calendrier
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL: Day overflow list (mobile) */}
+      {dayEventsList && (
+        <div className="fixed inset-0 bg-gray-900/60 dark:bg-black/80 backdrop-blur-md flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-gray-900 rounded-3xl p-6 w-full max-w-sm shadow-2xl border border-gray-100 dark:border-gray-800">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-black text-gray-900 dark:text-white">Événements du jour</h3>
+              <button
+                onClick={() => setDayEventsList(null)}
+                aria-label="Fermer"
+                className="p-2 rounded-xl bg-gray-50 dark:bg-gray-800 text-gray-500 hover:text-gray-900 dark:hover:text-white transition-all"
+              >
+                <X size={18} />
+              </button>
+            </div>
+            <div className="flex flex-col gap-2">
+              {dayEventsList.map(ev => (
+                <button
+                  key={ev.id}
+                  onClick={() => { setSelectedEvent(ev); setDayEventsList(null); }}
+                  className={`${ev.color} text-white text-sm font-bold px-3 py-2.5 rounded-xl w-full text-left truncate hover:scale-[1.02] transition-transform shadow-sm`}
+                >
+                  {ev.title}
+                </button>
+              ))}
             </div>
           </div>
         </div>

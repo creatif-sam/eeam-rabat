@@ -42,11 +42,14 @@ export default function LogisticsTab() {
 
   const fetchItems = useCallback(async () => {
     setLoading(true);
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from("logistics_items")
       .select("id, name, category, quantity, min_quantity, condition, location, notes, created_at")
       .order("category")
       .order("name");
+    if (error) {
+      toast.error("Impossible de charger l'inventaire.");
+    }
     setItems(data || []);
     setLoading(false);
   }, [supabase]);
@@ -71,18 +74,25 @@ export default function LogisticsTab() {
 
   const canEdit = userRole && ["admin", "pastor"].includes(userRole);
 
-  const handleDelete = async (id: string) => {
-    if (!confirm("Archiver cet équipement ? Il ne sera plus visible dans la liste.")) return;
-    const { error } = await supabase
-      .from("logistics_items")
-      .update({ deleted_at: new Date().toISOString() })
-      .eq("id", id);
-    if (error) {
-      toast.error("Erreur lors de l'archivage.");
-      return;
-    }
-    toast.success("Équipement archivé.");
-    fetchItems();
+  const handleDelete = (id: string) => {
+    toast("Archiver cet équipement ? Il ne sera plus visible dans la liste.", {
+      action: {
+        label: "Archiver",
+        onClick: async () => {
+          const { error } = await supabase
+            .from("logistics_items")
+            .update({ deleted_at: new Date().toISOString() })
+            .eq("id", id);
+          if (error) {
+            toast.error("Erreur lors de l'archivage.");
+            return;
+          }
+          toast.success("Équipement archivé.");
+          fetchItems();
+        }
+      },
+      cancel: { label: "Annuler", onClick: () => {} }
+    });
   };
 
   const exportExcel = async () => {
@@ -185,7 +195,9 @@ export default function LogisticsTab() {
 
       {/* Content */}
       {loading ? (
-        <div className="text-center py-12 text-gray-400">Chargement…</div>
+        <div className="flex items-center justify-center py-16">
+          <div className="w-10 h-10 border-4 border-cyan-200 border-t-cyan-600 rounded-full animate-spin"></div>
+        </div>
       ) : filtered.length === 0 ? (
         <div className="text-center py-16">
           <Package size={40} className="mx-auto mb-3 text-gray-300 dark:text-gray-600" />

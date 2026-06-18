@@ -154,6 +154,7 @@ export default function UploadDocumentModal({
           </h2>
           <button
             onClick={onClose}
+            aria-label="Fermer"
             className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"
           >
             <X size={20} />

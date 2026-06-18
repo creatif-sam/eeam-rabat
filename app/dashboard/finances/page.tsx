@@ -52,6 +52,8 @@ export default function FinancesTab() {
 
   const [showCreate, setShowCreate] = useState(false);
   const [editing, setEditing] = useState<Transaction | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   useEffect(() => {
     const fetchRole = async () => {
@@ -84,6 +86,10 @@ export default function FinancesTab() {
     setStartDate(start.toISOString().split("T")[0]);
     setEndDate(end);
   }, [selectedPeriod]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [startDate, endDate, searchQuery]);
 
   useEffect(() => {
     fetchAll();
@@ -161,6 +167,12 @@ export default function FinancesTab() {
   const filteredTransactions = dateFilteredTransactions.filter(t =>
     t.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
     t.categorie.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const totalPages = Math.ceil(filteredTransactions.length / itemsPerPage);
+  const paginatedTransactions = filteredTransactions.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
   );
 
   const revenueByType = dateFilteredTransactions
@@ -455,7 +467,7 @@ export default function FinancesTab() {
 
         {/* Mobile Cards */}
         <div className="block sm:hidden space-y-4">
-          {filteredTransactions.map(t => (
+          {paginatedTransactions.map(t => (
             <div key={t.id} className="border border-gray-200 dark:border-gray-700 rounded-xl p-4 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
               <div className="flex justify-between items-start mb-3">
                 <div className="flex-1">
@@ -505,7 +517,7 @@ export default function FinancesTab() {
               </tr>
             </thead>
             <tbody>
-              {filteredTransactions.map(t => (
+              {paginatedTransactions.map(t => (
                 <tr key={t.id} className="border-b border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300">
                   <td className="px-4 py-3">
                     {new Date(t.date_transaction).toLocaleDateString("fr-FR")}
@@ -531,6 +543,35 @@ export default function FinancesTab() {
             </tbody>
           </table>
         </div>
+
+        {!filteredTransactions.length && (
+          <div className="text-center py-16">
+            <FileText size={40} className="mx-auto mb-3 text-gray-300 dark:text-gray-600" />
+            <p className="text-gray-500 dark:text-gray-400">Aucune transaction trouvée.</p>
+          </div>
+        )}
+
+        {totalPages > 1 && (
+          <div className="flex justify-center items-center gap-3 p-3 md:p-4">
+            <button
+              disabled={currentPage === 1}
+              onClick={() => setCurrentPage(p => p - 1)}
+              className="px-3 py-1 md:px-4 md:py-1 rounded bg-cyan-600 text-white hover:bg-cyan-700 disabled:bg-cyan-300 disabled:cursor-not-allowed text-sm"
+            >
+              Précédent
+            </button>
+            <span className="text-xs md:text-sm text-gray-700 dark:text-gray-300">
+              Page {currentPage} sur {totalPages}
+            </span>
+            <button
+              disabled={currentPage === totalPages}
+              onClick={() => setCurrentPage(p => p + 1)}
+              className="px-3 py-1 md:px-4 md:py-1 rounded bg-cyan-600 text-white hover:bg-cyan-700 disabled:bg-cyan-300 disabled:cursor-not-allowed text-sm"
+            >
+              Suivant
+            </button>
+          </div>
+        )}
       </div>
 
       {showCreate && (

@@ -81,13 +81,21 @@ export default function Header({ user }: { user: User }) {
   async function markAllRead() {
     const unreadIds = notifications.filter(n => !n.read).map(n => n.id)
     if (!unreadIds.length) return
-    await supabase.from("notifications").update({ read: true }).in("id", unreadIds)
+    const { error } = await supabase.from("notifications").update({ read: true }).in("id", unreadIds)
+    if (error) {
+      toast.error("Impossible de marquer les notifications comme lues.")
+      return
+    }
     setNotifications(prev => prev.map(n => ({ ...n, read: true })))
     toast.success("Toutes les notifications marquées comme lues")
   }
 
   async function deleteNotif(id: string) {
-    await supabase.from("notifications").delete().eq("id", id)
+    const { error } = await supabase.from("notifications").delete().eq("id", id)
+    if (error) {
+      toast.error("Impossible de supprimer la notification.")
+      return
+    }
     setNotifications(prev => prev.filter(n => n.id !== id))
   }
 

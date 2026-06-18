@@ -27,16 +27,10 @@ export default function CreateTransactionModal({
     montant: "",
     type: "revenu"
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const submit = async () => {
-    const {
-      data: { user }
-    } = await supabase.auth.getUser();
-
-    if (!user || !user.email) {
-      toast.error("Utilisateur non connecté.");
-      return;
-    }
+    if (isSubmitting) return;
 
     if (!form.montant || Number(form.montant) <= 0) {
       toast.error("Veuillez saisir un montant valide.");
@@ -50,6 +44,18 @@ export default function CreateTransactionModal({
 
     if (form.type === "depense" && !form.description.trim()) {
       toast.error("Veuillez saisir une description pour la dépense.");
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    const {
+      data: { user }
+    } = await supabase.auth.getUser();
+
+    if (!user || !user.email) {
+      toast.error("Utilisateur non connecté.");
+      setIsSubmitting(false);
       return;
     }
 
@@ -72,6 +78,8 @@ export default function CreateTransactionModal({
     };
 
     const { error } = await supabase.from("transactions_financieres").insert(payload);
+
+    setIsSubmitting(false);
 
     if (error) {
       toast.error("Impossible de créer la transaction.");
@@ -190,13 +198,14 @@ export default function CreateTransactionModal({
         )}
 
         <div className="flex flex-col sm:flex-row gap-3 pt-4">
-          <button onClick={onClose} className="flex-1 bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 py-3 rounded-xl">
+          <button onClick={onClose} disabled={isSubmitting} className="flex-1 bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 py-3 rounded-xl disabled:opacity-50">
             Annuler
           </button>
           <button
             onClick={submit}
-            className="flex-1 bg-gradient-to-r from-cyan-500 to-blue-600 text-white py-3 rounded-xl shadow-lg shadow-cyan-500/30">
-            Créer
+            disabled={isSubmitting}
+            className="flex-1 bg-gradient-to-r from-cyan-500 to-blue-600 text-white py-3 rounded-xl shadow-lg shadow-cyan-500/30 disabled:opacity-50">
+            {isSubmitting ? "Création..." : "Créer"}
           </button>
         </div>
       </div>

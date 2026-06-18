@@ -146,16 +146,23 @@ export default function ResourcesDocsPage({ role }: { role: string | null }) {
     );
   };
 
-  const handleDeleteResource = async (id: string, filePath: string) => {
-    if (!confirm("Supprimer ce document définitivement ?")) return;
-    await supabase.storage.from("documents").remove([filePath]);
-    const { error } = await supabase.from("resources").delete().eq("id", id);
-    if (error) {
-      toast.error("Erreur lors de la suppression.");
-      return;
-    }
-    setResources((prev) => prev.filter((r) => r.id !== id));
-    toast.success("Document supprimé.");
+  const handleDeleteResource = (id: string, filePath: string) => {
+    toast("Supprimer ce document définitivement ?", {
+      action: {
+        label: "Supprimer",
+        onClick: async () => {
+          await supabase.storage.from("documents").remove([filePath]);
+          const { error } = await supabase.from("resources").delete().eq("id", id);
+          if (error) {
+            toast.error("Erreur lors de la suppression.");
+            return;
+          }
+          setResources((prev) => prev.filter((r) => r.id !== id));
+          toast.success("Document supprimé.");
+        }
+      },
+      cancel: { label: "Annuler", onClick: () => {} }
+    });
   };
 
   const handleDeleteCategory = async (cat: Category) => {

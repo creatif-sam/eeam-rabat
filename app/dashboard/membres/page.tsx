@@ -160,7 +160,12 @@ export default function MembersPage() {
       {activeTab === "membres" && (
         <>
           {loading ? (
-            <div className="p-8 text-gray-500 dark:text-gray-400">Chargement des membres...</div>
+            <div className="flex items-center justify-center min-h-[300px]">
+              <div className="text-center">
+                <div className="w-12 h-12 border-4 border-cyan-200 border-t-cyan-600 rounded-full animate-spin mx-auto mb-4"></div>
+                <p className="text-gray-500 dark:text-gray-400">Chargement des membres...</p>
+              </div>
+            </div>
           ) : (
             <>
               <div className="flex flex-col sm:flex-row sm:justify-end gap-3">
@@ -285,7 +290,16 @@ export default function MembersPage() {
                 </table>
 
                 {!filteredMembers.length && (
-                  <div className="p-6 text-center text-gray-500 dark:text-gray-400">Aucun membre trouve</div>
+                  <div className="text-center py-16">
+                    <Users size={40} className="mx-auto mb-3 text-gray-300 dark:text-gray-600" />
+                    <p className="text-gray-500 dark:text-gray-400">Aucun membre trouvé.</p>
+                    <button
+                      onClick={() => setShowAddModal(true)}
+                      className="mt-3 text-sm text-cyan-500 hover:underline"
+                    >
+                      Ajouter le premier membre
+                    </button>
+                  </div>
                 )}
 
                 {totalPages > 1 && (
