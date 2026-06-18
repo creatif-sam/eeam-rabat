@@ -2,12 +2,13 @@
 
 import Link from "next/link";
 import { ArrowLeft, Cookie, Shield, Eye, Settings } from "lucide-react";
+import SiteLayout from "@/components/public/layout/SiteLayout";
 
 export default function CookiePolicyPage() {
   // Use a static date to avoid hydration issues
   const currentDate = "13 janvier 2026";
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+    <SiteLayout>
       <div className="max-w-4xl mx-auto px-6 py-12">
         {/* Header */}
         <div className="mb-8">
@@ -206,6 +207,6 @@ export default function CookiePolicyPage() {
           </p>
         </div>
       </div>
-    </div>
+    </SiteLayout>
   );
 }
