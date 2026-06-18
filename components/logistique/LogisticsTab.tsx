@@ -238,7 +238,9 @@ export default function LogisticsTab() {
                               {item.quantity}
                             </span>
                             {isLowStock && (
-                              <AlertTriangle size={12} className="inline ml-1 text-amber-500" title={`Stock bas (min. ${item.min_quantity})`} />
+                              <span className="inline-block ml-1" title={`Stock bas (min. ${item.min_quantity})`}>
+                                <AlertTriangle size={12} className="inline text-amber-500" />
+                              </span>
                             )}
                           </td>
                           <td className="px-4 py-3">

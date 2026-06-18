@@ -36,7 +36,13 @@ export default function LoansTab() {
         "id, item_id, lent_to, quantity_lent, lent_at, expected_return, returned_at, notes, created_at, logistics_items(name, category)"
       )
       .order("lent_at", { ascending: false });
-    setLoans((data as Loan[]) || []);
+    const normalized = (data ?? []).map((loan) => ({
+      ...loan,
+      logistics_items: Array.isArray(loan.logistics_items)
+        ? loan.logistics_items[0] ?? null
+        : loan.logistics_items,
+    }));
+    setLoans(normalized as Loan[]);
     setLoading(false);
   }, [supabase]);
 
