@@ -2,12 +2,23 @@
 
 import { useState, useEffect } from "react";
 import { Download, X } from "lucide-react";
+import { usePathname } from "next/navigation";
 
 export default function PWAInstallPrompt() {
+  const pathname = usePathname();
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [showPrompt, setShowPrompt] = useState(false);
 
+  // Only show on dashboard routes
+  const isDashboard = pathname?.startsWith('/dashboard');
+
   useEffect(() => {
+    // Don't show if not on dashboard
+    if (!isDashboard) {
+      setShowPrompt(false);
+      return;
+    }
+
     // Check if already installed
     if (window.matchMedia('(display-mode: standalone)').matches) {
       return; // Already installed
@@ -32,7 +43,7 @@ export default function PWAInstallPrompt() {
         console.warn("Failed to remove beforeinstallprompt listener:", error);
       }
     };
-  }, []);
+  }, [isDashboard]);
 
   const handleInstall = async () => {
     if (!deferredPrompt) return;
@@ -78,7 +89,7 @@ export default function PWAInstallPrompt() {
     }
   }, []);
 
-  if (!showPrompt) return null;
+  if (!showPrompt || !isDashboard) return null;
 
   return (
     <div className="fixed bottom-4 left-4 right-4 md:left-auto md:right-4 md:w-96 z-50">
