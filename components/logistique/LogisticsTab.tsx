@@ -154,15 +154,13 @@ export default function LogisticsTab() {
               Exporter
             </button>
           )}
-          {canEdit && (
-            <button
-              onClick={() => setShowCreate(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-cyan-500 hover:bg-cyan-600 text-white rounded-xl text-sm font-medium transition-colors shadow-sm whitespace-nowrap"
-            >
-              <Plus size={16} />
-              Ajouter
-            </button>
-          )}
+          <button
+            onClick={() => canEdit ? setShowCreate(true) : toast.error("Vous n'avez pas la permission d'ajouter des équipements.")}
+            className="flex items-center gap-2 px-4 py-2 bg-cyan-500 hover:bg-cyan-600 text-white rounded-xl text-sm font-medium transition-colors shadow-sm whitespace-nowrap"
+          >
+            <Plus size={16} />
+            Ajouter
+          </button>
         </div>
       </div>
 
@@ -202,14 +200,12 @@ export default function LogisticsTab() {
         <div className="text-center py-16">
           <Package size={40} className="mx-auto mb-3 text-gray-300 dark:text-gray-600" />
           <p className="text-gray-500 dark:text-gray-400">Aucun équipement trouvé.</p>
-          {canEdit && (
-            <button
-              onClick={() => setShowCreate(true)}
-              className="mt-3 text-sm text-cyan-500 hover:underline"
-            >
-              Ajouter le premier équipement
-            </button>
-          )}
+          <button
+            onClick={() => canEdit ? setShowCreate(true) : toast.error("Vous n'avez pas la permission d'ajouter des équipements.")}
+            className="mt-3 text-sm text-cyan-500 hover:underline"
+          >
+            Ajouter le premier équipement
+          </button>
         </div>
       ) : (
         <div className="space-y-6">
