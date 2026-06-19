@@ -31,6 +31,15 @@ const CONDITION_LABEL: Record<string, string> = {
   mauvais: "Mauvais",
 };
 
+// Normalize role to handle different formats
+function normalizeRole(role: string | null) {
+  if (!role) return null;
+  const normalized = role.toLowerCase();
+  if (normalized === "cp" || normalized === "president_cp") return "membre_cp";
+  if (normalized === "corps_pastoral") return "pastor";
+  return normalized;
+}
+
 export default function LogisticsTab() {
   const supabase = createClient();
   const [items, setItems] = useState<LogisticsItem[]>([]);
@@ -72,7 +81,7 @@ export default function LogisticsTab() {
     fetchItems();
   }, [fetchItems, supabase]);
 
-  const canEdit = userRole && ["admin", "pastor"].includes(userRole);
+  const canEdit = userRole && ["admin", "pastor"].includes(normalizeRole(userRole) ?? "");
 
   const handleDelete = (id: string) => {
     toast("Archiver cet équipement ? Il ne sera plus visible dans la liste.", {

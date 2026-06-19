@@ -336,13 +336,13 @@ export default function PastoralCounsellingForm() {
 
       <div>
         <div className="flex justify-between items-baseline mb-1.5">
-          <label className="block text-sm font-semibold text-gray-800 dark:text-gray-200">Motif de l&apos;entretien *</label>
+          <label className="block text-sm font-semibold text-gray-800 dark:text-gray-200">Information complémentaire (optionnel: laissez vide si vous n&apos;avez pas)</label>
           <span className={`text-xs ${form.reason.length > MAX_REASON_LENGTH * 0.9 ? "text-amber-500" : "text-gray-400 dark:text-gray-500"}`}>
             {form.reason.length}/{MAX_REASON_LENGTH}
           </span>
         </div>
         <textarea name="reason" rows={4} value={form.reason} onChange={handleChange}
-          className={inputClass} placeholder="Décrivez brièvement le motif" required />
+          className={inputClass} placeholder="Ajoutez des informations supplémentaires si nécessaire (optionnel)" />
       </div>
 
       <button
