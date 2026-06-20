@@ -3,7 +3,7 @@ import { Resend } from "resend";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
-const FROM = "EEAM Rabat <eeam-r@gen116.com>";
+const FROM = "EEAM Rabat <eeam-rabat@samuelgyasi.com>";
 
 export async function POST(req: Request) {
   // Only authenticated users (pastors/admins calling from the dashboard) may send email
