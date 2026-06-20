@@ -26,7 +26,7 @@ export default function ClientProviders({
       <Toaster richColors position="top-right" />
       <CookieManager />
       {mounted && <CookieBanner />}
-      <PWAInstallPrompt />
+      {mounted && <PWAInstallPrompt />}
     </ThemeProvider>
   )
 }
