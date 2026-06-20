@@ -92,9 +92,17 @@ export default function PWAInstallPrompt() {
   if (!showPrompt || !isDashboard) return null;
 
   return (
-    <div className="fixed bottom-4 left-4 right-4 md:left-auto md:right-4 md:w-96 z-50">
-      <div className="bg-card border border-border rounded-lg shadow-lg p-4">
-        <div className="flex items-start gap-3">
+    <div className="fixed bottom-4 left-4 right-4 md:left-4 md:right-auto md:w-96 z-50">
+      <div className="bg-card border border-border rounded-lg shadow-lg p-4 relative">
+        <button
+          onClick={handleDismiss}
+          className="absolute top-2 right-2 p-1 text-muted-foreground hover:text-foreground hover:bg-muted rounded-md transition-colors"
+          aria-label="Fermer"
+        >
+          <X size={18} />
+        </button>
+
+        <div className="flex items-start gap-3 pr-6">
           <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center flex-shrink-0">
             <Download className="text-primary-foreground" size={20} />
           </div>
@@ -107,20 +115,12 @@ export default function PWAInstallPrompt() {
               Installez notre application pour un accès rapide et fluide.
             </p>
 
-            <div className="flex gap-2 mt-3">
-              <button
-                onClick={handleInstall}
-                className="flex-1 bg-primary text-primary-foreground px-4 py-2 rounded-md text-sm font-medium hover:bg-primary/90 transition-colors"
-              >
-                Installer
-              </button>
-              <button
-                onClick={handleDismiss}
-                className="px-3 py-2 text-muted-foreground hover:text-foreground transition-colors"
-              >
-                <X size={16} />
-              </button>
-            </div>
+            <button
+              onClick={handleInstall}
+              className="w-full mt-3 bg-primary text-primary-foreground px-4 py-2 rounded-md text-sm font-medium hover:bg-primary/90 transition-colors"
+            >
+              Installer
+            </button>
           </div>
         </div>
       </div>

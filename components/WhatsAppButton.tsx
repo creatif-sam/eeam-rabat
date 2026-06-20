@@ -5,7 +5,7 @@ export default function WhatsAppButton() {
       target="_blank"
       rel="noopener noreferrer"
       aria-label="Contacter sur WhatsApp"
-      className="fixed bottom-20 sm:bottom-6 right-4 sm:right-6 z-50 flex items-center justify-center w-16 h-16 rounded-full bg-[#25D366] shadow-2xl hover:bg-[#20c65a] transition-all duration-300 hover:scale-110 active:scale-95 animate-none"
+      className="fixed bottom-20 sm:bottom-6 right-4 sm:right-6 z-40 flex items-center justify-center w-16 h-16 rounded-full bg-[#25D366] shadow-2xl hover:bg-[#20c65a] transition-all duration-300 hover:scale-110 active:scale-95 animate-none"
       style={{
         boxShadow: '0 8px 24px rgba(37, 211, 102, 0.4), 0 4px 8px rgba(0, 0, 0, 0.15)'
       }}
