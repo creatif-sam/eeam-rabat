@@ -91,8 +91,8 @@ export default function PastoralCounsellingList() {
     const withConfirmed = await supabase
       .from("pastoral_counselling")
       .select(`confirmed, ${baseFields}`)
-      .order("counselling_date", { ascending: true })
-      .order("counselling_time", { ascending: true });
+      .order("counselling_date", { ascending: false })
+      .order("counselling_time", { ascending: false });
 
     if (!withConfirmed.error) {
       rawData = withConfirmed.data as Record<string, unknown>[];
@@ -100,8 +100,8 @@ export default function PastoralCounsellingList() {
       const fallback = await supabase
         .from("pastoral_counselling")
         .select(baseFields)
-        .order("counselling_date", { ascending: true })
-        .order("counselling_time", { ascending: true });
+        .order("counselling_date", { ascending: false })
+        .order("counselling_time", { ascending: false });
       rawData = (fallback.data ?? []) as Record<string, unknown>[];
     }
 
