@@ -151,15 +151,16 @@ export default function PastoralCounsellingForm() {
 
     setIsSubmitting(true);
 
-    // Duplicate booking check
+    // Duplicate booking check - same phone, date AND time
     const { count: dupCount } = await supabase
       .from("pastoral_counselling")
       .select("id", { count: "exact", head: true })
       .eq("phone", form.phone)
-      .eq("counselling_date", date);
+      .eq("counselling_date", date)
+      .eq("counselling_time", time);
 
     if ((dupCount ?? 0) > 0) {
-      toast.error("Un rendez-vous existe déjà pour ce numéro à cette date.");
+      toast.error("Vous avez déjà réservé ce créneau horaire.");
       setIsSubmitting(false);
       return;
     }
