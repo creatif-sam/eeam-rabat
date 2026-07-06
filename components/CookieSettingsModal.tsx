@@ -52,7 +52,7 @@ export default function CookieSettingsModal({ isOpen, onClose }: CookieSettingsM
       title: "Cookies essentiels",
       description: "Ces cookies sont nécessaires au fonctionnement du site web et ne peuvent pas être désactivés.",
       icon: Shield,
-      color: "text-green-600",
+      color: "text-green-600 dark:text-green-400",
       required: true,
     },
     {
@@ -60,7 +60,7 @@ export default function CookieSettingsModal({ isOpen, onClose }: CookieSettingsM
       title: "Cookies d'analyse",
       description: "Ces cookies nous aident à comprendre comment les visiteurs interagissent avec notre site web en collectant des informations anonymes.",
       icon: BarChart3,
-      color: "text-blue-600",
+      color: "text-blue-600 dark:text-blue-400",
       required: false,
     },
     {
@@ -68,7 +68,7 @@ export default function CookieSettingsModal({ isOpen, onClose }: CookieSettingsM
       title: "Cookies marketing",
       description: "Ces cookies sont utilisés pour vous proposer des publicités pertinentes et mesurer l'efficacité de nos campagnes.",
       icon: ShoppingCart,
-      color: "text-purple-600",
+      color: "text-purple-600 dark:text-purple-400",
       required: false,
     },
     {
@@ -76,7 +76,7 @@ export default function CookieSettingsModal({ isOpen, onClose }: CookieSettingsM
       title: "Cookies de préférences",
       description: "Ces cookies permettent de mémoriser vos préférences et personnaliser votre expérience sur notre site.",
       icon: Heart,
-      color: "text-red-600",
+      color: "text-red-600 dark:text-red-400",
       required: false,
     },
   ];
@@ -90,14 +90,14 @@ export default function CookieSettingsModal({ isOpen, onClose }: CookieSettingsM
       headerClass="bg-gradient-to-r from-blue-500 to-indigo-600"
     >
       <div className="space-y-6">
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+        <div className="bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-900 rounded-lg p-4">
           <div className="flex items-start gap-3">
-            <Cookie className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
+            <Cookie className="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
             <div>
-              <h4 className="font-medium text-blue-900 mb-1">
+              <h4 className="font-medium text-blue-900 dark:text-blue-200 mb-1">
                 À propos des cookies
               </h4>
-              <p className="text-sm text-blue-700">
+              <p className="text-sm text-blue-700 dark:text-blue-300">
                 Les cookies sont de petits fichiers texte stockés sur votre appareil qui nous aident à améliorer votre expérience.
                 Vous pouvez modifier vos préférences à tout moment.
               </p>
@@ -109,14 +109,14 @@ export default function CookieSettingsModal({ isOpen, onClose }: CookieSettingsM
           {cookieCategories.map((category) => {
             const Icon = category.icon;
             return (
-              <div key={category.id} className="border border-gray-200 rounded-lg p-4">
+              <div key={category.id} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
                 <div className="flex items-start gap-3">
                   <Icon className={`w-5 h-5 ${category.color} mt-0.5 flex-shrink-0`} />
                   <div className="flex-1">
-                    <h4 className="font-medium text-gray-900 mb-1">
+                    <h4 className="font-medium text-gray-900 dark:text-gray-100 mb-1">
                       {category.title}
                     </h4>
-                    <p className="text-sm text-gray-600 mb-3">
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
                       {category.description}
                     </p>
                     <div className="flex items-center">
@@ -127,11 +127,11 @@ export default function CookieSettingsModal({ isOpen, onClose }: CookieSettingsM
                         onChange={(e) => handleSettingChange(category.id, e.target.checked)}
                         className={`w-4 h-4 ${
                           category.required
-                            ? "text-gray-400 bg-gray-100"
-                            : `${category.color.replace('text-', 'text-').replace('-600', '-600')} bg-gray-100 border-gray-300`
+                            ? "text-gray-400 bg-gray-100 dark:bg-gray-700"
+                            : `${category.color.replace('text-', 'text-').replace('-600', '-600')} bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600`
                         } rounded focus:ring-2 focus:ring-offset-0`}
                       />
-                      <label className={`ml-2 text-sm ${category.required ? 'text-gray-500' : 'text-gray-700'}`}>
+                      <label className={`ml-2 text-sm ${category.required ? 'text-gray-500 dark:text-gray-400' : 'text-gray-700 dark:text-gray-300'}`}>
                         {category.required ? "Toujours activé (requis)" : "Activer"}
                       </label>
                     </div>
@@ -142,11 +142,11 @@ export default function CookieSettingsModal({ isOpen, onClose }: CookieSettingsM
           })}
         </div>
 
-        <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-          <h4 className="font-medium text-gray-900 mb-2">
+        <div className="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+          <h4 className="font-medium text-gray-900 dark:text-gray-100 mb-2">
             Informations supplémentaires
           </h4>
-          <div className="space-y-2 text-sm text-gray-600">
+          <div className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
             <p>
               <strong>Durée de conservation :</strong> Les cookies essentiels sont conservés pendant votre session.
               Les autres cookies expirent après 12 mois maximum.
@@ -160,10 +160,10 @@ export default function CookieSettingsModal({ isOpen, onClose }: CookieSettingsM
           </div>
         </div>
 
-        <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-gray-200">
+        <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
           <button
             onClick={handleRejectAll}
-            className="px-4 py-2 text-red-600 border border-red-300 rounded-lg hover:bg-red-50 transition-colors text-sm font-medium"
+            className="px-4 py-2 text-red-600 dark:text-red-400 border border-red-300 dark:border-red-800 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/40 transition-colors text-sm font-medium"
           >
             Refuser tous les cookies
           </button>
@@ -171,7 +171,7 @@ export default function CookieSettingsModal({ isOpen, onClose }: CookieSettingsM
           <div className="flex flex-col sm:flex-row gap-3 ml-auto">
             <button
               onClick={onClose}
-              className="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 active:bg-gray-100 transition-colors text-sm font-medium order-2 sm:order-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="px-4 py-2 text-gray-700 dark:text-gray-200 border border-gray-300 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 active:bg-gray-100 dark:active:bg-gray-700 transition-colors text-sm font-medium order-2 sm:order-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               Fermer
             </button>
@@ -179,7 +179,7 @@ export default function CookieSettingsModal({ isOpen, onClose }: CookieSettingsM
             <div className="flex gap-3 order-1 sm:order-2">
               <button
                 onClick={handleReset}
-                className="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 active:bg-gray-100 transition-colors text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="px-4 py-2 text-gray-700 dark:text-gray-200 border border-gray-300 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 active:bg-gray-100 dark:active:bg-gray-700 transition-colors text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <RotateCcw className="w-4 h-4 inline mr-2" />
                 Réinitialiser
@@ -191,7 +191,7 @@ export default function CookieSettingsModal({ isOpen, onClose }: CookieSettingsM
                 className={`px-4 py-2 rounded-lg transition-colors text-sm font-medium focus:outline-none focus:ring-2 ${
                   hasChanges
                     ? "bg-blue-600 text-white hover:bg-blue-700 active:bg-blue-800 focus:ring-blue-500"
-                    : "bg-gray-300 text-gray-500 cursor-not-allowed"
+                    : "bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed"
                 }`}
               >
                 <Save className="w-4 h-4 inline mr-2" />

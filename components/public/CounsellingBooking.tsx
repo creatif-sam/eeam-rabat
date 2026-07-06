@@ -144,14 +144,11 @@ export default function PastoralCounsellingForm() {
     if (name === "phone") validatePhone(value);
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (dateError || phoneError || !date || !time || isSubmitting) return;
-    if (honeypot) return;
-
-    setIsSubmitting(true);
-
-    // Duplicate booking check - same phone, date AND time
+  // Non-atomic check-then-insert, kept only as a fallback for as long as the
+  // book_counselling_slot() migration hasn't been applied yet to this
+  // Supabase project. Once applied, the RPC path below is always used and
+  // this can be deleted.
+  const legacyCheckAndInsert = async (): Promise<boolean> => {
     const { count: dupCount } = await supabase
       .from("pastoral_counselling")
       .select("id", { count: "exact", head: true })
@@ -161,15 +158,12 @@ export default function PastoralCounsellingForm() {
 
     if ((dupCount ?? 0) > 0) {
       toast.error("Vous avez déjà réservé ce créneau horaire.");
-      setIsSubmitting(false);
-      return;
+      return false;
     }
 
-    // Re-check capacity in case slot filled since page load
     if ((slotCounts[time] ?? 0) >= MAX_PER_SLOT) {
       toast.error("Ce créneau est complet. Veuillez en choisir un autre.");
-      setIsSubmitting(false);
-      return;
+      return false;
     }
 
     const { error: insertError } = await supabase
@@ -184,12 +178,61 @@ export default function PastoralCounsellingForm() {
         reason: form.reason,
       });
 
-    setIsSubmitting(false);
-
     if (insertError) {
       toast.error("Une erreur est survenue. Veuillez réessayer.");
-      return;
+      return false;
     }
+
+    return true;
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (dateError || phoneError || !date || !time || isSubmitting) return;
+    if (honeypot) return;
+
+    setIsSubmitting(true);
+
+    // Atomic on the DB side: book_counselling_slot() takes an advisory lock
+    // scoped to this exact date+time before checking capacity/duplicates and
+    // inserting, so two concurrent submissions for the last open spot can't
+    // both succeed.
+    const { error: rpcError } = await supabase.rpc("book_counselling_slot", {
+      p_full_name: form.full_name,
+      p_phone: form.phone,
+      p_email: form.email || null,
+      p_pastor_id: form.pastor_id || null,
+      p_counselling_date: date,
+      p_counselling_time: time,
+      p_reason: form.reason,
+      p_max_per_slot: MAX_PER_SLOT,
+    });
+
+    let success = !rpcError;
+
+    if (rpcError) {
+      const msg = rpcError.message || "";
+      if (msg.includes("DUPLICATE_BOOKING")) {
+        toast.error("Vous avez déjà réservé ce créneau horaire.");
+        setIsSubmitting(false);
+        return;
+      }
+      if (msg.includes("SLOT_FULL")) {
+        toast.error("Ce créneau est complet. Veuillez en choisir un autre.");
+        setIsSubmitting(false);
+        return;
+      }
+      if (rpcError.code === "PGRST202" || rpcError.code === "42883") {
+        // Migration not applied yet on this project — fall back so the form
+        // keeps working (with the old, non-atomic guarantee) in the meantime.
+        success = await legacyCheckAndInsert();
+      } else {
+        toast.error("Une erreur est survenue. Veuillez réessayer.");
+      }
+    }
+
+    setIsSubmitting(false);
+    if (!success) return;
 
     setBookingRef(`EP-${new Date().getFullYear()}-${String(Math.floor(Math.random() * 99999)).padStart(5, "0")}`);
     setSubmitted(true);

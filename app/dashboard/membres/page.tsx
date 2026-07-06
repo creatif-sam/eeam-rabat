@@ -45,9 +45,11 @@ export default function MembersPage() {
   const [activeTab, setActiveTab] = useState<TabId>("membres");
 
   const [members, setMembers] = useState<Member[]>([]);
+  const [totalCount, setTotalCount] = useState(0);
   const [loading, setLoading] = useState(true);
 
   const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [filterGenre, setFilterGenre] = useState<"all" | "Homme" | "Femme">("all");
   const [filterBaptise, setFilterBaptise] = useState<"all" | "Oui" | "Non">("all");
   const [filterParoisse, setFilterParoisse] = useState("all");
@@ -61,55 +63,104 @@ export default function MembersPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
+  // Lightweight aggregates/options, fetched separately so the main query
+  // only ever pulls one page of rows instead of the whole table.
+  const [stats, setStats] = useState({ total: 0, men: 0, women: 0, baptised: 0, nationalities: 0 });
+  const [paroisses, setParoisses] = useState<string[]>([]);
+  const [commissionOptions, setCommissionOptions] = useState<string[]>([]);
+
+  // Debounce free-text search so we don't refetch on every keystroke.
+  useEffect(() => {
+    const t = setTimeout(() => {
+      setDebouncedSearch(search);
+      setCurrentPage(1);
+    }, 400);
+    return () => clearTimeout(t);
+  }, [search]);
+
+  const applyFilters = (query: any) => {
+    if (debouncedSearch) {
+      const term = `%${debouncedSearch}%`;
+      query = query.or(`nom.ilike.${term},prenom.ilike.${term},telephone.ilike.${term},email.ilike.${term}`);
+    }
+    if (filterGenre !== "all") query = query.eq("genre", filterGenre);
+    if (filterBaptise !== "all") query = query.eq("baptise", filterBaptise);
+    if (filterParoisse !== "all") query = query.eq("paroisse", filterParoisse);
+    if (filterCommission !== "all") query = query.contains("commissions", [filterCommission]);
+    return query;
+  };
+
   const fetchMembers = async () => {
-    const { data } = await supabase
-      .from("member_registrations")
-      .select("*")
-      .order("created_at", { ascending: false });
-    if (data) setMembers(data);
+    setLoading(true);
+    const from = (currentPage - 1) * itemsPerPage;
+    const to = from + itemsPerPage - 1;
+
+    let query = supabase.from("member_registrations").select("*", { count: "exact" });
+    query = applyFilters(query);
+
+    const { data, count } = await query
+      .order("prenom", { ascending: true })
+      .order("nom", { ascending: true })
+      .range(from, to);
+
+    setMembers(data ?? []);
+    setTotalCount(count ?? 0);
     setLoading(false);
+  };
+
+  const fetchStatsAndOptions = async () => {
+    const [{ count: total }, { count: men }, { count: women }, { count: baptised }, { data: aux }] =
+      await Promise.all([
+        supabase.from("member_registrations").select("*", { count: "exact", head: true }),
+        supabase.from("member_registrations").select("*", { count: "exact", head: true }).eq("genre", "Homme"),
+        supabase.from("member_registrations").select("*", { count: "exact", head: true }).eq("genre", "Femme"),
+        supabase.from("member_registrations").select("*", { count: "exact", head: true }).eq("baptise", "Oui"),
+        supabase.from("member_registrations").select("paroisse, commissions, nationalite")
+      ]);
+
+    const parishSet = new Set<string>();
+    const commissionSet = new Set<string>();
+    const nationSet = new Set<string>();
+    (aux ?? []).forEach((r: { paroisse: string; commissions: string[] | null; nationalite: string }) => {
+      if (r.paroisse) parishSet.add(r.paroisse);
+      (r.commissions ?? []).forEach(c => commissionSet.add(c));
+      if (r.nationalite) nationSet.add(r.nationalite);
+    });
+
+    setStats({
+      total: total ?? 0,
+      men: men ?? 0,
+      women: women ?? 0,
+      baptised: baptised ?? 0,
+      nationalities: nationSet.size
+    });
+    setParoisses(Array.from(parishSet));
+    setCommissionOptions(Array.from(commissionSet));
   };
 
   useEffect(() => {
     fetchMembers();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [debouncedSearch, filterGenre, filterBaptise, filterParoisse, filterCommission, currentPage]);
+
+  useEffect(() => {
+    fetchStatsAndOptions();
   }, []);
 
-  const totalMembers = members.length;
-  const totalMen = members.filter(m => m.genre === "Homme").length;
-  const totalWomen = members.filter(m => m.genre === "Femme").length;
-  const totalBaptised = members.filter(m => m.baptise === "Oui").length;
-  const nationalities = new Set(members.map(m => m.nationalite)).size;
+  const totalPages = Math.max(1, Math.ceil(totalCount / itemsPerPage));
 
-  const paroisses = Array.from(new Set(members.map(m => m.paroisse)));
-  const commissions = Array.from(new Set(members.flatMap(m => m.commissions ?? [])));
+  const refreshAll = () => {
+    fetchMembers();
+    fetchStatsAndOptions();
+  };
 
-  const filteredMembers = members
-    .filter(m => {
-      const matchesSearch =
-        `${m.prenom} ${m.nom}`.toLowerCase().includes(search.toLowerCase()) ||
-        m.telephone.includes(search) ||
-        (m.email ?? "").toLowerCase().includes(search.toLowerCase());
-      const matchesGenre = filterGenre === "all" || m.genre === filterGenre;
-      const matchesBaptise = filterBaptise === "all" || m.baptise === filterBaptise;
-      const matchesParoisse = filterParoisse === "all" || m.paroisse === filterParoisse;
-      const matchesCommission = filterCommission === "all" || (m.commissions ?? []).includes(filterCommission);
-      return matchesSearch && matchesGenre && matchesBaptise && matchesParoisse && matchesCommission;
-    })
-    .sort((a, b) => {
-      const c = a.prenom.localeCompare(b.prenom, "fr", { sensitivity: "base" });
-      if (c !== 0) return c;
-      return a.nom.localeCompare(b.nom, "fr", { sensitivity: "base" });
-    });
+  const exportCSV = async () => {
+    let query = supabase.from("member_registrations").select("*");
+    query = applyFilters(query);
+    const { data } = await query.order("prenom", { ascending: true }).order("nom", { ascending: true });
 
-  const totalPages = Math.ceil(filteredMembers.length / itemsPerPage);
-  const paginatedMembers = filteredMembers.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
-  );
-
-  const exportCSV = () => {
     const headers = ["Nom", "Prenom", "Paroisse", "Genre", "Nationalite", "Telephone", "Email", "Baptise", "Commissions"];
-    const rows = filteredMembers.map(m => [
+    const rows = (data ?? []).map(m => [
       m.nom, m.prenom, m.paroisse, m.genre, m.nationalite,
       m.telephone, m.email ?? "", m.baptise, (m.commissions ?? []).join(", ")
     ]);
@@ -186,17 +237,17 @@ export default function MembersPage() {
               </div>
 
               <div className="grid grid-cols-2 md:grid-cols-5 gap-3 md:gap-4">
-                <StatCard label="Total membres" value={totalMembers} />
-                <StatCard label="Hommes" value={totalMen} />
-                <StatCard label="Femmes" value={totalWomen} />
-                <StatCard label="Baptises" value={totalBaptised} />
-                <StatCard label="Nationalites" value={nationalities} />
+                <StatCard label="Total membres" value={stats.total} />
+                <StatCard label="Hommes" value={stats.men} />
+                <StatCard label="Femmes" value={stats.women} />
+                <StatCard label="Baptises" value={stats.baptised} />
+                <StatCard label="Nationalites" value={stats.nationalities} />
               </div>
 
               <div className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 p-3 md:p-4 rounded-xl grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
                 <input
                   value={search}
-                  onChange={e => { setSearch(e.target.value); setCurrentPage(1); }}
+                  onChange={e => setSearch(e.target.value)}
                   placeholder="Recherche..."
                   className="border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 placeholder:text-gray-400 dark:placeholder:text-gray-500 rounded-lg px-3 py-2 text-sm outline-none focus:border-cyan-400 transition-colors"
                 />
@@ -214,7 +265,7 @@ export default function MembersPage() {
                   className="border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-cyan-400 transition-colors"
                 >
                   <option value="all">Toutes les commissions</option>
-                  {commissions.map(c => <option key={c} value={c}>{c}</option>)}
+                  {commissionOptions.map(c => <option key={c} value={c}>{c}</option>)}
                 </select>
                 <select
                   value={filterGenre}
@@ -250,7 +301,7 @@ export default function MembersPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {paginatedMembers.map((m, index) => (
+                    {members.map((m, index) => (
                       <tr
                         key={m.id}
                         className="border-t border-gray-100 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
@@ -289,7 +340,7 @@ export default function MembersPage() {
                   </tbody>
                 </table>
 
-                {!filteredMembers.length && (
+                {!members.length && (
                   <div className="text-center py-16">
                     <Users size={40} className="mx-auto mb-3 text-gray-300 dark:text-gray-600" />
                     <p className="text-gray-500 dark:text-gray-400">Aucun membre trouvé.</p>
@@ -341,7 +392,7 @@ export default function MembersPage() {
               </Modal>
 
               <Modal open={showAddModal} onClose={() => setShowAddModal(false)} title="Ajouter un membre">
-                <MemberRegistrationForm onSuccess={() => { setShowAddModal(false); fetchMembers(); }} />
+                <MemberRegistrationForm onSuccess={() => { setShowAddModal(false); refreshAll(); }} />
               </Modal>
 
               <Modal open={showEditModal} onClose={() => setShowEditModal(false)} title="Modifier le membre">
@@ -349,7 +400,7 @@ export default function MembersPage() {
                   <MemberRegistrationForm
                     initialData={selectedMember}
                     isEdit
-                    onSuccess={() => { setShowEditModal(false); fetchMembers(); }}
+                    onSuccess={() => { setShowEditModal(false); refreshAll(); }}
                   />
                 )}
               </Modal>

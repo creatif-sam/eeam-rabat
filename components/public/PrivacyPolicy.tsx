@@ -19,11 +19,11 @@ export default function PrivacyPolicy() {
           <ShieldCheck className="text-white" size={32} />
         </div>
 
-        <h1 className="text-3xl font-bold text-gray-800 mb-3">
+        <h1 className="text-3xl font-bold text-gray-800 dark:text-white mb-3">
           Politique de confidentialité et de protection des données
         </h1>
 
-        <p className="text-gray-600 max-w-2xl mx-auto">
+        <p className="text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
           L'Église Évangélique au Maroc (EEAM), paroisse de Rabat s'engage à protéger
           les informations personnelles confiées par ses membres,
           visiteurs et partenaires.
@@ -101,18 +101,18 @@ function PolicyItem({
   text: string;
 }) {
   return (
-    <div className="flex gap-4 p-6 bg-white rounded-2xl shadow border border-gray-100 hover:shadow-lg transition">
+    <div className="flex gap-4 p-6 bg-white dark:bg-gray-900 rounded-2xl shadow border border-gray-100 dark:border-gray-800 hover:shadow-lg transition">
       <div className="flex-shrink-0">
-        <div className="w-12 h-12 rounded-xl bg-cyan-100 flex items-center justify-center">
-          <Icon className="text-cyan-600" size={22} />
+        <div className="w-12 h-12 rounded-xl bg-cyan-100 dark:bg-cyan-900/40 flex items-center justify-center">
+          <Icon className="text-cyan-600 dark:text-cyan-400" size={22} />
         </div>
       </div>
 
       <div>
-        <h2 className="text-lg font-semibold text-gray-800 mb-1">
+        <h2 className="text-lg font-semibold text-gray-800 dark:text-white mb-1">
           {title}
         </h2>
-        <p className="text-gray-600 text-sm leading-relaxed">
+        <p className="text-gray-600 dark:text-gray-400 text-sm leading-relaxed">
           {text}
         </p>
       </div>

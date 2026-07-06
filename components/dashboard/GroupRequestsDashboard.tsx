@@ -21,13 +21,16 @@ export default function GroupRequestsDashboard() {
   const [stats, setStats] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState<Request | null>(null);
+  // Pending requests are what admins act on day-to-day; showing everything
+  // by default means this query grows unbounded as the church's history grows.
+  const [showProcessed, setShowProcessed] = useState(false);
 
   useEffect(() => {
     loadData();
-  }, []);
+  }, [showProcessed]);
 
   const loadData = async () => {
-    const { data } = await supabase
+    let query = supabase
       .from("group_join_requests")
       .select(
         `
@@ -42,6 +45,12 @@ export default function GroupRequestsDashboard() {
         `
       )
       .order("created_at", { ascending: false });
+
+    if (!showProcessed) {
+      query = query.eq("processed", false);
+    }
+
+    const { data } = await query;
 
     // Transform the data to match the expected type
     const transformedData = (data || []).map(item => ({
@@ -74,6 +83,15 @@ export default function GroupRequestsDashboard() {
 
   return (
     <div className="space-y-8">
+      <label className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
+        <input
+          type="checkbox"
+          checked={showProcessed}
+          onChange={e => setShowProcessed(e.target.checked)}
+        />
+        Inclure les demandes traitées
+      </label>
+
       {/* Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {Object.entries(stats).map(([group, count]) => (

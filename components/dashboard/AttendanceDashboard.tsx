@@ -42,20 +42,42 @@ function Detail({
   );
 }
 
+const currentMonth = () => new Date().toISOString().slice(0, 7);
+
 export default function AttendanceDashboard() {
   const supabase = createClient();
 
   const [data, setData] = useState<AttendanceRow[]>([]);
-  const [selectedMonth, setSelectedMonth] = useState("");
+  // Default to the current month so the initial load doesn't pull the
+  // entire attendance history; "Tous les mois" is an explicit opt-in.
+  const [selectedMonth, setSelectedMonth] = useState(currentMonth());
+  const [months, setMonths] = useState<string[]>([]);
   const [viewRow, setViewRow] = useState<AttendanceRow | null>(null);
   const [editRow, setEditRow] = useState<AttendanceRow | null>(null);
 
   useEffect(() => {
-    loadData();
+    loadMonths();
   }, []);
 
-  const loadData = async () => {
+  useEffect(() => {
+    loadData(selectedMonth);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedMonth]);
+
+  const loadMonths = async () => {
+    // Only the date column, so this is much lighter than the full joined query below.
     const { data } = await supabase
+      .from("attendance_records")
+      .select("attendance_date")
+      .order("attendance_date", { ascending: false });
+
+    const set = new Set<string>();
+    (data ?? []).forEach(d => set.add(d.attendance_date.slice(0, 7)));
+    setMonths(Array.from(set));
+  };
+
+  const loadData = async (month: string) => {
+    let query = supabase
       .from("attendance_records")
       .select(`
         attendance_date,
@@ -65,8 +87,16 @@ export default function AttendanceDashboard() {
         enfants,
         nouveaux,
         service_types(name)
-      `)
-      .order("attendance_date", { ascending: true });
+      `);
+
+    if (month) {
+      const start = `${month}-01`;
+      const end = new Date(`${start}T00:00:00Z`);
+      end.setUTCMonth(end.getUTCMonth() + 1);
+      query = query.gte("attendance_date", start).lt("attendance_date", end.toISOString().slice(0, 10));
+    }
+
+    const { data } = await query.order("attendance_date", { ascending: true });
 
     // Transform the data to match the expected type
     const transformedData = (data || []).map(item => ({
@@ -77,18 +107,7 @@ export default function AttendanceDashboard() {
     setData(transformedData);
   };
 
-  const months = useMemo(() => {
-    const set = new Set<string>();
-    data.forEach(d => set.add(d.attendance_date.slice(0, 7)));
-    return Array.from(set).sort().reverse();
-  }, [data]);
-
-  const filteredData = useMemo(() => {
-    if (!selectedMonth) return data;
-    return data.filter(d =>
-      d.attendance_date.startsWith(selectedMonth)
-    );
-  }, [data, selectedMonth]);
+  const filteredData = data;
 
   const averages = useMemo(() => {
     const map: Record<string, { sum: number; count: number }> = {};
@@ -164,7 +183,7 @@ export default function AttendanceDashboard() {
             className="px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg text-sm w-full sm:w-auto bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 outline-none focus:border-cyan-400 transition-colors"
           >
             <option value="">Tous les mois</option>
-            {months.map(m => (
+            {(months.includes(selectedMonth) || !selectedMonth ? months : [selectedMonth, ...months]).map(m => (
               <option key={m} value={m}>
                 {m}
               </option>
@@ -430,7 +449,7 @@ export default function AttendanceDashboard() {
                     .eq("attendance_date", editRow.attendance_date);
 
                   setEditRow(null);
-                  loadData();
+                  loadData(selectedMonth);
                 }}
                 className="px-4 py-2 bg-cyan-600 text-white rounded-lg text-sm font-medium w-full sm:w-auto"
               >

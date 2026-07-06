@@ -25,13 +25,16 @@ export default function EventsSection() {
 
   const fetchEvents = async () => {
     const supabase = createClient();
-    const today = new Date();
+    const todayStr = new Date().toISOString().split("T")[0];
 
     const { data, error } = await supabase
       .from("events")
       .select(
         "id,title,event_date,start_time,location,is_online,color"
-      );
+      )
+      .gte("event_date", todayStr)
+      .order("event_date", { ascending: true })
+      .limit(5);
 
     if (error || !data) {
       console.error("Failed to load events", error);
@@ -39,22 +42,7 @@ export default function EventsSection() {
       return;
     }
 
-    const upcoming = data
-      .map(e => ({
-        ...e,
-        date: new Date(e.event_date)
-      }))
-      .filter(e => e.date >= new Date(
-        today.getFullYear(),
-        today.getMonth(),
-        today.getDate()
-      ))
-      .sort(
-        (a, b) => a.date.getTime() - b.date.getTime()
-      )
-      .slice(0, 5);
-
-    setEvents(upcoming);
+    setEvents(data.map(e => ({ ...e, date: new Date(e.event_date) })));
     setLoading(false);
   };
 

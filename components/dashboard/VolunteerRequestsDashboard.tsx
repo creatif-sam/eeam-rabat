@@ -26,17 +26,25 @@ export default function VolunteerRequestsDashboard() {
   const [groupBy, setGroupBy] = useState<"none" | "ministry" | "availability">(
     "none"
   );
+  // Pending requests are what admins act on day-to-day; showing everything
+  // by default means this query grows unbounded as the church's history grows.
+  const [showProcessed, setShowProcessed] = useState(false);
 
   useEffect(() => {
     load();
-  }, []);
+  }, [showProcessed]);
 
   const load = async () => {
-    const { data } = await supabase
+    let query = supabase
       .from("volunteer_requests")
       .select("id, first_name, last_name, email, phone, ministry, skills, availability, processed, created_at")
       .order("created_at", { ascending: false });
 
+    if (!showProcessed) {
+      query = query.eq("processed", false);
+    }
+
+    const { data } = await query;
     setData(data || []);
   };
 
@@ -94,7 +102,7 @@ export default function VolunteerRequestsDashboard() {
     <div className="space-y-6">
       {/* Controls */}
       <div className="flex flex-wrap gap-4 justify-between items-center">
-        <div className="flex gap-3">
+        <div className="flex flex-wrap gap-3 items-center">
           <select
             value={groupBy}
             onChange={e =>
@@ -106,6 +114,15 @@ export default function VolunteerRequestsDashboard() {
             <option value="ministry">Par ministère</option>
             <option value="availability">Par disponibilité</option>
           </select>
+
+          <label className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
+            <input
+              type="checkbox"
+              checked={showProcessed}
+              onChange={e => setShowProcessed(e.target.checked)}
+            />
+            Inclure les demandes traitées
+          </label>
         </div>
 
         <button

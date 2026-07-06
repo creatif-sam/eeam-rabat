@@ -76,7 +76,7 @@ export default function Footer() {
                   { href: "/#calendar", label: "Calendrier" },
                   { href: "/#events", label: "Événements" },
                   { href: "/auth/login", label: "Connexion" },
-                  { href: "/auth/sign-up", label: "S’inscrire" },
+                  { href: "/auth/sign-up", label: "S'inscrire" },
                 ].map(({ href, label }) => (
                   <li key={href}>
                     <Link href={href}

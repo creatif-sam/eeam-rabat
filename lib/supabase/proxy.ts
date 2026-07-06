@@ -53,15 +53,28 @@ export async function updateSession(request: NextRequest) {
   const { data } = await supabase.auth.getClaims();
   const user = data?.claims;
 
-  if (
-    request.nextUrl.pathname !== "/" &&
-    !user &&
-    !request.nextUrl.pathname.startsWith("/login") &&
-    !request.nextUrl.pathname.startsWith("/auth") &&
-    !request.nextUrl.pathname.startsWith("/politique-de-confidentialite") &&
-    !request.nextUrl.pathname.startsWith("/politique-cookies") &&
-    !request.nextUrl.pathname.startsWith("/entretien-pastoral")
-  ) {
+  // Paths reachable without being logged in: the public marketing site,
+  // auth pages, static PWA/SEO assets, and the anonymous-but-password-gated
+  // public form APIs (attendance, commission requests, access-code check).
+  const PUBLIC_PATH_PREFIXES = [
+    "/login",
+    "/auth",
+    "/politique-de-confidentialite",
+    "/politique-cookies",
+    "/entretien-pastoral",
+    "/manifest.json",
+    "/sw.js",
+    "/robots.txt",
+    "/sitemap.xml",
+    "/api/attendance",
+    "/api/commission-requests",
+    "/api/verify-access-code",
+  ];
+  const isPublicPath =
+    request.nextUrl.pathname === "/" ||
+    PUBLIC_PATH_PREFIXES.some((p) => request.nextUrl.pathname.startsWith(p));
+
+  if (!isPublicPath && !user) {
     // no user, potentially respond by redirecting the user to the login page
     const url = request.nextUrl.clone();
     const hadSessionCookie = request.cookies.getAll().some((c) => c.name.startsWith("sb-"));

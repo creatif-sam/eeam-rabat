@@ -3,9 +3,6 @@
 import { useState } from "react";
 import { Save, Lock } from "lucide-react";
 import { toast } from "sonner";
-import { createClient } from "@/lib/supabase/client";
-
-const ACCESS_PASSWORD = "EEAM2026";
 
 const inputClass = "w-full px-4 py-3 rounded-xl border transition-all focus:outline-none focus:ring-2 " +
   "bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 " +
@@ -15,21 +12,33 @@ const inputClass = "w-full px-4 py-3 rounded-xl border transition-all focus:outl
 const labelClass = "block text-sm font-semibold text-gray-800 dark:text-gray-200 mb-1.5";
 
 export default function RequestSubmissionForm() {
-  const supabase = createClient();
-
   const [authorized, setAuthorized] = useState(false);
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [unlocking, setUnlocking] = useState(false);
 
   const [form, setForm] = useState({
     full_name: "", email: "", request_type: "", details: ""
   });
 
-  const handleUnlock = () => {
-    if (password === ACCESS_PASSWORD) {
-      setAuthorized(true);
-    } else {
-      toast.error("Mot de passe incorrect");
+  const handleUnlock = async () => {
+    setUnlocking(true);
+    try {
+      const res = await fetch("/api/verify-access-code", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ password })
+      });
+      const json = await res.json();
+      if (json.ok) {
+        setAuthorized(true);
+      } else {
+        toast.error("Mot de passe incorrect");
+      }
+    } catch {
+      toast.error("Une erreur est survenue. Réessayez.");
+    } finally {
+      setUnlocking(false);
     }
   };
 
@@ -44,11 +53,17 @@ export default function RequestSubmissionForm() {
     e.preventDefault();
     setLoading(true);
 
-    const { error } = await supabase.from("commission_requests").insert(form);
+    const res = await fetch("/api/commission-requests", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ password, ...form })
+    });
+
     setLoading(false);
 
-    if (error) {
-      toast.error("Une erreur est survenue. Veuillez informer un membre du CP.");
+    if (!res.ok) {
+      const json = await res.json().catch(() => null);
+      toast.error(json?.error || "Une erreur est survenue. Veuillez informer un membre du CP.");
       return;
     }
 
@@ -73,9 +88,9 @@ export default function RequestSubmissionForm() {
           onKeyDown={e => e.key === "Enter" && handleUnlock()}
           className={inputClass + " max-w-xs"}
         />
-        <button onClick={handleUnlock}
-          className="px-6 py-3 bg-gradient-to-r from-rose-500 to-pink-600 text-white rounded-xl shadow font-medium hover:from-rose-600 hover:to-pink-700 transition">
-          Déverrouiller
+        <button onClick={handleUnlock} disabled={unlocking}
+          className="px-6 py-3 bg-gradient-to-r from-rose-500 to-pink-600 text-white rounded-xl shadow font-medium hover:from-rose-600 hover:to-pink-700 transition disabled:opacity-60">
+          {unlocking ? "Vérification..." : "Déverrouiller"}
         </button>
       </div>
     );

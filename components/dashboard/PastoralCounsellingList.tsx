@@ -70,10 +70,11 @@ export default function PastoralCounsellingList() {
   const [filterDate, setFilterDate] = useState("");
 
   useEffect(() => {
-    loadCounselling();
-  }, []);
+    loadCounselling(filterMonth, filterDate);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filterMonth, filterDate]);
 
-  const loadCounselling = async () => {
+  const loadCounselling = async (month?: string, date?: string) => {
     // Try with `confirmed` column first; fall back to base fields if column missing
     const baseFields = `
       id,
@@ -88,18 +89,33 @@ export default function PastoralCounsellingList() {
 
     let rawData: Record<string, unknown>[] | null = null;
 
-    const withConfirmed = await supabase
-      .from("pastoral_counselling")
-      .select(`confirmed, ${baseFields}`)
+    const applyDateFilter = (query: any) => {
+      if (date) return query.eq("counselling_date", date);
+      if (month) {
+        const start = `${month}-01`;
+        const end = new Date(`${start}T00:00:00Z`);
+        end.setUTCMonth(end.getUTCMonth() + 1);
+        return query.gte("counselling_date", start).lt("counselling_date", end.toISOString().slice(0, 10));
+      }
+      return query;
+    };
+
+    const withConfirmed = await applyDateFilter(
+      supabase
+        .from("pastoral_counselling")
+        .select(`confirmed, ${baseFields}`)
+    )
       .order("counselling_date", { ascending: false })
       .order("counselling_time", { ascending: false });
 
     if (!withConfirmed.error) {
       rawData = withConfirmed.data as Record<string, unknown>[];
     } else {
-      const fallback = await supabase
-        .from("pastoral_counselling")
-        .select(baseFields)
+      const fallback = await applyDateFilter(
+        supabase
+          .from("pastoral_counselling")
+          .select(baseFields)
+      )
         .order("counselling_date", { ascending: false })
         .order("counselling_time", { ascending: false });
       rawData = (fallback.data ?? []) as Record<string, unknown>[];
@@ -142,17 +158,16 @@ export default function PastoralCounsellingList() {
         ? `Entretien confirmé — confirmation envoyée par ${channels.join(" et ")}`
         : "Entretien confirmé"
     );
-    loadCounselling();
+    loadCounselling(filterMonth, filterDate);
   };
 
+  // Month/date filtering now happens server-side (see loadCounselling); only
+  // the free-text name search still needs to run over the loaded rows.
   const filteredData = useMemo(() => {
-    return data.filter(item => {
-      const nameMatch = item.full_name.toLowerCase().includes(search.toLowerCase());
-      const monthMatch = filterMonth ? item.counselling_date.slice(0, 7) === filterMonth : true;
-      const dateMatch = filterDate ? item.counselling_date === filterDate : true;
-      return nameMatch && monthMatch && dateMatch;
-    });
-  }, [data, search, filterMonth, filterDate]);
+    return data.filter(item =>
+      item.full_name.toLowerCase().includes(search.toLowerCase())
+    );
+  }, [data, search]);
 
   const exportDayPDF = (date: string, items: Counselling[]) => {
     const fmtDate = new Date(date + "T00:00:00").toLocaleDateString("fr-FR", {
@@ -200,11 +215,11 @@ export default function PastoralCounsellingList() {
     return <p className="text-gray-500">Chargement des rendez vous</p>;
   }
 
-  if (!data.length) {
+  const hasActiveFilter = search || filterMonth || filterDate;
+
+  if (!data.length && !hasActiveFilter) {
     return <p className="text-gray-500">Aucun entretien programmé</p>;
   }
-
-  const hasActiveFilter = search || filterMonth || filterDate;
 
   return (
     <div className="space-y-6 md:space-y-8">

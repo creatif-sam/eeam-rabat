@@ -8,11 +8,14 @@ const defaultUrl = process.env.VERCEL_URL
   ? `https://${process.env.VERCEL_URL}`
   : "http://localhost:3000"
 
+const siteTitle = "EEAM Rabat - Église Évangélique Au Maroc"
+const siteDescription =
+  "La technologie et l'excellence pour la gloire de Dieu - Paroisse de Rabat"
+
 export const metadata: Metadata = {
   metadataBase: new URL(defaultUrl),
-  title: "EEAM Rabat - Église Évangélique Au Maroc",
-  description:
-    "La technologie et l'excellence pour la gloire de Dieu - Paroisse de Rabat",
+  title: siteTitle,
+  description: siteDescription,
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
@@ -22,7 +25,15 @@ export const metadata: Metadata = {
   formatDetection: {
     telephone: false
   },
-  openGraph: {}
+  openGraph: {
+    title: siteTitle,
+    description: siteDescription,
+    url: defaultUrl,
+    siteName: "EEAM Rabat",
+    locale: "fr_FR",
+    type: "website",
+    images: [{ url: "/images/eeam-logo.png" }]
+  }
 }
 
 export const viewport = {

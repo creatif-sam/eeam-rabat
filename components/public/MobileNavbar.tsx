@@ -63,7 +63,7 @@ export default function MobileNavbar({ onNavigate, onLogin, onSignUp, onMember }
 
         {/* Expandable Quick Actions */}
         <div className={`overflow-hidden transition-all duration-300 ${isExpanded ? 'max-h-32 pb-4' : 'max-h-0'}`}>
-          <div className="px-4 pt-2 border-t border-gray-100">
+          <div className="px-4 pt-2 border-t border-gray-100 dark:border-gray-800">
             <div className="grid grid-cols-2 gap-2">
               <button
                 onClick={() => {
@@ -80,7 +80,7 @@ export default function MobileNavbar({ onNavigate, onLogin, onSignUp, onMember }
                   if (onSignUp) onSignUp();
                   setIsExpanded(false);
                 }}
-                className="flex items-center justify-center gap-2 p-3 bg-white border-2 border-cyan-500 text-cyan-600 rounded-lg text-sm font-medium"
+                className="flex items-center justify-center gap-2 p-3 bg-white dark:bg-gray-900 border-2 border-cyan-500 text-cyan-600 dark:text-cyan-400 rounded-lg text-sm font-medium"
               >
                 <UserPlus size={16} />
                 S'inscrire
@@ -94,7 +94,7 @@ export default function MobileNavbar({ onNavigate, onLogin, onSignUp, onMember }
           onClick={() => setIsExpanded(!isExpanded)}
           aria-label={isExpanded ? "Réduire le menu" : "Plus d'options"}
           aria-expanded={isExpanded}
-          className="absolute -top-4 left-1/2 transform -translate-x-1/2 w-8 h-8 bg-white border border-gray-200 rounded-full shadow-lg flex items-center justify-center"
+          className="absolute -top-4 left-1/2 transform -translate-x-1/2 w-8 h-8 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 rounded-full shadow-lg flex items-center justify-center"
         >
           <ChevronUp
             size={16}

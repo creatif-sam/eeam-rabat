@@ -21,8 +21,6 @@ type AttendanceData = {
   notes: string;
 };
 
-const ACCESS_PASSWORD = "EEAM2026";
-
 const inputClass =
   "w-full px-4 py-3 rounded-xl border transition-all focus:outline-none focus:ring-2 " +
   "bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 " +
@@ -50,6 +48,7 @@ export default function AttendanceForm() {
   });
 
   const [saving, setSaving] = useState(false);
+  const [unlocking, setUnlocking] = useState(false);
 
   useEffect(() => {
     const today = new Date().toISOString().split("T")[0];
@@ -67,11 +66,24 @@ export default function AttendanceForm() {
     setServiceTypes(data || []);
   };
 
-  const handleUnlock = () => {
-    if (password === ACCESS_PASSWORD) {
-      setAuthorized(true);
-    } else {
-      toast.error("Mot de passe incorrect");
+  const handleUnlock = async () => {
+    setUnlocking(true);
+    try {
+      const res = await fetch("/api/verify-access-code", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ password })
+      });
+      const json = await res.json();
+      if (json.ok) {
+        setAuthorized(true);
+      } else {
+        toast.error("Mot de passe incorrect");
+      }
+    } catch {
+      toast.error("Une erreur est survenue. Réessayez.");
+    } finally {
+      setUnlocking(false);
     }
   };
 
@@ -83,25 +95,21 @@ export default function AttendanceForm() {
     e.preventDefault();
     setSaving(true);
 
-    const { error } = await supabase.from("attendance_records").insert({
-      attendance_date: attendance.date,
-      service_type_id: attendance.service_type_id,
-      culte_total: Number(attendance.culte),
-      hommes: Number(attendance.hommes),
-      femmes: Number(attendance.femmes),
-      enfants: Number(attendance.enfants),
-      nouveaux: Number(attendance.nouveaux),
-      notes: attendance.notes || null
+    const res = await fetch("/api/attendance", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ password, attendance })
     });
 
     setSaving(false);
 
-    if (error) {
-      toast.error("Une erreur est survenue. Veuillez informer le mentor de l'accueil ou un membre du CP.");
+    if (!res.ok) {
+      const json = await res.json().catch(() => null);
+      toast.error(json?.error || "Une erreur est survenue. Veuillez informer le mentor de l'accueil ou un membre du CP.");
       return;
     }
 
-    toast.success("Données d'assiduité enregistrées avec succè¨s !");
+    toast.success("Données d'assiduité enregistrées avec succès !");
     setAttendance(prev => ({
       ...prev,
       culte: "",
@@ -138,9 +146,10 @@ export default function AttendanceForm() {
         </div>
         <button
           onClick={handleUnlock}
-          className="px-6 py-3 bg-gradient-to-r from-rose-500 to-pink-600 text-white rounded-xl shadow font-medium hover:from-rose-600 hover:to-pink-700 transition"
+          disabled={unlocking}
+          className="px-6 py-3 bg-gradient-to-r from-rose-500 to-pink-600 text-white rounded-xl shadow font-medium hover:from-rose-600 hover:to-pink-700 transition disabled:opacity-60"
         >
-          Déverrouiller
+          {unlocking ? "Vérification..." : "Déverrouiller"}
         </button>
       </div>
     );

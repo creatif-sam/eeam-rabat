@@ -21,10 +21,13 @@ export default function CommissionRequestsDashboard() {
   const [data, setData] = useState<CommissionRequest[]>([]);
   const [view, setView] = useState<CommissionRequest | null>(null);
   const [filter, setFilter] = useState("all");
+  // Pending requests are what admins act on day-to-day; showing everything
+  // by default means this query grows unbounded as the church's history grows.
+  const [showProcessed, setShowProcessed] = useState(false);
 
   useEffect(() => {
     load();
-  }, [filter]);
+  }, [filter, showProcessed]);
 
   const load = async () => {
     let query = supabase
@@ -34,6 +37,9 @@ export default function CommissionRequestsDashboard() {
 
     if (filter !== "all") {
       query = query.eq("request_type", filter);
+    }
+    if (!showProcessed) {
+      query = query.eq("processed", false);
     }
 
     const { data } = await query;
@@ -69,18 +75,29 @@ export default function CommissionRequestsDashboard() {
     <div className="space-y-6">
       {/* Controls */}
       <div className="flex flex-wrap gap-4 justify-between items-center">
-        <select
-          value={filter}
-          onChange={e => setFilter(e.target.value)}
-          className="border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 px-3 py-2 rounded-md text-sm outline-none focus:border-cyan-400 transition-colors"
-        >
-          <option value="all">Toutes les demandes</option>
-          <option value="Prière">Prière</option>
-          <option value="Budget">Budget</option>
-          <option value="Conseil spirituel">Conseil spirituel</option>
-          <option value="Service">Service</option>
-          <option value="Autre">Autre</option>
-        </select>
+        <div className="flex flex-wrap gap-3 items-center">
+          <select
+            value={filter}
+            onChange={e => setFilter(e.target.value)}
+            className="border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 px-3 py-2 rounded-md text-sm outline-none focus:border-cyan-400 transition-colors"
+          >
+            <option value="all">Toutes les demandes</option>
+            <option value="Prière">Prière</option>
+            <option value="Budget">Budget</option>
+            <option value="Conseil spirituel">Conseil spirituel</option>
+            <option value="Service">Service</option>
+            <option value="Autre">Autre</option>
+          </select>
+
+          <label className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
+            <input
+              type="checkbox"
+              checked={showProcessed}
+              onChange={e => setShowProcessed(e.target.checked)}
+            />
+            Inclure les demandes traitées
+          </label>
+        </div>
 
         <button
           onClick={exportExcel}
