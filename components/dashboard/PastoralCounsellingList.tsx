@@ -142,10 +142,17 @@ export default function PastoralCounsellingList() {
   };
 
   const handleConfirm = async (item: Counselling) => {
-    await supabase
+    const { error } = await supabase
       .from("pastoral_counselling")
       .update({ confirmed: true })
       .eq("id", item.id);
+
+    if (error) {
+      toast.error("La confirmation n'a pas pu être enregistrée. Veuillez réessayer.");
+      console.error("[pastoral_counselling confirm]", error.message);
+      return;
+    }
+
     await Promise.all([
       sendConfirmationEmail(item),
       sendConfirmationWhatsApp(item),

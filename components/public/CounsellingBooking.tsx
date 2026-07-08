@@ -8,7 +8,18 @@ import { createClient } from "@/lib/supabase/client";
 type Pastor = {
   id: string;
   name: string;
+  available_days: number[];
 };
+
+const DEFAULT_AVAILABLE_DAYS = [3, 5, 6];
+const DAY_NAMES_FR: Record<number, string> = {
+  0: "dimanche", 1: "lundi", 2: "mardi", 3: "mercredi",
+  4: "jeudi", 5: "vendredi", 6: "samedi",
+};
+
+function formatDayNames(days: number[]): string {
+  return [...days].sort().map(d => DAY_NAMES_FR[d]).join(" et ");
+}
 
 const inputClass =
   "w-full px-4 py-3 rounded-xl border transition-all focus:outline-none focus:ring-2 " +
@@ -21,13 +32,13 @@ const labelClass = "block text-sm font-semibold text-gray-800 dark:text-gray-200
 const MAX_PER_SLOT = 5;
 const MAX_REASON_LENGTH = 600;
 
-/** Next N valid counselling dates (Wed=3, Fri=5, Sat=6) starting from today */
-function getNextAvailableDates(count = 5): string[] {
+/** Next N valid counselling dates matching the given allowed weekdays, starting from today */
+function getNextAvailableDates(allowedDays: number[], count = 5): string[] {
   const dates: string[] = [];
   const d = new Date();
   d.setHours(0, 0, 0, 0);
   while (dates.length < count) {
-    if ([3, 5, 6].includes(d.getDay())) {
+    if (allowedDays.includes(d.getDay())) {
       dates.push(d.toISOString().split("T")[0]);
     }
     d.setDate(d.getDate() + 1);
@@ -65,12 +76,26 @@ export default function PastoralCounsellingForm() {
   });
 
   const fetchPastors = useCallback(async () => {
-    const { data } = await supabase
+    // Try with `available_days` first; fall back to base fields if the
+    // column doesn't exist yet on a given Supabase project (same defensive
+    // pattern as the confirmed-column fallback elsewhere in this app).
+    const withDays = await supabase
+      .from("pastors")
+      .select("id,name,available_days")
+      .eq("active", true)
+      .order("name");
+
+    if (!withDays.error) {
+      setPastors((withDays.data || []) as Pastor[]);
+      return;
+    }
+
+    const fallback = await supabase
       .from("pastors")
       .select("id,name")
       .eq("active", true)
       .order("name");
-    setPastors(data || []);
+    setPastors((fallback.data || []).map(p => ({ ...p, available_days: DEFAULT_AVAILABLE_DAYS })));
   }, [supabase]);
 
   const fetchSlotCounts = useCallback(async (selectedDate: string) => {
@@ -108,13 +133,19 @@ export default function PastoralCounsellingForm() {
 
   // today's date string (YYYY-MM-DD) used as min for the date picker
   const todayStr = useMemo(() => new Date().toISOString().split("T")[0], []);
-  const nextDates = useMemo(() => getNextAvailableDates(5), []);
+
+  const selectedPastor = useMemo(
+    () => pastors.find(p => p.id === form.pastor_id) || null,
+    [pastors, form.pastor_id]
+  );
+  const allowedDays = selectedPastor?.available_days ?? DEFAULT_AVAILABLE_DAYS;
+
+  const nextDates = useMemo(() => getNextAvailableDates(allowedDays, 5), [allowedDays]);
 
   const getAvailableTimes = () => {
     if (!date) return [];
     const day = new Date(date + "T00:00:00").getDay();
-    // 3 = Wednesday, 5 = Friday, 6 = Saturday
-    if (day === 3 || day === 5 || day === 6) return generateTimes("16:30", "19:00");
+    if (allowedDays.includes(day)) return generateTimes("16:30", "19:00");
     return [];
   };
 
@@ -123,10 +154,32 @@ export default function PastoralCounsellingForm() {
     setTime("");
     setDateError("");
     const day = new Date(value + "T00:00:00").getDay();
-    if (![3, 5, 6].includes(day)) {
-      setDateError("Les entretiens sont disponibles uniquement les mercredis, vendredis et samedis.");
+    if (!allowedDays.includes(day)) {
+      setDateError(
+        selectedPastor
+          ? `${selectedPastor.name} est disponible uniquement le ${formatDayNames(allowedDays)}. Veuillez choisir une autre date.`
+          : "Les entretiens sont disponibles uniquement les mercredis, vendredis et samedis."
+      );
     }
   };
+
+  // If the visitor already picked a date and then switches to a pastor who
+  // isn't available that day, the date is no longer valid — clear it and
+  // prompt them to pick a new one instead of silently keeping a bad date.
+  useEffect(() => {
+    if (!date) return;
+    const day = new Date(date + "T00:00:00").getDay();
+    if (!allowedDays.includes(day)) {
+      setDate("");
+      setTime("");
+      setDateError(
+        selectedPastor
+          ? `${selectedPastor.name} est disponible uniquement le ${formatDayNames(allowedDays)}. Veuillez choisir une nouvelle date.`
+          : ""
+      );
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [form.pastor_id]);
 
   // Validates a Moroccan mobile number: +212/00212/0 followed by 6 or 7 then 8 digits
   const validatePhone = (value: string) => {
@@ -219,6 +272,11 @@ export default function PastoralCounsellingForm() {
       }
       if (msg.includes("SLOT_FULL")) {
         toast.error("Ce créneau est complet. Veuillez en choisir un autre.");
+        setIsSubmitting(false);
+        return;
+      }
+      if (msg.includes("PASTOR_UNAVAILABLE")) {
+        toast.error("Ce pasteur n'est pas disponible à cette date. Veuillez choisir une autre date.");
         setIsSubmitting(false);
         return;
       }
@@ -317,6 +375,11 @@ export default function PastoralCounsellingForm() {
           <option value="">Indifférent</option>
           {pastors.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
         </select>
+        {selectedPastor && (
+          <p className="mt-1.5 text-xs text-gray-500 dark:text-gray-400">
+            {selectedPastor.name} est disponible uniquement le {formatDayNames(allowedDays)}.
+          </p>
+        )}
       </div>
 
       <div>

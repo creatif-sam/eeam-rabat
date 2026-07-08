@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Calendar,
   ChevronLeft,
@@ -84,6 +84,9 @@ function expandEventsForMonth(events: Event[], year: number, month: number): Eve
   return result;
 }
 
+const MAX_DESKTOP_TILES = 3;
+const SWIPE_THRESHOLD_PX = 50;
+
 export default function PublicCalendar() {
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
@@ -91,6 +94,7 @@ export default function PublicCalendar() {
   const [today, setToday] = useState<Date | null>(null);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [dayEventsList, setDayEventsList] = useState<Event[] | null>(null);
+  const touchStartX = useRef(0);
 
   useEffect(() => {
     const now = new Date();
@@ -98,6 +102,34 @@ export default function PublicCalendar() {
     setToday(now);
     fetchEvents();
   }, []);
+
+  // Close whichever modal is open on Escape, so keyboard/mobile users
+  // aren't stuck with only the small X button to dismiss it.
+  useEffect(() => {
+    if (!selectedEvent && !dayEventsList) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setSelectedEvent(null);
+        setDayEventsList(null);
+      }
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [selectedEvent, dayEventsList]);
+
+  const goToMonth = (offset: number) => {
+    setCurrentDate(d => (d ? new Date(d.getFullYear(), d.getMonth() + offset, 1) : d));
+  };
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX;
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    const delta = e.changedTouches[0].clientX - touchStartX.current;
+    if (Math.abs(delta) < SWIPE_THRESHOLD_PX) return;
+    goToMonth(delta > 0 ? -1 : 1);
+  };
 
   const fetchEvents = async () => {
     const supabase = createClient();
@@ -181,8 +213,8 @@ export default function PublicCalendar() {
           </p>
         </div>
 
-        {/* Legend */}
-        <div className="flex items-center gap-2 text-xs text-gray-400 dark:text-gray-500 bg-gray-50 dark:bg-gray-800/60 border border-gray-100 dark:border-gray-700 rounded-2xl px-4 py-2">
+        {/* Legend (desktop only — mobile uses dots, not colored blocks, so this copy doesn't apply there and just eats vertical space above the fold) */}
+        <div className="hidden sm:flex items-center gap-2 text-xs text-gray-400 dark:text-gray-500 bg-gray-50 dark:bg-gray-800/60 border border-gray-100 dark:border-gray-700 rounded-2xl px-4 py-2">
           <span className="w-2.5 h-2.5 rounded-full bg-blue-500 flex-shrink-0" />
           <span className="font-medium">Couleur = événement</span>
           <span className="mx-1 text-gray-300 dark:text-gray-600">·</span>
@@ -191,7 +223,7 @@ export default function PublicCalendar() {
 
         <div className="flex gap-3 bg-gray-50 dark:bg-gray-900 p-1.5 rounded-2xl border border-gray-100 dark:border-gray-800">
           <button
-            onClick={() => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1))}
+            onClick={() => goToMonth(-1)}
             aria-label="Mois précédent"
             className="p-3 rounded-xl hover:bg-white dark:hover:bg-gray-800 text-gray-600 dark:text-gray-300 hover:shadow-sm transition-all"
           >
@@ -204,7 +236,7 @@ export default function PublicCalendar() {
             Aujourd&apos;hui
           </button>
           <button
-            onClick={() => setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1))}
+            onClick={() => goToMonth(1)}
             aria-label="Mois suivant"
             className="p-3 rounded-xl hover:bg-white dark:hover:bg-gray-800 text-gray-600 dark:text-gray-300 hover:shadow-sm transition-all"
           >
@@ -222,19 +254,46 @@ export default function PublicCalendar() {
         ))}
       </div>
 
-      {/* GRID: Calendar Days */}
-      <div className="grid grid-cols-7 gap-1 sm:gap-4">
+      {/* GRID: Calendar Days (swipeable on touch devices) */}
+      <div
+        className="grid grid-cols-7 gap-1 sm:gap-4"
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
+      >
         {calendarDays.map((day, index) => {
           if (!day) return <div key={`empty-${index}`} className="aspect-square opacity-0" />;
 
           const date = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
           const isToday = date.toDateString() === today.toDateString();
           const dayEvents = getEventsForDate(date);
+          const hasEvents = dayEvents.length > 0;
+
+          // Tapping/clicking anywhere in the cell (not just a specific event
+          // tile/dot) opens something: the single event directly, or a
+          // picker list if the day has more than one. This matters most on
+          // mobile, where the dots alone are too small to reliably tap.
+          const handleCellActivate = () => {
+            if (!hasEvents) return;
+            if (dayEvents.length === 1) setSelectedEvent(dayEvents[0]);
+            else setDayEventsList(dayEvents);
+          };
 
           return (
             <div
               key={`${currentDate.getFullYear()}-${currentDate.getMonth()}-${day}`}
-              className={`min-h-[46px] sm:min-h-[110px] border-2 rounded-xl sm:rounded-3xl p-1 sm:p-3 transition-all relative group ${
+              role={hasEvents ? "button" : undefined}
+              tabIndex={hasEvents ? 0 : undefined}
+              aria-label={hasEvents ? `${day} ${monthNames[currentDate.getMonth()]} — ${dayEvents.length} événement${dayEvents.length > 1 ? "s" : ""}` : undefined}
+              onClick={handleCellActivate}
+              onKeyDown={e => {
+                if (hasEvents && (e.key === "Enter" || e.key === " ")) {
+                  e.preventDefault();
+                  handleCellActivate();
+                }
+              }}
+              className={`min-h-[46px] sm:min-h-[110px] border-2 rounded-xl sm:rounded-3xl p-1 sm:p-3 transition-all relative ${
+                hasEvents ? "cursor-pointer" : ""
+              } ${
                 isToday
                   ? "bg-primary/[0.03] border-primary shadow-lg shadow-primary/5 dark:bg-primary/5"
                   : "bg-white dark:bg-gray-900 border-gray-50 dark:border-gray-800 hover:border-gray-200 dark:hover:border-gray-700 hover:shadow-md"
@@ -244,38 +303,47 @@ export default function PublicCalendar() {
                 {day}
               </div>
 
-              {/* Desktop: full event tiles */}
+              {/* Desktop: full event tiles, capped so one busy day doesn't stretch the whole row */}
               <div className="hidden sm:flex flex-col gap-1.5">
-                {dayEvents.map(ev => (
+                {dayEvents.slice(0, MAX_DESKTOP_TILES).map(ev => (
                   <button
                     key={ev.id}
-                    onClick={() => setSelectedEvent(ev)}
+                    onClick={e => { e.stopPropagation(); setSelectedEvent(ev); }}
                     className={`${ev.color} text-white text-[11px] font-bold px-2 py-1.5 rounded-xl w-full text-left truncate hover:scale-[1.03] transition-transform shadow-sm`}
                   >
                     {ev.title}
                   </button>
                 ))}
+                {dayEvents.length > MAX_DESKTOP_TILES && (
+                  <button
+                    onClick={e => { e.stopPropagation(); setDayEventsList(dayEvents); }}
+                    className="text-[11px] font-bold text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 text-left px-2"
+                  >
+                    +{dayEvents.length - MAX_DESKTOP_TILES} de plus
+                  </button>
+                )}
               </div>
 
-              {/* Mobile: colored dot indicators */}
+              {/* Mobile: colored dot indicators (padding enlarges the tap target beyond the visible dot) */}
               <div className="flex sm:hidden flex-wrap gap-0.5 mt-0.5">
                 {dayEvents.slice(0, 3).map(ev => (
                   <button
                     key={ev.id}
-                    onClick={() => setSelectedEvent(ev)}
-                    className="relative flex-shrink-0"
+                    onClick={e => { e.stopPropagation(); setSelectedEvent(ev); }}
+                    aria-label={ev.title}
                     title={ev.title}
+                    className="relative flex-shrink-0 p-1.5 -m-1.5"
                   >
                     <span className={`${ev.color} w-2 h-2 rounded-full block`} />
                     {ev.is_recurring && (
-                      <span className="absolute -top-1 -right-1 text-[6px] text-gray-400">↻</span>
+                      <span className="absolute top-0 right-0 text-[6px] text-gray-400">↻</span>
                     )}
                   </button>
                 ))}
                 {dayEvents.length > 3 && (
                   <button
-                    onClick={() => setDayEventsList(dayEvents)}
-                    className="text-[8px] text-gray-400 leading-none underline"
+                    onClick={e => { e.stopPropagation(); setDayEventsList(dayEvents); }}
+                    className="text-[8px] text-gray-400 leading-none underline p-1.5 -m-1.5"
                   >
                     +{dayEvents.length - 3}
                   </button>
@@ -288,75 +356,82 @@ export default function PublicCalendar() {
 
       {/* MODAL: Event Details */}
       {selectedEvent && (
-        <div className="fixed inset-0 bg-gray-900/60 dark:bg-black/80 backdrop-blur-md flex items-center justify-center z-50 p-4 animate-in fade-in duration-300">
-          <div className="bg-white dark:bg-gray-900 rounded-[2.5rem] p-8 sm:p-10 w-full max-w-xl shadow-2xl border border-gray-100 dark:border-gray-800 relative overflow-hidden">
-            
-            {/* Decorative background element */}
-            <div className={`absolute top-0 left-0 w-full h-2 ${selectedEvent.color}`} />
+        <div
+          className="fixed inset-0 bg-gray-900/60 dark:bg-black/80 backdrop-blur-md flex items-center justify-center z-50 p-4 animate-in fade-in duration-300"
+          onClick={() => setSelectedEvent(null)}
+        >
+          <div
+            onClick={e => e.stopPropagation()}
+            className="bg-white dark:bg-gray-900 rounded-[2.5rem] w-full max-w-xl max-h-[90vh] shadow-2xl border border-gray-100 dark:border-gray-800 relative overflow-hidden flex flex-col"
+          >
+            {/* Decorative background element (stays fixed above the scrolling content) */}
+            <div className={`absolute top-0 left-0 w-full h-2 z-10 ${selectedEvent.color}`} />
 
             <button
               onClick={() => setSelectedEvent(null)}
               aria-label="Fermer"
-              className="absolute top-8 right-8 p-2.5 rounded-2xl bg-gray-50 dark:bg-gray-800 text-gray-500 hover:text-gray-900 dark:hover:text-white transition-all hover:rotate-90"
+              className="absolute top-8 right-8 z-10 p-2.5 rounded-2xl bg-gray-50 dark:bg-gray-800 text-gray-500 hover:text-gray-900 dark:hover:text-white transition-all hover:rotate-90"
             >
               <X size={20} />
             </button>
 
-            <div className="mb-8">
-              <div className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest text-white mb-6 shadow-md ${selectedEvent.color}`}>
-                {selectedEvent.is_recurring ? <><RefreshCw size={10} /> Récurrent</> : "Événement Paroisse"}
-              </div>
-              
-              <h3 className="text-3xl sm:text-4xl font-black text-gray-900 dark:text-white leading-tight">
-                {selectedEvent.title}
-              </h3>
-            </div>
+            <div className="p-8 sm:p-10 overflow-y-auto">
+              <div className="mb-8">
+                <div className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest text-white mb-6 shadow-md ${selectedEvent.color}`}>
+                  {selectedEvent.is_recurring ? <><RefreshCw size={10} /> Récurrent</> : "Événement Paroisse"}
+                </div>
 
-            {selectedEvent.description && (
-              <p className="text-gray-600 dark:text-gray-400 mb-8 leading-relaxed text-lg">
-                {selectedEvent.description}
-              </p>
-            )}
+                <h3 className="text-3xl sm:text-4xl font-black text-gray-900 dark:text-white leading-tight">
+                  {selectedEvent.title}
+                </h3>
+              </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 p-6 bg-gray-50 dark:bg-gray-800/50 rounded-3xl border border-gray-100 dark:border-gray-700">
-              <div className="flex items-center gap-4 text-gray-700 dark:text-gray-200">
-                <div className="p-3 rounded-2xl bg-white dark:bg-gray-800 shadow-sm text-primary">
-                  <Clock size={20} />
+              {selectedEvent.description && (
+                <p className="text-gray-600 dark:text-gray-400 mb-8 leading-relaxed text-lg">
+                  {selectedEvent.description}
+                </p>
+              )}
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 p-6 bg-gray-50 dark:bg-gray-800/50 rounded-3xl border border-gray-100 dark:border-gray-700">
+                <div className="flex items-center gap-4 text-gray-700 dark:text-gray-200">
+                  <div className="p-3 rounded-2xl bg-white dark:bg-gray-800 shadow-sm text-primary">
+                    <Clock size={20} />
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-[10px] font-black uppercase text-gray-400">Horaire</span>
+                    <span className="font-bold">{selectedEvent.start_time} — {selectedEvent.end_time}</span>
+                  </div>
                 </div>
-                <div className="flex flex-col">
-                  <span className="text-[10px] font-black uppercase text-gray-400">Horaire</span>
-                  <span className="font-bold">{selectedEvent.start_time} — {selectedEvent.end_time}</span>
+
+                <div className="flex items-center gap-4 text-gray-700 dark:text-gray-200">
+                  <div className="p-3 rounded-2xl bg-white dark:bg-gray-800 shadow-sm text-primary">
+                    <MapPin size={20} />
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-[10px] font-black uppercase text-gray-400">Lieu</span>
+                    <span className="font-bold truncate max-w-[150px]">{selectedEvent.location}</span>
+                  </div>
                 </div>
               </div>
-              
-              <div className="flex items-center gap-4 text-gray-700 dark:text-gray-200">
-                <div className="p-3 rounded-2xl bg-white dark:bg-gray-800 shadow-sm text-primary">
-                  <MapPin size={20} />
-                </div>
-                <div className="flex flex-col">
-                  <span className="text-[10px] font-black uppercase text-gray-400">Lieu</span>
-                  <span className="font-bold truncate max-w-[150px]">{selectedEvent.location}</span>
-                </div>
-              </div>
-            </div>
 
-            <div className="mt-10 flex flex-col gap-3">
-              <a
-                href={getGoogleCalendarUrl(selectedEvent)}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center justify-center gap-3 w-full py-5 px-6 rounded-2xl bg-cyan-600 hover:bg-cyan-700 text-white font-black text-lg shadow-xl shadow-cyan-600/20 hover:shadow-cyan-600/40 hover:-translate-y-1 transition-all"
-              >
-                <ExternalLink size={20} />
-                Ajouter à mon Agenda
-              </a>
-              
-              <button
-                onClick={() => setSelectedEvent(null)}
-                className="w-full py-4 text-gray-500 dark:text-gray-400 font-bold hover:text-gray-900 dark:hover:text-white transition-colors"
-              >
-                Retour au calendrier
-              </button>
+              <div className="mt-10 flex flex-col gap-3">
+                <a
+                  href={getGoogleCalendarUrl(selectedEvent)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-center gap-3 w-full py-5 px-6 rounded-2xl bg-cyan-600 hover:bg-cyan-700 text-white font-black text-lg shadow-xl shadow-cyan-600/20 hover:shadow-cyan-600/40 hover:-translate-y-1 transition-all"
+                >
+                  <ExternalLink size={20} />
+                  Ajouter à mon Agenda
+                </a>
+
+                <button
+                  onClick={() => setSelectedEvent(null)}
+                  className="w-full py-4 text-gray-500 dark:text-gray-400 font-bold hover:text-gray-900 dark:hover:text-white transition-colors"
+                >
+                  Retour au calendrier
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -364,8 +439,14 @@ export default function PublicCalendar() {
 
       {/* MODAL: Day overflow list (mobile) */}
       {dayEventsList && (
-        <div className="fixed inset-0 bg-gray-900/60 dark:bg-black/80 backdrop-blur-md flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-gray-900 rounded-3xl p-6 w-full max-w-sm shadow-2xl border border-gray-100 dark:border-gray-800">
+        <div
+          className="fixed inset-0 bg-gray-900/60 dark:bg-black/80 backdrop-blur-md flex items-center justify-center z-50 p-4"
+          onClick={() => setDayEventsList(null)}
+        >
+          <div
+            onClick={e => e.stopPropagation()}
+            className="bg-white dark:bg-gray-900 rounded-3xl p-6 w-full max-w-sm max-h-[80vh] overflow-y-auto shadow-2xl border border-gray-100 dark:border-gray-800"
+          >
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-black text-gray-900 dark:text-white">Événements du jour</h3>
               <button
