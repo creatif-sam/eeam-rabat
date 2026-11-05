@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Save } from "lucide-react";
 import { toast } from "sonner";
-import { createClient } from "@/lib/supabase/client";
+import Turnstile, { type TurnstileHandle } from "@/components/Turnstile";
+import { submitVolunteer } from "@/app/actions/public-forms";
 
 const inputClass = "w-full px-4 py-3 rounded-xl border transition-all focus:outline-none focus:ring-2 " +
   "bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 " +
@@ -13,9 +14,9 @@ const inputClass = "w-full px-4 py-3 rounded-xl border transition-all focus:outl
 const labelClass = "block text-sm font-semibold text-gray-800 dark:text-gray-200 mb-1.5";
 
 export default function VolunteerForm() {
-  const supabase = createClient();
-
   const [loading, setLoading] = useState(false);
+  const [captcha, setCaptcha] = useState<string | null>(null);
+  const captchaRef = useRef<TurnstileHandle>(null);
 
   const [form, setForm] = useState({
     first_name: "",
@@ -45,34 +46,18 @@ export default function VolunteerForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
-
-    const { error } = await supabase.from("volunteer_requests").insert(form);
-    setLoading(false);
-
-    if (error) {
-      toast.error("Une erreur est survenue. Veuillez informer un responsable.");
+    if (!captcha) {
+      toast.error("Merci de valider la vérification anti-robot.");
       return;
     }
-    // Send confirmation email if email provided
-    if (form.email) {
-      const html = `
-        <div style="font-family:sans-serif;max-width:520px;margin:auto;padding:32px 24px;background:#f9fafb;border-radius:12px">
-          <h2 style="color:#0e7490;margin-bottom:8px">👋 Candidature bénévolat reçue</h2>
-          <p style="color:#374151">Bonjour <strong>${form.first_name} ${form.last_name}</strong>,</p>
-          <p style="color:#374151">Votre candidature pour le ministère <strong>${form.ministry}</strong> a bien été reçue.</p>
-          <p style="color:#374151">Nous vous contacterons prochainement pour la suite.</p>
-          <p style="color:#6b7280;font-size:13px;margin-top:24px">Église EEAM — Rabat</p>
-        </div>`;
-      fetch("/api/send-email", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          to: form.email,
-          subject: "Candidature bénévolat reçue — EEAM Rabat",
-          html,
-        }),
-      });
+    setLoading(true);
+    const result = await submitVolunteer(form, captcha);
+    setLoading(false);
+    captchaRef.current?.reset();
+
+    if (!result.ok) {
+      toast.error(result.error);
+      return;
     }
     toast.success("Candidature envoyée ! Nous vous contacterons bientôt.");
     setForm({ first_name: "", last_name: "", email: "", phone: "", ministry: "", skills: "", availability: [] });
@@ -138,7 +123,9 @@ export default function VolunteerForm() {
         ))}
       </div>
 
-      <button type="submit" disabled={loading}
+      <Turnstile ref={captchaRef} onToken={setCaptcha} />
+
+      <button type="submit" disabled={loading || !captcha}
         className="w-full flex justify-center items-center gap-2 bg-gradient-to-r from-cyan-500 to-emerald-600 text-white py-3 rounded-xl font-medium shadow-lg hover:from-cyan-600 hover:to-emerald-700 transition disabled:opacity-60">
         <Save size={18} />
         {loading ? "Envoi en cours..." : "Soumettre ma candidature"}

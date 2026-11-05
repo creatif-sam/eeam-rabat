@@ -11,7 +11,6 @@ import MobileNavbar from "@/components/public/MobileNavbar";
 import Footer from "@/components/public/Footer";
 import BaseModal from "@/components/modals/BaseModal";
 
-import MemberRegistrationForm from "@/components/public/MemberRegistrationForm";
 import VolunteerForm from "@/components/public/VolunteerForm";
 import JoinGroupForm from "@/components/public/JoinCommission";
 import RequestSubmissionForm from "@/components/public/RequestSubmissionForm";
@@ -23,7 +22,6 @@ export default function HomePage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [signUpOpen, setSignUpOpen] = useState(false);
-  const [memberOpen, setMemberOpen] = useState(false);
   const [volunteerOpen, setVolunteerOpen] = useState(false);
   const [joinGroupOpen, setJoinGroupOpen] = useState(false);
   const [requestOpen, setRequestOpen] = useState(false);
@@ -49,7 +47,7 @@ export default function HomePage() {
 
         <div id="services">
           <ServicesGrid
-            onMember={() => setMemberOpen(true)}
+            onMember={() => router.push("/inscription-membre")}
             onVolunteer={() => setVolunteerOpen(true)}
             onJoinGroup={() => setJoinGroupOpen(true)}
             onRequest={() => setRequestOpen(true)}
@@ -66,16 +64,6 @@ export default function HomePage() {
         </div>
 
       </main>
-
-      <BaseModal
-        open={memberOpen}
-        onClose={() => setMemberOpen(false)}
-        title="Inscription Membre"
-        subtitle="Rejoignez notre communauté"
-        headerClass="bg-gradient-to-r from-blue-500 to-indigo-600"
-      >
-        <MemberRegistrationForm />
-      </BaseModal>
 
       <BaseModal
         open={volunteerOpen}
@@ -135,7 +123,7 @@ export default function HomePage() {
           }
         }}
         onSignUp={() => setSignUpOpen(true)}
-        onMember={() => setMemberOpen(true)}
+        onMember={() => router.push("/inscription-membre")}
       />
 
       <Footer />

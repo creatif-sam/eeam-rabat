@@ -18,6 +18,7 @@ import type { SvgIconComponent } from "@mui/icons-material"
 import {
   AssessmentOutlined,
   AssignmentOutlined,
+  CampaignOutlined,
   ChecklistOutlined,
   ChevronLeft,
   EventOutlined,
@@ -47,6 +48,7 @@ type MenuItem = { label: string; icon: SvgIconComponent; route: string; roles: s
 
 const allMenuItems: MenuItem[] = [
   { label: "Accueil", icon: HomeOutlined, route: "/dashboard", roles: null },
+  { label: "Annonces", icon: CampaignOutlined, route: "/dashboard/annonces", roles: ADMIN_ROLES },
   { label: "Annexe de J5", icon: PlaceOutlined, route: "/dashboard/annexe-j5", roles: null },
   { label: "Baptêmes", icon: WaterDropOutlined, route: "/dashboard/baptemes", roles: null },
   { label: "Commissions", icon: GroupsOutlined, route: "/dashboard/groupes", roles: null },

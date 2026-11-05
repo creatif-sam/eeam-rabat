@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
+import Turnstile, { type TurnstileHandle } from "@/components/Turnstile";
 import { Save, Lock } from "lucide-react";
 import { toast } from "sonner";
 
@@ -16,6 +17,8 @@ export default function RequestSubmissionForm() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [unlocking, setUnlocking] = useState(false);
+  const [captcha, setCaptcha] = useState<string | null>(null);
+  const captchaRef = useRef<TurnstileHandle>(null);
 
   const [form, setForm] = useState({
     full_name: "", email: "", request_type: "", details: ""
@@ -51,15 +54,20 @@ export default function RequestSubmissionForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!captcha) {
+      toast.error("Merci de valider la vérification anti-robot.");
+      return;
+    }
     setLoading(true);
 
     const res = await fetch("/api/commission-requests", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ password, ...form })
+      body: JSON.stringify({ password, ...form, turnstileToken: captcha })
     });
 
     setLoading(false);
+    captchaRef.current?.reset();
 
     if (!res.ok) {
       const json = await res.json().catch(() => null);
@@ -126,7 +134,8 @@ export default function RequestSubmissionForm() {
         <textarea name="details" rows={5} value={form.details} onChange={handleChange}
           className={inputClass} placeholder="Décrivez votre demande en détail" required />
       </div>
-      <button type="submit" disabled={loading}
+      <Turnstile ref={captchaRef} onToken={setCaptcha} />
+      <button type="submit" disabled={loading || !captcha}
         className="w-full px-6 py-3 bg-gradient-to-r from-rose-500 to-pink-600 text-white rounded-xl transition shadow-lg flex items-center justify-center gap-2 font-medium disabled:opacity-60">
         <Save size={18} />
         {loading ? "Envoi en cours..." : "Envoyer la demande"}

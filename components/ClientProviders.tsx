@@ -5,7 +5,6 @@ import { useEffect, useState } from "react"
 import { Toaster } from "sonner"
 import CookieBanner from "@/components/CookieBanner"
 import { CookieManager } from "@/components/CookieManager"
-import PWAInstallPrompt from "@/components/PWAInstallPrompt"
 import NormalizeBody from "@/components/NormalizeBody"
 import MuiProvider from "@/components/MuiProvider"
 
@@ -27,7 +26,6 @@ export default function ClientProviders({
       <Toaster richColors position="top-right" />
       <CookieManager />
       {mounted && <CookieBanner />}
-      {mounted && <PWAInstallPrompt />}
     </ThemeProvider>
   )
 }

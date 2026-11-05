@@ -4,11 +4,15 @@ import Image from "next/image";
 import { LogIn, UserPlus } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { ThemeSwitcher } from "@/components/theme-switcher";
+import AnnouncementBar from "@/components/public/AnnouncementBar";
+import InstallAppButton from "@/components/pwa/InstallAppButton";
 
 export default function Header({ onLogin, onSignUp }: { onLogin?: () => void; onSignUp?: () => void }) {
   const router = useRouter();
 
   return (
+    <>
+    <AnnouncementBar />
     <header className="bg-white dark:bg-gray-950 border-b border-gray-100 dark:border-gray-800 shadow-sm transition-colors duration-300">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4">
         <div className="flex items-center justify-between">
@@ -37,6 +41,7 @@ export default function Header({ onLogin, onSignUp }: { onLogin?: () => void; on
           {/* Buttons + Theme Switcher */}
           <div className="flex items-center gap-2 sm:gap-3">
             <ThemeSwitcher />
+            <InstallAppButton />
 
             <button
               onClick={() =>
@@ -76,5 +81,6 @@ export default function Header({ onLogin, onSignUp }: { onLogin?: () => void; on
         </div>
       </div>
     </header>
+    </>
   );
 }

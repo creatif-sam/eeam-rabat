@@ -5,6 +5,7 @@ import { headers } from "next/headers"
 import { createSupabaseServerClient } from "@/lib/supabase/server"
 import { createSupabaseAdminClient } from "@/lib/supabase/admin"
 import { notifyApproversOfSignup } from "@/lib/accounts/notify"
+import { CAPTCHA_ERROR, isHuman } from "@/lib/turnstile"
 
 export type SignUpResult = { ok: true } | { ok: false; error: string }
 
@@ -17,7 +18,9 @@ async function requestOrigin() {
   return host ? `${proto}://${host}` : null
 }
 
-export async function signUpAction(email: string, password: string): Promise<SignUpResult> {
+export async function signUpAction(email: string, password: string, turnstileToken: string | null): Promise<SignUpResult> {
+  if (!(await isHuman(turnstileToken))) return { ok: false, error: CAPTCHA_ERROR }
+
   const cleanEmail = (email ?? "").trim().toLowerCase()
   if (!cleanEmail || !password) {
     return { ok: false, error: "Email et mot de passe requis" }

@@ -1,8 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
+import Turnstile, { type TurnstileHandle } from "@/components/Turnstile";
+import { submitMemberRegistration } from "@/app/actions/public-forms";
 import {
   User,
   Phone,
@@ -19,6 +21,8 @@ type MemberRegistrationFormProps = {
   isEdit?: boolean;
   initialData?: any;
   onSuccess?: () => void;
+  /** Public site: anti-bot check + server-side insert. The dashboard leaves this off. */
+  publicMode?: boolean;
 };
 
 const inputClass =
@@ -27,7 +31,7 @@ const inputClass =
   "dark:bg-gray-800 dark:text-gray-100 dark:border-gray-700 dark:placeholder:text-gray-500 " + 
   "focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary";
 
-export default function MemberRegistrationForm({ isEdit, initialData, onSuccess }: MemberRegistrationFormProps) {
+export default function MemberRegistrationForm({ isEdit, initialData, onSuccess, publicMode }: MemberRegistrationFormProps) {
   const supabase = createClient();
 
   const [form, setForm] = useState({
@@ -50,6 +54,8 @@ export default function MemberRegistrationForm({ isEdit, initialData, onSuccess 
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [captcha, setCaptcha] = useState<string | null>(null);
+  const captchaRef = useRef<TurnstileHandle>(null);
 
   useEffect(() => {
     if (isEdit && initialData) {
@@ -157,14 +163,29 @@ export default function MemberRegistrationForm({ isEdit, initialData, onSuccess 
       consent: true 
     };
 
-    const { error } = isEdit && initialData
-      ? await supabase.from("member_registrations").update(payload).eq('id', initialData.id)
-      : await supabase.from("member_registrations").insert(payload);
+    if (publicMode && !isEdit) {
+      if (!captcha) {
+        setError("Merci de valider la vérification anti-robot.");
+        setLoading(false);
+        return;
+      }
+      const result = await submitMemberRegistration(payload, captcha);
+      captchaRef.current?.reset();
+      if (!result.ok) {
+        setError(result.error);
+        setLoading(false);
+        return;
+      }
+    } else {
+      const { error } = isEdit && initialData
+        ? await supabase.from("member_registrations").update(payload).eq('id', initialData.id)
+        : await supabase.from("member_registrations").insert(payload);
 
-    if (error) {
-      setError(error.code === "23505" ? "Ce numéro de téléphone est déjà utilisé." : error.message);
-      setLoading(false);
-      return;
+      if (error) {
+        setError(error.code === "23505" ? "Ce numéro de téléphone est déjà utilisé." : error.message);
+        setLoading(false);
+        return;
+      }
     }
 
     setSuccess(true);
@@ -328,11 +349,13 @@ export default function MemberRegistrationForm({ isEdit, initialData, onSuccess 
         </div>
         )}
 
+        {publicMode && !isEdit && <Turnstile ref={captchaRef} onToken={setCaptcha} />}
+
         {error && <p className="p-4 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-xl text-sm font-bold text-center">{error}</p>}
 
         <button
           type="submit"
-          disabled={loading}
+          disabled={loading || (publicMode && !isEdit && !captcha)}
           className={`w-full flex items-center justify-center gap-3 py-4 px-6 rounded-2xl font-bold text-lg transition-all duration-300 active:scale-[0.98] ${loading ? "bg-gray-400 dark:bg-gray-700 cursor-not-allowed" : "bg-primary text-white dark:text-black shadow-xl hover:shadow-primary/40 hover:-translate-y-0.5"}`}
         >
           {loading ? <Loader2 className="h-6 w-6 animate-spin" /> : (isEdit ? "Modifier" : "S'inscrire")}

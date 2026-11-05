@@ -1,9 +1,7 @@
 ﻿"use client";
 
-import { useState } from "react";
 import Link from "next/link";
 import { Lock, User, Users, HandHeart, FilePen, UserCheck, ClipboardList } from "lucide-react";
-import PrayerRequestForm from "@/components/public/PrayerRequests";
 
 type ServicesGridProps = {
   onMember: () => void;
@@ -22,7 +20,6 @@ export default function ServicesGrid({
   onRequest,
   onAttendance
 }: ServicesGridProps) {
-  const [showPrayerForm, setShowPrayerForm] = useState(false);
 
   return (
     <>
@@ -67,7 +64,7 @@ export default function ServicesGrid({
         </div>
 
         {/* Demande de prière */}
-        <div onClick={() => setShowPrayerForm(true)} className={cardClass}>
+        <Link href="/demande-de-priere" className={cardClass}>
           <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-rose-500 to-pink-600 rounded-2xl flex items-center justify-center mb-3 sm:mb-4 group-hover:scale-110 transition-transform shadow-lg">
             <HandHeart className="text-xl sm:text-2xl text-white" />
           </div>
@@ -77,7 +74,7 @@ export default function ServicesGrid({
           <p className="text-gray-600 dark:text-gray-400 text-sm">
             Confiez vos sujets de prière à notre équipe d'intercession
           </p>
-        </div>
+        </Link>
 
         {/* Soumettre une Demande */}
         <div onClick={onRequest} className={`relative ${cardClass}`}>
@@ -127,23 +124,6 @@ export default function ServicesGrid({
         </div>
       </div>
 
-      {/* Prayer Request Modal */}
-      {showPrayerForm && (
-        <div
-          className="fixed inset-0 bg-black/50 dark:bg-black/70 backdrop-blur-sm flex items-center justify-center z-50 p-4 overflow-y-auto"
-          onClick={(e) => { if (e.target === e.currentTarget) setShowPrayerForm(false); }}
-        >
-          <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 w-full max-w-xl relative border border-gray-100 dark:border-gray-800 shadow-2xl my-auto max-h-[90vh] overflow-y-auto">
-            <button
-              onClick={() => setShowPrayerForm(false)}
-              className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 text-xl font-bold transition-colors z-10"
-            >
-              ✕
-            </button>
-            <PrayerRequestForm />
-          </div>
-        </div>
-      )}
     </>
   );
 }

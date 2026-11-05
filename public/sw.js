@@ -1,100 +1,140 @@
-// Cache name is versioned via the ?v= query param appended to the registration
-// URL (see app/layout.tsx), which is driven by NEXT_PUBLIC_APP_VERSION. Every
-// new deployment gets a new cache name, and activate() below wipes every cache
-// that doesn't match it.
-const APP_VERSION = new URL(self.location.href).searchParams.get('v') || 'dev';
+/* EEAM Rabat service worker
+ *
+ * Cache name is versioned via the ?v= query param appended at registration
+ * (NEXT_PUBLIC_APP_VERSION), so each deployment gets a fresh cache and old
+ * ones are deleted on activate.
+ *
+ * Strategy
+ * - Only same-origin GET requests are handled; everything else (form posts,
+ *   server actions, Supabase, Cloudflare…) goes straight to the network.
+ * - /_next/static/* and /icons, /images: cache-first (content-hashed / static).
+ * - Public pages: network-first, cached copy used only when offline.
+ * - Private areas (/dashboard, /auth, /profile, /api): never cached, so
+ *   member data never stays on the device after logout. Offline → offline page.
+ */
+const APP_VERSION = new URL(self.location.href).searchParams.get("v") || "dev";
 const CACHE_NAME = `eeam-rabat-${APP_VERSION}`;
-const urlsToCache = [
-  '/manifest.json',
-  '/images/eeam-logo.png',
-  '/politique-de-confidentialite',
-  '/politique-cookies'
+const OFFLINE_URL = "/offline.html";
+const PRECACHE = [
+  OFFLINE_URL,
+  "/manifest.json",
+  "/icons/icon-192.png",
+  "/icons/icon-512.png",
+  "/icons/apple-touch-icon.png",
 ];
+const PRIVATE_PREFIXES = ["/dashboard", "/auth", "/profile", "/api"];
+const STATIC_PREFIXES = ["/_next/static/", "/icons/", "/images/"];
 
-// Install event - cache static resources only (no navigations, no API)
-self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then((cache) => {
-        return cache.addAll(urlsToCache);
-      })
-  );
+self.addEventListener("install", (event) => {
+  event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(PRECACHE)));
   self.skipWaiting();
 });
 
-// Activate event - wipe every cache that isn't the current version
-self.addEventListener('activate', (event) => {
+self.addEventListener("activate", (event) => {
   event.waitUntil(
-    caches.keys().then((cacheNames) => {
-      return Promise.all(
-        cacheNames.map((cacheName) => {
-          if (cacheName !== CACHE_NAME) {
-            return caches.delete(cacheName);
-          }
-        })
-      );
-    })
+    (async () => {
+      const names = await caches.keys();
+      await Promise.all(names.filter((n) => n !== CACHE_NAME).map((n) => caches.delete(n)));
+      if (self.registration.navigationPreload) await self.registration.navigationPreload.enable();
+      await self.clients.claim();
+    })()
   );
-  self.clients.claim();
 });
 
-// Fetch event:
-// - /api/ requests: NetworkOnly — never serve or store a cached response,
-//   these can carry authenticated/session-specific data.
-// - Navigation requests (HTML pages): NetworkFirst — always try the network
-//   first so logged-in/out state is never served stale; only fall back to
-//   the cache (or the offline shell) when the network is unreachable.
-// - Everything else (static assets): cache-first, falling back to network.
-self.addEventListener('fetch', (event) => {
-  const url = new URL(event.request.url);
+const isPrivate = (path) => PRIVATE_PREFIXES.some((p) => path === p || path.startsWith(p + "/"));
 
-  if (url.pathname.startsWith('/api/')) {
-    event.respondWith(fetch(event.request));
-    return;
-  }
+self.addEventListener("fetch", (event) => {
+  const { request } = event;
+  if (request.method !== "GET") return;
+  const url = new URL(request.url);
+  if (url.origin !== self.location.origin) return;
 
-  if (event.request.mode === 'navigate') {
+  // Static, immutable assets: cache-first
+  if (STATIC_PREFIXES.some((p) => url.pathname.startsWith(p))) {
     event.respondWith(
-      fetch(event.request)
-        .then((response) => {
-          const responseClone = response.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, responseClone));
-          return response;
-        })
-        .catch(() => {
-          return caches.match(event.request).then((cached) => cached || caches.match('/'));
-        })
+      caches.match(request).then(
+        (cached) =>
+          cached ||
+          fetch(request).then((res) => {
+            if (res.ok) {
+              const copy = res.clone();
+              caches.open(CACHE_NAME).then((c) => c.put(request, copy));
+            }
+            return res;
+          })
+      )
     );
     return;
   }
 
-  event.respondWith(
-    caches.match(event.request)
-      .then((response) => {
-        return response || fetch(event.request);
-      })
-      .catch(() => {
-        if (event.request.mode === 'navigate') {
-          return caches.match('/');
+  if (request.mode !== "navigate") return;
+
+  // Private pages: network only, offline page as fallback
+  if (isPrivate(url.pathname)) {
+    event.respondWith(
+      (async () => {
+        try {
+          return (await event.preloadResponse) || (await fetch(request));
+        } catch {
+          return caches.match(OFFLINE_URL);
         }
-      })
+      })()
+    );
+    return;
+  }
+
+  // Public pages: network-first, keep a copy for offline use
+  event.respondWith(
+    (async () => {
+      try {
+        const res = (await event.preloadResponse) || (await fetch(request));
+        if (res.ok && res.type === "basic") {
+          const copy = res.clone();
+          caches.open(CACHE_NAME).then((c) => c.put(request, copy));
+        }
+        return res;
+      } catch {
+        return (await caches.match(request)) || (await caches.match(OFFLINE_URL));
+      }
+    })()
   );
 });
 
-// Listen for push events and show notifications
-self.addEventListener('push', function(event) {
+// Push notifications
+self.addEventListener("push", (event) => {
   let data = {};
-  if (event.data) {
-    data = event.data.json();
+  try {
+    data = event.data ? event.data.json() : {};
+  } catch {
+    data = { body: event.data ? event.data.text() : "" };
   }
-  const title = data.title || 'EEAM Notification';
-  const options = {
-    body: data.body || 'You have a new notification.',
-    icon: '/images/eeam-logo.png',
-    badge: '/images/eeam-logo.png',
-    data: data.url || '/'
-  };
   event.waitUntil(
-    self.registration.showNotification(title, options)
+    self.registration.showNotification(data.title || "EEAM Rabat", {
+      body: data.body || "Vous avez une nouvelle notification.",
+      icon: "/icons/icon-192.png",
+      badge: "/icons/icon-96.png",
+      lang: "fr",
+      data: { url: data.url || "/" },
+    })
+  );
+});
+
+// Open (or focus) the app on the notification's page when tapped
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  const target = new URL((event.notification.data && event.notification.data.url) || "/", self.location.origin).href;
+  event.waitUntil(
+    (async () => {
+      const windows = await self.clients.matchAll({ type: "window", includeUncontrolled: true });
+      for (const client of windows) {
+        if (client.url === target && "focus" in client) return client.focus();
+      }
+      const existing = windows.find((c) => "navigate" in c);
+      if (existing) {
+        await existing.navigate(target);
+        return existing.focus();
+      }
+      return self.clients.openWindow(target);
+    })()
   );
 });

@@ -77,7 +77,7 @@ export async function updateSession(request: NextRequest) {
   // Only the members area and private APIs require a session. Anything else
   // (including unknown URLs) falls through so visitors get the real 404 page
   // instead of being bounced to the login screen.
-  const PROTECTED_PREFIXES = ["/dashboard", "/protected", "/profile", "/api"];
+  const PROTECTED_PREFIXES = ["/dashboard", "/profile", "/api"];
   const isProtectedPath = PROTECTED_PREFIXES.some(
     (p) => request.nextUrl.pathname === p || request.nextUrl.pathname.startsWith(p + "/"),
   );

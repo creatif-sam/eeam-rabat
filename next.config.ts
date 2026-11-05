@@ -2,6 +2,12 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   cacheComponents: true,
+  // The Turnstile site key is public by design; expose TURNSTILE_SITE_KEY to
+  // the browser bundle (the secret key stays server-only).
+  env: {
+    NEXT_PUBLIC_TURNSTILE_SITE_KEY:
+      process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || process.env.TURNSTILE_SITE_KEY || "",
+  },
   async headers() {
     return [
       {

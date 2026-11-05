@@ -27,6 +27,7 @@ import {
   Close,
   DarkModeOutlined,
   DoneAll,
+  InstallMobileOutlined,
   InfoOutlined,
   LightModeOutlined,
   Logout,
@@ -38,6 +39,8 @@ import {
 import { logout } from "@/app/auth/logout/actions"
 import { createClient } from "@/lib/supabase/client"
 import { useSidebar } from "./SidebarContext"
+import { promptInstall, usePWAInstall } from "@/lib/pwa/install"
+import { IOSInstructions } from "@/components/pwa/InstallAppButton"
 
 type Profile = {
   full_name: string | null
@@ -90,6 +93,22 @@ function ThemeToggle() {
         {isDark ? <LightModeOutlined /> : <DarkModeOutlined />}
       </IconButton>
     </Tooltip>
+  )
+}
+
+function InstallAppIcon() {
+  const { canPrompt, isIOS } = usePWAInstall()
+  const [showIOS, setShowIOS] = useState(false)
+  if (!canPrompt && !isIOS) return null
+  return (
+    <>
+      <Tooltip title="Installer l'application">
+        <IconButton onClick={() => (canPrompt ? void promptInstall() : setShowIOS(true))} aria-label="Installer l'application">
+          <InstallMobileOutlined />
+        </IconButton>
+      </Tooltip>
+      {showIOS && <IOSInstructions onClose={() => setShowIOS(false)} />}
+    </>
   )
 }
 
@@ -190,6 +209,7 @@ export default function Header({ user }: { user: User }) {
           Tableau de bord
         </Typography>
 
+        <InstallAppIcon />
         <ThemeToggle />
 
         {/* Notifications */}

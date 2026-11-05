@@ -1,4 +1,4 @@
-import type { Metadata } from "next"
+import type { Metadata, Viewport } from "next"
 import Script from "next/script"
 import "./globals.css"
 import ClientProviders from "@/components/ClientProviders"
@@ -17,6 +17,13 @@ export const metadata: Metadata = {
   title: siteTitle,
   description: siteDescription,
   manifest: "/manifest.json",
+  icons: {
+    icon: [
+      { url: "/favicon.ico" },
+      { url: "/icons/icon-192.png", sizes: "192x192", type: "image/png" }
+    ],
+    apple: [{ url: "/icons/apple-touch-icon.png", sizes: "180x180" }]
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
@@ -36,8 +43,14 @@ export const metadata: Metadata = {
   }
 }
 
-export const viewport = {
-  themeColor: "#ffffff"
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#0891b2" },
+    { media: "(prefers-color-scheme: dark)", color: "#0b0f17" }
+  ]
 }
 
 export default function RootLayout({
@@ -54,13 +67,24 @@ export default function RootLayout({
 
         <WhatsAppButton />
 
-        <Script id="pwa-push" strategy="afterInteractive">
+        {/* Capture the install prompt before React hydrates (it only fires once) */}
+        <Script id="pwa-install-capture" strategy="beforeInteractive">
+          {`window.addEventListener("beforeinstallprompt", function (e) { e.preventDefault(); window.__bip = e; });`}
+        </Script>
+
+        <Script id="pwa-sw" strategy="afterInteractive">
           {`
-            if ("serviceWorker" in navigator) {
-              window.addEventListener("load", function () {
-                navigator.serviceWorker.register("/sw.js?v=${process.env.NEXT_PUBLIC_APP_VERSION || "dev"}")
-              })
-            }
+            (function () {
+              if (!("serviceWorker" in navigator)) return;
+              function register() {
+                navigator.serviceWorker
+                  .register("/sw.js?v=${process.env.NEXT_PUBLIC_APP_VERSION || "dev"}")
+                  .catch(function (err) { console.warn("[sw] registration failed", err); });
+              }
+              // afterInteractive may run after "load" has already fired
+              if (document.readyState === "complete") register();
+              else window.addEventListener("load", register, { once: true });
+            })();
           `}
         </Script>
       </body>

@@ -1,12 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Save, Heart, Lock } from "lucide-react";
 import { toast } from "sonner";
-import { createClient } from "@/lib/supabase/client";
+import Turnstile, { type TurnstileHandle } from "@/components/Turnstile";
+import { submitPrayerRequest } from "@/app/actions/public-forms";
 
-export default function PrayerRequestForm() {
-  const supabase = createClient();
+export default function PrayerRequestForm({ onSuccess, showHeader = true }: { onSuccess?: () => void; showHeader?: boolean } = {}) {
+  const [captcha, setCaptcha] = useState<string | null>(null);
+  const captchaRef = useRef<TurnstileHandle>(null);
 
   const [form, setForm] = useState({
     name: "",
@@ -30,27 +32,23 @@ export default function PrayerRequestForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!captcha) {
+      toast.error("Merci de valider la vérification anti-robot.");
+      return;
+    }
     setLoading(true);
-
-    const { error } = await supabase
-      .from("prayer_requests")
-      .insert({
-        name: form.name,
-        email: form.email || null,
-        subject: form.subject,
-        message: form.message,
-        confidential: form.confidential
-      });
-
+    const result = await submitPrayerRequest(form, captcha);
     setLoading(false);
+    captchaRef.current?.reset();
 
-    if (error) {
-      toast.error("Une erreur est survenue. Veuillez informer un responsable.");
+    if (!result.ok) {
+      toast.error(result.error);
       return;
     }
 
     toast.success("Demande de prière envoyée. Notre équipe intercède avec foi.");
     setForm({ name: "", email: "", subject: "", message: "", confidential: false });
+    onSuccess?.();
   };
 
   const inputClass = "w-full px-4 py-3 rounded-xl border transition-all focus:outline-none focus:ring-2 " +
@@ -63,6 +61,7 @@ export default function PrayerRequestForm() {
   return (
     <form onSubmit={handleSubmit} className="space-y-5 w-full">
       {/* Header */}
+      {showHeader && (
       <div className="flex items-start gap-3 bg-rose-50 dark:bg-rose-900/20 border border-rose-200 dark:border-rose-800 rounded-xl p-4">
         <Heart className="text-rose-600 dark:text-rose-400 mt-0.5" size={20} />
         <div className="text-sm text-rose-800 dark:text-rose-300">
@@ -70,23 +69,24 @@ export default function PrayerRequestForm() {
           <p>Partagez votre besoin. Notre équipe intercède avec foi et discrétion.</p>
         </div>
       </div>
+      )}
 
       <div>
         <label className={labelClass}>Nom complet *</label>
         <input name="name" required value={form.name} onChange={handleChange}
-          placeholder="Aude Nana" className={inputClass} />
+          placeholder="Jean Dupont" className={inputClass} />
       </div>
 
       <div>
         <label className={labelClass}>Email <span className="font-normal text-gray-500 dark:text-gray-400">(optionnel)</span></label>
         <input type="email" name="email" value={form.email} onChange={handleChange}
-          placeholder="aude@exemple.com" className={inputClass} />
+          placeholder="jean@exemple.com" className={inputClass} />
       </div>
 
       <div>
         <label className={labelClass}>Sujet de prière *</label>
         <input name="subject" required value={form.subject} onChange={handleChange}
-          placeholder="Exécution de l&apos;obéissance" className={inputClass} />
+          placeholder="Ex. : santé, famille, travail…" className={inputClass} />
       </div>
 
       <div>
@@ -104,7 +104,9 @@ export default function PrayerRequestForm() {
         </span>
       </label>
 
-      <button type="submit" disabled={loading}
+      <Turnstile ref={captchaRef} onToken={setCaptcha} />
+
+      <button type="submit" disabled={loading || !captcha}
         className="w-full px-6 py-3 bg-gradient-to-r from-rose-500 to-pink-600 text-white rounded-xl hover:from-rose-600 hover:to-pink-700 transition shadow-lg font-medium flex items-center justify-center gap-2 disabled:opacity-60">
         <Save size={18} />
         {loading ? "Envoi en cours..." : "Envoyer la demande de prière"}

@@ -1,9 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Users } from "lucide-react";
 import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
+import Turnstile, { type TurnstileHandle } from "@/components/Turnstile";
+import { submitJoinGroup } from "@/app/actions/public-forms";
 
 type Group = { id: string; name: string; };
 
@@ -17,6 +19,9 @@ const labelClass = "block text-sm font-semibold text-gray-800 dark:text-gray-200
 export default function GroupJoinForm() {
   const supabase = createClient();
   const [groups, setGroups] = useState<Group[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [captcha, setCaptcha] = useState<string | null>(null);
+  const captchaRef = useRef<TurnstileHandle>(null);
 
   const [form, setForm] = useState({
     full_name: "", phone: "", email: "", group_id: "", motivation: ""
@@ -35,15 +40,16 @@ export default function GroupJoinForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const { error } = await supabase.from("group_join_requests").insert({
-      full_name: form.full_name,
-      phone: form.phone,
-      email: form.email || null,
-      group_id: form.group_id,
-      motivation: form.motivation
-    });
-    if (error) {
-      toast.error("Une erreur est survenue. Veuillez réessayer.");
+    if (!captcha) {
+      toast.error("Merci de valider la vérification anti-robot.");
+      return;
+    }
+    setLoading(true);
+    const result = await submitJoinGroup(form, captcha);
+    setLoading(false);
+    captchaRef.current?.reset();
+    if (!result.ok) {
+      toast.error(result.error);
       return;
     }
     toast.success("Demande envoyée ! Vous serez contacté par le responsable du groupe.");
@@ -91,9 +97,11 @@ export default function GroupJoinForm() {
           className={inputClass} placeholder="Pourquoi souhaitez-vous rejoindre ce groupe" required />
       </div>
 
-      <button type="submit"
-        className="w-full px-6 py-3 rounded-xl font-medium bg-gradient-to-r from-cyan-500 to-blue-600 text-white hover:from-cyan-600 hover:to-blue-700 transition shadow-lg">
-        Envoyer la demande
+      <Turnstile ref={captchaRef} onToken={setCaptcha} />
+
+      <button type="submit" disabled={loading || !captcha}
+        className="w-full px-6 py-3 rounded-xl font-medium bg-gradient-to-r from-cyan-500 to-blue-600 text-white hover:from-cyan-600 hover:to-blue-700 transition shadow-lg disabled:opacity-60">
+        {loading ? "Envoi en cours..." : "Envoyer la demande"}
       </button>
     </form>
   );

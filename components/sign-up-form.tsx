@@ -14,7 +14,8 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { useState } from "react"
+import { useRef, useState } from "react"
+import Turnstile, { type TurnstileHandle } from "@/components/Turnstile"
 import { Mail, Lock, Eye, EyeOff } from "lucide-react"
 
 export function SignUpForm({
@@ -28,6 +29,8 @@ export function SignUpForm({
   const [isLoading, setIsLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [showRepeatPassword, setShowRepeatPassword] = useState(false)
+  const [captcha, setCaptcha] = useState<string | null>(null)
+  const captchaRef = useRef<TurnstileHandle>(null)
   const router = useRouter()
 
   const handleSignUp = async (e: React.FormEvent) => {
@@ -42,7 +45,8 @@ export function SignUpForm({
     }
 
     try {
-      const result = await signUpAction(email, password)
+      const result = await signUpAction(email, password, captcha)
+      captchaRef.current?.reset()
       if (!result.ok) throw new Error(result.error)
       router.push("/auth/sign-up-success")
     } catch (error: unknown) {
@@ -138,6 +142,8 @@ export function SignUpForm({
                 </div>
               </div>
 
+              <Turnstile ref={captchaRef} onToken={setCaptcha} />
+
               {error && (
                 <p className="text-sm text-red-500">
                   {error}
@@ -147,7 +153,7 @@ export function SignUpForm({
               <Button
                 type="submit"
                 className="w-full"
-                disabled={isLoading}
+                disabled={isLoading || !captcha}
               >
                 {isLoading
                   ? "Création du compte..."

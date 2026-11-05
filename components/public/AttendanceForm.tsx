@@ -1,6 +1,7 @@
 ﻿"use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
+import Turnstile, { type TurnstileHandle } from "@/components/Turnstile";
 import { Save, Lock, CalendarDays } from "lucide-react";
 import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
@@ -49,6 +50,8 @@ export default function AttendanceForm() {
 
   const [saving, setSaving] = useState(false);
   const [unlocking, setUnlocking] = useState(false);
+  const [captcha, setCaptcha] = useState<string | null>(null);
+  const captchaRef = useRef<TurnstileHandle>(null);
 
   useEffect(() => {
     const today = new Date().toISOString().split("T")[0];
@@ -93,15 +96,20 @@ export default function AttendanceForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!captcha) {
+      toast.error("Merci de valider la vérification anti-robot.");
+      return;
+    }
     setSaving(true);
 
     const res = await fetch("/api/attendance", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ password, attendance })
+      body: JSON.stringify({ password, attendance, turnstileToken: captcha })
     });
 
     setSaving(false);
+    captchaRef.current?.reset();
 
     if (!res.ok) {
       const json = await res.json().catch(() => null);
@@ -237,9 +245,11 @@ export default function AttendanceForm() {
         />
       </div>
 
+      <Turnstile ref={captchaRef} onToken={setCaptcha} />
+
       <button
         type="submit"
-        disabled={saving}
+        disabled={saving || !captcha}
         className="w-full px-6 py-3 bg-gradient-to-r from-cyan-500 to-blue-600 text-white rounded-xl hover:from-cyan-600 hover:to-blue-700 transition shadow-lg flex items-center justify-center gap-2 font-medium disabled:opacity-60"
       >
         <Save size={18} />

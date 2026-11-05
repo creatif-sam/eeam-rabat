@@ -1,7 +1,6 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -13,7 +12,9 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Link from "next/link";
-import { useState } from "react";
+import { useRef, useState } from "react";
+import Turnstile, { type TurnstileHandle } from "@/components/Turnstile";
+import { requestPasswordReset } from "@/app/auth/forgot-password/actions";
 
 export function ForgotPasswordForm({
   className,
@@ -23,25 +24,27 @@ export function ForgotPasswordForm({
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [captcha, setCaptcha] = useState<string | null>(null);
+  const captchaRef = useRef<TurnstileHandle>(null);
 
   const handleForgotPassword = async (e: React.FormEvent) => {
     e.preventDefault();
-    const supabase = createClient();
+    if (!captcha) {
+      setError("Merci de valider la vérification anti-robot.");
+      return;
+    }
     setIsLoading(true);
     setError(null);
 
-    try {
-      // The url which will be included in the email. This URL needs to be configured in your redirect URLs in the Supabase dashboard at https://supabase.com/dashboard/project/_/auth/url-configuration
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/auth/update-password`,
-      });
-      if (error) throw error;
-      setSuccess(true);
-    } catch (error: unknown) {
-      setError(error instanceof Error ? error.message : "An error occurred");
-    } finally {
-      setIsLoading(false);
+    const result = await requestPasswordReset(email, captcha);
+    captchaRef.current?.reset();
+    setIsLoading(false);
+
+    if (!result.ok) {
+      setError(result.error);
+      return;
     }
+    setSuccess(true);
   };
 
   return (
@@ -49,51 +52,48 @@ export function ForgotPasswordForm({
       {success ? (
         <Card>
           <CardHeader>
-            <CardTitle className="text-2xl">Check Your Email</CardTitle>
-            <CardDescription>Password reset instructions sent</CardDescription>
+            <CardTitle className="text-2xl">Vérifiez votre boîte mail</CardTitle>
+            <CardDescription>Instructions de réinitialisation envoyées</CardDescription>
           </CardHeader>
           <CardContent>
             <p className="text-sm text-muted-foreground">
-              If you registered using your email and password, you will receive
-              a password reset email.
+              Si un compte existe avec cette adresse, vous recevrez un e-mail contenant un lien pour
+              choisir un nouveau mot de passe.
             </p>
           </CardContent>
         </Card>
       ) : (
         <Card>
           <CardHeader>
-            <CardTitle className="text-2xl">Reset Your Password</CardTitle>
+            <CardTitle className="text-2xl">Mot de passe oublié</CardTitle>
             <CardDescription>
-              Type in your email and we&apos;ll send you a link to reset your
-              password
+              Saisissez votre adresse e-mail pour recevoir un lien de réinitialisation.
             </CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleForgotPassword}>
               <div className="flex flex-col gap-6">
                 <div className="grid gap-2">
-                  <Label htmlFor="email">Email</Label>
+                  <Label htmlFor="email">Adresse e-mail</Label>
                   <Input
                     id="email"
                     type="email"
-                    placeholder="m@example.com"
+                    placeholder="exemple@email.com"
                     required
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                   />
                 </div>
+                <Turnstile ref={captchaRef} onToken={setCaptcha} />
                 {error && <p className="text-sm text-red-500">{error}</p>}
-                <Button type="submit" className="w-full" disabled={isLoading}>
-                  {isLoading ? "Sending..." : "Send reset email"}
+                <Button type="submit" className="w-full" disabled={isLoading || !captcha}>
+                  {isLoading ? "Envoi..." : "Envoyer le lien"}
                 </Button>
               </div>
               <div className="mt-4 text-center text-sm">
-                Already have an account?{" "}
-                <Link
-                  href="/auth/login"
-                  className="underline underline-offset-4"
-                >
-                  Login
+                Vous vous souvenez de votre mot de passe ?{" "}
+                <Link href="/auth/login" className="underline underline-offset-4">
+                  Se connecter
                 </Link>
               </div>
             </form>

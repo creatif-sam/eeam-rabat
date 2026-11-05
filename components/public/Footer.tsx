@@ -5,6 +5,7 @@ import Image from "next/image";
 import { MapPin, Mail, Shield, Heart, Phone, ExternalLink, Cookie, Settings } from "lucide-react";
 import { useState } from "react";
 import CookieSettingsModal from "@/components/CookieSettingsModal";
+import InstallAppButton from "@/components/pwa/InstallAppButton";
 
 export default function Footer() {
   const [showCookieSettings, setShowCookieSettings] = useState(false);
@@ -129,6 +130,11 @@ export default function Footer() {
                 Conforme RGPD
               </div>
             </div>
+          </div>
+
+          {/* ─── Install the app ─── */}
+          <div className="mb-10 empty:hidden">
+            <InstallAppButton variant="card" />
           </div>
 
           {/* ─── Divider ─── */}

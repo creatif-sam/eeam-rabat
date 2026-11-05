@@ -1,9 +1,11 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Save, Calendar, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
+import Turnstile, { type TurnstileHandle } from "@/components/Turnstile";
+import { bookCounselling } from "@/app/actions/public-forms";
 
 type Pastor = {
   id: string;
@@ -66,6 +68,8 @@ export default function PastoralCounsellingForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [phoneError, setPhoneError] = useState("");
   const [honeypot, setHoneypot] = useState("");
+  const [captcha, setCaptcha] = useState<string | null>(null);
+  const captchaRef = useRef<TurnstileHandle>(null);
 
   const [form, setForm] = useState({
     full_name: "",
@@ -197,100 +201,31 @@ export default function PastoralCounsellingForm() {
     if (name === "phone") validatePhone(value);
   };
 
-  // Non-atomic check-then-insert, kept only as a fallback for as long as the
-  // book_counselling_slot() migration hasn't been applied yet to this
-  // Supabase project. Once applied, the RPC path below is always used and
-  // this can be deleted.
-  const legacyCheckAndInsert = async (): Promise<boolean> => {
-    const { count: dupCount } = await supabase
-      .from("pastoral_counselling")
-      .select("id", { count: "exact", head: true })
-      .eq("phone", form.phone)
-      .eq("counselling_date", date)
-      .eq("counselling_time", time);
-
-    if ((dupCount ?? 0) > 0) {
-      toast.error("Vous avez déjà réservé ce créneau horaire.");
-      return false;
-    }
-
-    if ((slotCounts[time] ?? 0) >= MAX_PER_SLOT) {
-      toast.error("Ce créneau est complet. Veuillez en choisir un autre.");
-      return false;
-    }
-
-    const { error: insertError } = await supabase
-      .from("pastoral_counselling")
-      .insert({
-        full_name: form.full_name,
-        phone: form.phone,
-        email: form.email || null,
-        pastor_id: form.pastor_id || null,
-        counselling_date: date,
-        counselling_time: time,
-        reason: form.reason,
-      });
-
-    if (insertError) {
-      toast.error("Une erreur est survenue. Veuillez réessayer.");
-      return false;
-    }
-
-    return true;
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (dateError || phoneError || !date || !time || isSubmitting) return;
     if (honeypot) return;
-
-    setIsSubmitting(true);
-
-    // Atomic on the DB side: book_counselling_slot() takes an advisory lock
-    // scoped to this exact date+time before checking capacity/duplicates and
-    // inserting, so two concurrent submissions for the last open spot can't
-    // both succeed.
-    const { error: rpcError } = await supabase.rpc("book_counselling_slot", {
-      p_full_name: form.full_name,
-      p_phone: form.phone,
-      p_email: form.email || null,
-      p_pastor_id: form.pastor_id || null,
-      p_counselling_date: date,
-      p_counselling_time: time,
-      p_reason: form.reason,
-      p_max_per_slot: MAX_PER_SLOT,
-    });
-
-    let success = !rpcError;
-
-    if (rpcError) {
-      const msg = rpcError.message || "";
-      if (msg.includes("DUPLICATE_BOOKING")) {
-        toast.error("Vous avez déjà réservé ce créneau horaire.");
-        setIsSubmitting(false);
-        return;
-      }
-      if (msg.includes("SLOT_FULL")) {
-        toast.error("Ce créneau est complet. Veuillez en choisir un autre.");
-        setIsSubmitting(false);
-        return;
-      }
-      if (msg.includes("PASTOR_UNAVAILABLE")) {
-        toast.error("Ce pasteur n'est pas disponible à cette date. Veuillez choisir une autre date.");
-        setIsSubmitting(false);
-        return;
-      }
-      if (rpcError.code === "PGRST202" || rpcError.code === "42883") {
-        // Migration not applied yet on this project — fall back so the form
-        // keeps working (with the old, non-atomic guarantee) in the meantime.
-        success = await legacyCheckAndInsert();
-      } else {
-        toast.error("Une erreur est survenue. Veuillez réessayer.");
-      }
+    if (!captcha) {
+      toast.error("Merci de valider la vérification anti-robot.");
+      return;
     }
 
+    setIsSubmitting(true);
+    // Server action: verifies Turnstile, then books atomically through
+    // book_counselling_slot() (with a fallback if that migration is missing).
+    const result = await bookCounselling(
+      { ...form, counselling_date: date, counselling_time: time },
+      captcha,
+      MAX_PER_SLOT
+    );
     setIsSubmitting(false);
-    if (!success) return;
+    captchaRef.current?.reset();
+
+    if (!result.ok) {
+      toast.error(result.error);
+      if (result.code === "SLOT_FULL") fetchSlotCounts(date);
+      return;
+    }
 
     setBookingRef(`EP-${new Date().getFullYear()}-${String(Math.floor(Math.random() * 99999)).padStart(5, "0")}`);
     setSubmitted(true);
@@ -452,11 +387,13 @@ export default function PastoralCounsellingForm() {
           className={inputClass} placeholder="Ajoutez des informations supplémentaires si nécessaire (optionnel)" />
       </div>
 
+      <Turnstile ref={captchaRef} onToken={setCaptcha} />
+
       <button
         type="submit"
-        disabled={!!dateError || !!phoneError || isSubmitting}
+        disabled={!!dateError || !!phoneError || isSubmitting || !captcha}
         className={`w-full px-6 py-3 rounded-xl font-medium flex items-center justify-center gap-2 transition shadow-lg ${
-          dateError || phoneError || isSubmitting
+          dateError || phoneError || isSubmitting || !captcha
             ? "bg-gray-300 dark:bg-gray-700 text-gray-600 dark:text-gray-400 cursor-not-allowed"
             : "bg-gradient-to-r from-cyan-500 to-blue-600 text-white hover:from-cyan-600 hover:to-blue-700"
         }`}
