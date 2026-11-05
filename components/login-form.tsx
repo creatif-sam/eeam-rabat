@@ -14,7 +14,8 @@ import { Label } from "@/components/ui/label"
 import Link from "next/link"
 import { useEffect, useRef, useState } from "react"
 import Turnstile, { type TurnstileHandle } from "@/components/Turnstile"
-import { useSearchParams } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
+import { resetBrowserSession } from "@/lib/supabase/client"
 import { login } from "@/app/auth/login/actions"
 import { Mail, Lock, Eye, EyeOff } from "lucide-react"
 import { toast } from "sonner"
@@ -29,6 +30,7 @@ export function LoginForm({
   const [captcha, setCaptcha] = useState<string | null>(null)
   const captchaRef = useRef<TurnstileHandle>(null)
   const searchParams = useSearchParams()
+  const router = useRouter()
 
   useEffect(() => {
     if (searchParams.get("reason") === "session_expired") {
@@ -54,18 +56,22 @@ export function LoginForm({
             action={async (formData) => {
               setIsLoading(true)
               setError(null)
+              let result: Awaited<ReturnType<typeof login>>
               try {
-                await login(formData)
-              } catch (e) {
-                setError(
-                  e instanceof Error
-                    ? e.message
-                    : "Une erreur est survenue"
-                )
-                toast.error("Connexion impossible. Vérifiez vos identifiants et réessayez.")
-                captchaRef.current?.reset()
-                setIsLoading(false)
+                result = await login(formData)
+              } catch {
+                result = { ok: false, error: "Connexion impossible pour le moment. Réessayez." }
               }
+              if (result.ok) {
+                resetBrowserSession()
+                router.replace("/dashboard")
+                router.refresh()
+                return // keep the button in its loading state while navigating
+              }
+              setError(result.error)
+              toast.error(result.error)
+              captchaRef.current?.reset()
+              setIsLoading(false)
             }}
           >
             <div className="flex flex-col gap-6">
