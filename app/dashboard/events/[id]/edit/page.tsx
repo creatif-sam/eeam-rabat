@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Loader2, ArrowLeft, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
+import { announceChange } from "@/app/actions/notifications";
 
 const inputCls =
   "w-full border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 p-3 rounded-xl outline-none focus:border-cyan-500 transition-colors placeholder:text-gray-400 dark:placeholder:text-gray-500 text-sm";
@@ -114,6 +115,7 @@ export default function EditEventPage() {
       return;
     }
 
+    void announceChange("event_updated", String(payload.title ?? ""));
     toast.success("Événement mis à jour !");
     router.push("/dashboard/events");
   };

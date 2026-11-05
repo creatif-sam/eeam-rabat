@@ -4,41 +4,28 @@ import { useEffect, useState } from "react"
 import Link from "next/link"
 import { useTheme as useNextTheme } from "next-themes"
 import type { User } from "@supabase/supabase-js"
-import { toast } from "sonner"
 import AppBar from "@mui/material/AppBar"
 import Avatar from "@mui/material/Avatar"
-import Badge from "@mui/material/Badge"
 import Box from "@mui/material/Box"
-import Button from "@mui/material/Button"
 import Divider from "@mui/material/Divider"
 import IconButton from "@mui/material/IconButton"
-import List from "@mui/material/List"
-import ListItem from "@mui/material/ListItem"
 import ListItemIcon from "@mui/material/ListItemIcon"
-import ListItemText from "@mui/material/ListItemText"
 import Menu from "@mui/material/Menu"
 import MenuItem from "@mui/material/MenuItem"
-import Popover from "@mui/material/Popover"
 import Toolbar from "@mui/material/Toolbar"
 import Tooltip from "@mui/material/Tooltip"
 import Typography from "@mui/material/Typography"
 import {
-  CheckCircleOutlined,
-  Close,
   DarkModeOutlined,
-  DoneAll,
   InstallMobileOutlined,
-  InfoOutlined,
   LightModeOutlined,
   Logout,
   Menu as MenuIcon,
-  NotificationsOutlined,
   PersonOutlined,
-  WarningAmberOutlined,
 } from "@mui/icons-material"
 import { logout } from "@/app/auth/logout/actions"
-import { createClient } from "@/lib/supabase/client"
 import { useSidebar } from "./SidebarContext"
+import NotificationBell from "./NotificationBell"
 import { promptInstall, usePWAInstall } from "@/lib/pwa/install"
 import { IOSInstructions } from "@/components/pwa/InstallAppButton"
 
@@ -46,14 +33,6 @@ type Profile = {
   full_name: string | null
   avatar_url: string | null
   role: string | null
-}
-
-type Notification = {
-  id: string
-  type: "info" | "success" | "warning"
-  message: string
-  read: boolean
-  created_at: string
 }
 
 function formatRole(role?: string | null) {
@@ -70,12 +49,6 @@ function formatRole(role?: string | null) {
   }
 
   return map[role] ?? role
-}
-
-function NotifIcon({ type }: { type: Notification["type"] }) {
-  if (type === "success") return <CheckCircleOutlined fontSize="small" color="success" />
-  if (type === "warning") return <WarningAmberOutlined fontSize="small" color="warning" />
-  return <InfoOutlined fontSize="small" color="primary" />
 }
 
 function ThemeToggle() {
@@ -112,44 +85,11 @@ function InstallAppIcon() {
   )
 }
 
-export default function Header({ user }: { user: User }) {
-  const [supabase] = useState(() => createClient())
+export default function Header({ user, initialProfile }: { user: User; initialProfile: Profile | null }) {
   const { setIsMobileOpen } = useSidebar()
-  const [profile, setProfile] = useState<Profile | null>(null)
-  const [notifications, setNotifications] = useState<Notification[]>([])
-  const [notifAnchor, setNotifAnchor] = useState<HTMLElement | null>(null)
+  // Comes from the server (layout): the browser client can't read the session
+  const [profile, setProfile] = useState<Profile | null>(initialProfile)
   const [profileAnchor, setProfileAnchor] = useState<HTMLElement | null>(null)
-
-  useEffect(() => {
-    async function loadProfile() {
-      const { data } = await supabase
-        .from("profiles")
-        .select("full_name, avatar_url, role")
-        .eq("id", user.id)
-        .single()
-      setProfile(data)
-    }
-
-    async function loadNotifications() {
-      const { data } = await supabase
-        .from("notifications")
-        .select("*")
-        .eq("user_id", user.id)
-        .order("created_at", { ascending: false })
-        .limit(20)
-      setNotifications(data || [])
-      // Show unread as sonner toasts on load
-      const unread = (data || []).filter((n: Notification) => !n.read)
-      unread.slice(0, 3).forEach((n: Notification) => {
-        if (n.type === "success") toast.success(n.message)
-        else if (n.type === "warning") toast.warning(n.message)
-        else toast.info(n.message)
-      })
-    }
-
-    loadProfile()
-    loadNotifications()
-  }, [supabase, user.id])
 
   // The profile page broadcasts saved changes so the header updates instantly
   useEffect(() => {
@@ -161,27 +101,6 @@ export default function Header({ user }: { user: User }) {
     return () => window.removeEventListener("profile-updated", onUpdate)
   }, [])
 
-  async function markAllRead() {
-    const unreadIds = notifications.filter((n) => !n.read).map((n) => n.id)
-    if (!unreadIds.length) return
-    const { error } = await supabase.from("notifications").update({ read: true }).in("id", unreadIds)
-    if (error) {
-      toast.error("Impossible de marquer les notifications comme lues.")
-      return
-    }
-    setNotifications((prev) => prev.map((n) => ({ ...n, read: true })))
-    toast.success("Toutes les notifications marquées comme lues")
-  }
-
-  async function deleteNotif(id: string) {
-    const { error } = await supabase.from("notifications").delete().eq("id", id)
-    if (error) {
-      toast.error("Impossible de supprimer la notification.")
-      return
-    }
-    setNotifications((prev) => prev.filter((n) => n.id !== id))
-  }
-
   const fullName = profile?.full_name ?? user.email?.split("@")[0] ?? "Utilisateur"
 
   const initials = fullName
@@ -190,8 +109,6 @@ export default function Header({ user }: { user: User }) {
     .join("")
     .slice(0, 2)
     .toUpperCase()
-
-  const unreadCount = notifications.filter((n) => !n.read).length
 
   return (
     <AppBar
@@ -222,67 +139,7 @@ export default function Header({ user }: { user: User }) {
         <InstallAppIcon />
         <ThemeToggle />
 
-        {/* Notifications */}
-        <Tooltip title="Notifications">
-          <IconButton onClick={(e) => setNotifAnchor(e.currentTarget)} aria-label="Notifications">
-            <Badge badgeContent={unreadCount} color="secondary" max={9}>
-              <NotificationsOutlined />
-            </Badge>
-          </IconButton>
-        </Tooltip>
-
-        <Popover
-          open={Boolean(notifAnchor)}
-          anchorEl={notifAnchor}
-          onClose={() => setNotifAnchor(null)}
-          anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
-          transformOrigin={{ vertical: "top", horizontal: "right" }}
-          slotProps={{ paper: { sx: { width: 340, maxWidth: "calc(100vw - 32px)", mt: 1 } } }}
-        >
-          <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", px: 2, py: 1.5 }}>
-            <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-              Notifications
-            </Typography>
-            {unreadCount > 0 && (
-              <Button size="small" startIcon={<DoneAll fontSize="small" />} onClick={markAllRead}>
-                Tout lire
-              </Button>
-            )}
-          </Box>
-          <Divider />
-          {notifications.length === 0 ? (
-            <Typography variant="body2" color="text.secondary" align="center" sx={{ py: 4 }}>
-              Aucune notification
-            </Typography>
-          ) : (
-            <List dense disablePadding sx={{ maxHeight: 320, overflowY: "auto" }}>
-              {notifications.map((n) => (
-                <ListItem
-                  key={n.id}
-                  divider
-                  alignItems="flex-start"
-                  secondaryAction={
-                    <IconButton edge="end" size="small" onClick={() => deleteNotif(n.id)} aria-label="Supprimer">
-                      <Close fontSize="small" />
-                    </IconButton>
-                  }
-                  sx={(theme) => ({
-                    bgcolor: n.read ? "transparent" : "rgba(var(--mui-palette-primary-mainChannel) / 0.08)",
-                  })}
-                >
-                  <ListItemIcon sx={{ minWidth: 32, mt: 0.75 }}>
-                    <NotifIcon type={n.type} />
-                  </ListItemIcon>
-                  <ListItemText
-                    primary={n.message}
-                    secondary={new Date(n.created_at).toLocaleString("fr-FR", { dateStyle: "short", timeStyle: "short" })}
-                    slotProps={{ primary: { sx: { fontWeight: n.read ? 400 : 600, fontSize: 14 } } }}
-                  />
-                </ListItem>
-              ))}
-            </List>
-          )}
-        </Popover>
+        <NotificationBell />
 
         <Divider orientation="vertical" flexItem sx={{ mx: 1, my: 1.5 }} />
 

@@ -2,7 +2,7 @@
   "id": "/",
   "name": "EEAM Rabat - Église Évangélique Au Maroc",
   "short_name": "EEAM Rabat",
-  "description": "La technologie et l'excellence pour la gloire de Dieu - Paroisse de Rabat",
+  "description": "Calendrier, annonces, formulaires et espace des responsables de la paroisse EEAM de Rabat.",
   "start_url": "/?source=pwa",
   "scope": "/",
   "display": "standalone",

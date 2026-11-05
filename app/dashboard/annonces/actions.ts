@@ -1,6 +1,8 @@
 "use server"
 
+import { after } from "next/server"
 import { createSupabaseServerClient } from "@/lib/supabase/server"
+import { notify } from "@/lib/notifications/server"
 import { ANNOUNCEMENT_COLUMNS, YEAR_THEME_KEYS, type Announcement, type YearTheme } from "@/lib/site/announcements"
 
 /**
@@ -61,6 +63,21 @@ export async function saveAnnouncement(input: AnnouncementInput, id?: string): P
 
   const { data, error } = await query
   if (error || !data) return fail(error?.message ?? "Erreur inconnue")
+
+  // New announcement that is live right now → tell every member
+  const live = payload.is_active && (!payload.starts_at || new Date(payload.starts_at) <= new Date())
+  if (!id && live) {
+    after(() =>
+      notify({
+        audience: "members",
+        title: payload.label || "Annonce",
+        body: payload.message,
+        url: payload.link_url && payload.link_url.startsWith("/") ? payload.link_url : "/",
+        type: payload.tone === "urgent" ? "warning" : "info",
+        excludeUserId: user.id,
+      })
+    )
+  }
   return { ok: true, data: data as Announcement }
 }
 

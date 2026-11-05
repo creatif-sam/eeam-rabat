@@ -15,6 +15,10 @@ type PrayerRequest = {
   created_at: string;
 };
 
+// The public form stores the name in `name`; older rows may use `full_name`
+const mapRow = (r: Record<string, unknown>) =>
+  ({ ...r, full_name: (r.full_name ?? r.name ?? "") as string, confidential: !!r.confidential }) as unknown as PrayerRequest;
+
 const confidentialChip = (r: PrayerRequest) =>
   r.confidential ? <Chip icon={<LockOutlined />} label="Confidentiel" size="small" color="secondary" variant="outlined" /> : null;
 
@@ -22,7 +26,8 @@ export default function PrayerRequestsDashboard({ onChanged }: { onChanged?: () 
   return (
     <RequestInbox<PrayerRequest>
       table="prayer_requests"
-      select="id, full_name, email, subject, message, confidential, processed, created_at"
+      select="*"
+      mapRow={mapRow}
       primary={r => r.full_name || "Anonyme"}
       secondary={r => r.subject}
       badges={confidentialChip}

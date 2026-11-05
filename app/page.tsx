@@ -5,7 +5,7 @@ import BrandedLoader from "@/components/BrandedLoader";
 export const metadata = {
   title: "EEAM Rabat - Église Évangélique Au Maroc",
   description:
-    "Site de la paroisse EEAM Rabat : services, événements, formations, entretiens pastoraux et inscription des membres."
+    "La plateforme de la paroisse EEAM de Rabat : calendrier des cultes et activités, annonces, inscription des membres, demandes de prière, entretiens pastoraux et espace des responsables."
 };
 
 export default function EEAMIntranetHome() {

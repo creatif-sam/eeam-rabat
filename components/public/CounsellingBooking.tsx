@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import WhatsAppHint from "@/components/public/WhatsAppHint";
 import { createClient } from "@/lib/supabase/client";
 import Turnstile, { type TurnstileHandle } from "@/components/Turnstile";
-import { bookCounselling } from "@/app/actions/public-forms";
+import { bookCounselling, getSlotCounts } from "@/app/actions/public-forms";
 
 type Pastor = {
   id: string;
@@ -103,17 +103,10 @@ export default function PastoralCounsellingForm() {
     setPastors((fallback.data || []).map(p => ({ ...p, available_days: DEFAULT_AVAILABLE_DAYS })));
   }, [supabase]);
 
+  // Counts come from the server: booking details are never exposed publicly
   const fetchSlotCounts = useCallback(async (selectedDate: string) => {
-    const { data } = await supabase
-      .from("pastoral_counselling")
-      .select("counselling_time")
-      .eq("counselling_date", selectedDate);
-    const counts: Record<string, number> = {};
-    for (const row of data || []) {
-      counts[row.counselling_time] = (counts[row.counselling_time] || 0) + 1;
-    }
-    setSlotCounts(counts);
-  }, [supabase]);
+    setSlotCounts(await getSlotCounts(selectedDate));
+  }, []);
 
   useEffect(() => {
     fetchPastors();

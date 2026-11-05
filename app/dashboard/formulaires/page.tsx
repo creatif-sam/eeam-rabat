@@ -19,7 +19,7 @@ import {
   SupportAgentOutlined,
   VolunteerActivismOutlined,
 } from "@mui/icons-material";
-import { createClient } from "@/lib/supabase/client";
+import { pendingCounts } from "./actions";
 
 import PastoralCounsellingList from "@/components/dashboard/PastoralCounsellingList";
 import GroupRequestsDashboard from "@/components/dashboard/GroupRequestsDashboard";
@@ -46,30 +46,7 @@ function usePendingCounts() {
   const [counts, setCounts] = useState<Partial<Record<TabKey, number>>>({});
 
   const refresh = useCallback(async () => {
-    const supabase = createClient();
-    const today = new Date().toISOString().slice(0, 10);
-    const pending = (table: string) =>
-      supabase.from(table).select("id", { count: "exact", head: true }).eq("processed", false);
-
-    const [volunteer, group, prayer, request, pastoral] = await Promise.all([
-      pending("volunteer_requests"),
-      pending("group_join_requests"),
-      pending("prayer_requests"),
-      pending("commission_requests"),
-      supabase
-        .from("pastoral_counselling")
-        .select("id", { count: "exact", head: true })
-        .not("confirmed", "is", true)
-        .gte("counselling_date", today),
-    ]);
-
-    setCounts({
-      volunteer: volunteer.count ?? undefined,
-      group: group.count ?? undefined,
-      prayer: prayer.count ?? undefined,
-      request: request.count ?? undefined,
-      pastoral: pastoral.error ? undefined : pastoral.count ?? undefined,
-    });
+    setCounts((await pendingCounts()) as Partial<Record<TabKey, number>>);
   }, []);
 
   useEffect(() => {

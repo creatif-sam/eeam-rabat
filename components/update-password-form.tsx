@@ -1,7 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { createClient } from "@/lib/supabase/client";
+import { changePassword } from "@/app/dashboard/profile/actions";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -43,14 +43,14 @@ export function UpdatePasswordForm({
 
     setIsLoading(true);
     setError(null);
-    const { error } = await createClient().auth.updateUser({ password });
+    const result = await changePassword(password);
     setIsLoading(false);
 
-    if (error) {
+    if (!result.ok) {
       setError(
-        /expired|invalid|session/i.test(error.message)
+        /session/i.test(result.error)
           ? "Votre lien a expiré. Demandez un nouveau lien de réinitialisation."
-          : "Impossible de mettre à jour le mot de passe. Veuillez réessayer."
+          : result.error
       );
       return;
     }

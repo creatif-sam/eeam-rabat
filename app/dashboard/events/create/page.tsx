@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { Loader2, ArrowLeft, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
+import { announceChange } from "@/app/actions/notifications";
 
 const inputCls = "w-full border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 p-3 rounded-xl outline-none focus:border-cyan-500 transition-colors placeholder:text-gray-400 dark:placeholder:text-gray-500 text-sm";
 const labelCls = "block text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1.5";
@@ -59,6 +60,7 @@ export default function CreateEventPage() {
 
     const { error: insertError } = await supabase.from("events").insert(payload);
     if (insertError) { setError(insertError.message); setLoading(false); return; }
+    void announceChange("event_created", form.title);
     toast.success("Événement créé !");
     router.push("/dashboard/events");
   };

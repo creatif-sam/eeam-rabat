@@ -4,6 +4,7 @@ import { useState } from "react";
 import { X } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
+import { announceChange } from "@/app/actions/notifications";
 
 type Props = {
   open: boolean;
@@ -61,6 +62,7 @@ export default function CreateFormationModal({ open, onClose, onCreated }: Props
       return;
     }
 
+    void announceChange("formation_created", String(form.titre ?? ""));
     onCreated();
     onClose();
   };

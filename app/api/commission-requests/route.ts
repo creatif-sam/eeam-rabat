@@ -1,4 +1,5 @@
-import { NextResponse } from "next/server";
+import { NextResponse, after } from "next/server";
+import { notify } from "@/lib/notifications/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { createSupabaseAdminClient } from "@/lib/supabase/admin";
 import { clientKeyFrom, isRateLimited, verifyAccessCode } from "@/lib/publicFormsAccess";
@@ -38,6 +39,16 @@ export async function POST(req: Request) {
     console.error("[commission-requests]", error.message);
     return NextResponse.json({ error: "Une erreur est survenue." }, { status: 500 });
   }
+
+  after(() =>
+    notify({
+      audience: "leaders",
+      title: "Nouvelle requête de responsable",
+      body: `${full_name} · ${request_type}`,
+      url: "/dashboard/formulaires?tab=request",
+      type: "warning",
+    })
+  );
 
   return NextResponse.json({ ok: true });
 }

@@ -4,6 +4,8 @@ import { createSupabaseServerClient } from "@/lib/supabase/server"
 import { createSupabaseAdminClient } from "@/lib/supabase/admin"
 import { CAPTCHA_ERROR, isHuman } from "@/lib/turnstile"
 import { emailLayout, escapeHtml, sendEmail } from "@/lib/email/resend"
+import { after } from "next/server"
+import { notify } from "@/lib/notifications/server"
 
 /**
  * Public form submissions. Every action verifies the Cloudflare Turnstile
@@ -12,6 +14,11 @@ import { emailLayout, escapeHtml, sendEmail } from "@/lib/email/resend"
  */
 
 export type FormResult = { ok: true } | { ok: false; error: string; code?: string }
+
+/** Bell + push alert to admins and pastors, sent after the response. */
+function alertLeaders(title: string, body: string, url: string) {
+  after(() => notify({ audience: "leaders", title, body, url, type: "warning" }))
+}
 
 const GENERIC_ERROR = "Une erreur est survenue. Veuillez réessayer."
 
@@ -58,6 +65,7 @@ export async function submitMemberRegistration(input: Record<string, unknown>, t
     console.error("[member_registrations]", error.message)
     return { ok: false, error: GENERIC_ERROR }
   }
+  alertLeaders("Nouvelle inscription membre", `${payload.prenom} ${payload.nom}`, "/dashboard/membres")
   return { ok: true }
 }
 
@@ -100,6 +108,7 @@ export async function submitVolunteer(input: Record<string, unknown>, token: str
       }),
     })
   }
+  alertLeaders("Nouvelle candidature bénévole", `${payload.first_name} ${payload.last_name} · ${payload.ministry}`, "/dashboard/formulaires?tab=volunteer")
   return { ok: true }
 }
 
@@ -123,6 +132,7 @@ export async function submitJoinGroup(input: Record<string, unknown>, token: str
     console.error("[group_join_requests]", error.message)
     return { ok: false, error: GENERIC_ERROR }
   }
+  alertLeaders("Nouvelle demande pour rejoindre une commission", payload.full_name, "/dashboard/formulaires?tab=group")
   return { ok: true }
 }
 
@@ -146,6 +156,7 @@ export async function submitPrayerRequest(input: Record<string, unknown>, token:
     console.error("[prayer_requests]", error.message)
     return { ok: false, error: "Une erreur est survenue. Veuillez informer un responsable." }
   }
+  alertLeaders("Nouvelle demande de prière", payload.confidential ? "Demande confidentielle" : payload.subject, "/dashboard/formulaires?tab=prayer")
   return { ok: true }
 }
 
@@ -170,8 +181,7 @@ export async function bookCounselling(
     return { ok: false, error: "Merci de remplir tous les champs obligatoires." }
   }
 
-  // Use the regular server client: book_counselling_slot() is granted to anon.
-  const supabase = await createSupabaseServerClient()
+  const supabase = await db()
   const { error } = await supabase.rpc("book_counselling_slot", {
     p_full_name: p.full_name,
     p_phone: p.phone,
@@ -182,7 +192,10 @@ export async function bookCounselling(
     p_reason: p.reason,
     p_max_per_slot: maxPerSlot,
   })
-  if (!error) return { ok: true }
+  if (!error) {
+    alertLeaders("Nouvelle demande d'entretien pastoral", `${p.full_name} · ${p.counselling_date} ${p.counselling_time}`, "/dashboard/formulaires?tab=pastoral")
+    return { ok: true }
+  }
 
   const msg = error.message || ""
   if (msg.includes("DUPLICATE_BOOKING")) return { ok: false, code: "DUPLICATE_BOOKING", error: "Vous avez déjà réservé ce créneau horaire." }
@@ -210,10 +223,29 @@ export async function bookCounselling(
     if ((taken ?? 0) >= maxPerSlot) return { ok: false, code: "SLOT_FULL", error: "Ce créneau est complet. Veuillez en choisir un autre." }
 
     const { error: insertError } = await client.from("pastoral_counselling").insert(p)
-    if (!insertError) return { ok: true }
+    if (!insertError) {
+      alertLeaders("Nouvelle demande d'entretien pastoral", `${p.full_name} · ${p.counselling_date} ${p.counselling_time}`, "/dashboard/formulaires?tab=pastoral")
+      return { ok: true }
+    }
     console.error("[pastoral_counselling]", insertError.message)
   } else {
     console.error("[book_counselling_slot]", error.message)
   }
   return { ok: false, error: GENERIC_ERROR }
+}
+
+/** Bookings per time slot for one date (counts only — no personal data leaves the server). */
+export async function getSlotCounts(date: string): Promise<Record<string, number>> {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return {}
+  const { data, error } = await (await db())
+    .from("pastoral_counselling")
+    .select("counselling_time")
+    .eq("counselling_date", date)
+  if (error) return {}
+  const counts: Record<string, number> = {}
+  for (const row of data ?? []) {
+    const t = String(row.counselling_time ?? "").slice(0, 5)
+    if (t) counts[t] = (counts[t] ?? 0) + 1
+  }
+  return counts
 }

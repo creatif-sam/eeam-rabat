@@ -5,6 +5,7 @@ import { X, Upload, File as FileIcon, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
 import type { Category } from "./ResourcesDocsPage";
+import { announceChange } from "@/app/actions/notifications";
 
 const INPUT_CLS =
   "w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 " +
@@ -136,6 +137,7 @@ export default function UploadDocumentModal({
     }
 
     setProgress(100);
+    void announceChange("resource_added", title.trim());
     toast.success("Document ajouté avec succès.");
     onSaved();
     onClose();

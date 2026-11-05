@@ -10,6 +10,7 @@ import {
 import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
 import * as XLSX from "xlsx";
+import { announceChange } from "@/app/actions/notifications";
 
 type Event = {
   id: string;
@@ -139,9 +140,12 @@ export default function EventsTab() {
           const supabase = createClient();
           // Use base id (strip virtual suffix for recurring occurrences)
           const baseId = id.includes("_") ? id.split("_")[0] : id;
-          await supabase.from("events").delete().eq("id", baseId);
+          const title = events.find(e => e.id === id || e.id === baseId)?.title ?? "";
+          const { error } = await supabase.from("events").delete().eq("id", baseId);
+          if (error) { toast.error("Impossible de supprimer l'événement."); return; }
           setEvents(prev => prev.filter(e => e.id !== baseId && !e.id.startsWith(baseId + "_")));
           setSelectedEvent(null);
+          void announceChange("event_deleted", title);
           toast.success("Événement supprimé");
         }
       },

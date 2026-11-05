@@ -19,7 +19,7 @@ export default function DashboardLayout({
       <SidebarProvider>
         <AuthCheckWrapper>
           {({ user, profile }) => (
-            <DashboardContent user={user} role={profile?.role ?? null}>
+            <DashboardContent user={user} role={profile?.role ?? null} profile={profile ? { full_name: profile.full_name, avatar_url: profile.avatar_url, role: profile.role } : null}>
               {children}
             </DashboardContent>
           )}

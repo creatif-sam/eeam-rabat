@@ -42,7 +42,7 @@ import {
   Search,
   WhatsApp,
 } from "@mui/icons-material"
-import { createClient } from "@/lib/supabase/client"
+import { listRequests, setRequestProcessed } from "@/app/dashboard/formulaires/actions"
 
 export type BaseRequest = { id: string; processed: boolean; created_at: string }
 
@@ -93,7 +93,6 @@ function waNumber(phone: string) {
 export default function RequestInbox<T extends BaseRequest>(props: RequestInboxProps<T>) {
   const { table, select, mapRow, noun = "demande", primary, secondary, badges, columns, searchText, extraFilter, details, longText, contact, exportSheet, onChanged } = props
 
-  const [supabase] = useState(() => createClient())
   const theme = useTheme()
   const isMobile = useMediaQuery(theme.breakpoints.down("md"))
 
@@ -109,21 +108,15 @@ export default function RequestInbox<T extends BaseRequest>(props: RequestInboxP
   const load = useCallback(async () => {
     setLoading(true)
     setError(null)
-    let query = supabase.from(table).select(select).order("created_at", { ascending: false }).limit(500)
-    if (status === "pending") query = query.eq("processed", false)
-    if (status === "processed") query = query.eq("processed", true)
-
-    const { data, error } = await query
-    if (error) {
-      console.error(`[${table}]`, error)
-      setError("Impossible de charger les demandes.")
+    const result = await listRequests(table, select, status)
+    if (!result.ok) {
+      setError(result.error)
       setRows([])
     } else {
-      const raw = (data ?? []) as unknown as Record<string, unknown>[]
-      setRows(mapRow ? raw.map(mapRow) : (raw as unknown as T[]))
+      setRows(mapRow ? result.rows.map(mapRow) : (result.rows as unknown as T[]))
     }
     setLoading(false)
-  }, [supabase, table, select, status, mapRow])
+  }, [table, select, status, mapRow])
 
   useEffect(() => {
     load()
@@ -150,10 +143,10 @@ export default function RequestInbox<T extends BaseRequest>(props: RequestInboxP
 
   async function setProcessed(row: T, processed: boolean) {
     setSavingId(row.id)
-    const { error } = await supabase.from(table).update({ processed }).eq("id", row.id)
+    const result = await setRequestProcessed(table, row.id, processed)
     setSavingId(null)
-    if (error) {
-      toast.error(`Échec de la mise à jour : ${error.message}`)
+    if (!result.ok) {
+      toast.error(result.error ?? "Échec de la mise à jour.")
       return
     }
     toast.success(processed ? "Marquée comme traitée" : "Demande rouverte")
