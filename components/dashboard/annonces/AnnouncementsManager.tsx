@@ -36,11 +36,9 @@ import {
   VisibilityOutlined,
 } from "@mui/icons-material"
 import AnnouncementBar from "@/components/public/AnnouncementBar"
-import { createClient } from "@/lib/supabase/client"
+import { deleteAnnouncement, saveAnnouncement, saveYearTheme, setAnnouncementActive } from "@/app/dashboard/annonces/actions"
 import {
-  ANNOUNCEMENT_COLUMNS,
   TONES,
-  YEAR_THEME_KEYS,
   isLive,
   sortAnnouncements,
   type Announcement,
@@ -116,7 +114,6 @@ export default function AnnouncementsManager({
   initialTheme: YearTheme
   initialAnnouncements: Announcement[]
 }) {
-  const [supabase] = useState(() => createClient())
   const [theme, setTheme] = useState<YearTheme>(initialTheme)
   const [savedTheme, setSavedTheme] = useState<YearTheme>(initialTheme)
   const [savingTheme, setSavingTheme] = useState(false)
@@ -132,17 +129,9 @@ export default function AnnouncementsManager({
   /* ---------------- Theme ---------------- */
   async function saveTheme() {
     setSavingTheme(true)
-    const now = new Date().toISOString()
-    const { error } = await supabase.from("site_settings").upsert(
-      [
-        { key: YEAR_THEME_KEYS.label, value: theme.label.trim(), updated_at: now, updated_by: userId },
-        { key: YEAR_THEME_KEYS.theme, value: theme.theme.trim(), updated_at: now, updated_by: userId },
-        { key: YEAR_THEME_KEYS.reference, value: theme.reference.trim(), updated_at: now, updated_by: userId },
-      ],
-      { onConflict: "key" }
-    )
+    const result = await saveYearTheme(theme)
     setSavingTheme(false)
-    if (error) return toast.error(`Enregistrement impossible : ${error.message}`)
+    if (!result.ok) return toast.error(`Enregistrement impossible : ${result.error}`)
     setSavedTheme(theme)
     toast.success("Thème de l'année mis à jour sur le site.")
   }
@@ -183,18 +172,13 @@ export default function AnnouncementsManager({
       ends_at: fromLocalInput(draft.ends_at),
       is_active: draft.is_active,
       priority: Number(draft.priority) || 0,
-      updated_at: new Date().toISOString(),
     }
 
-    const query = draft.id
-      ? supabase.from("site_announcements").update(payload).eq("id", draft.id).select(ANNOUNCEMENT_COLUMNS).single()
-      : supabase.from("site_announcements").insert({ ...payload, created_by: userId }).select(ANNOUNCEMENT_COLUMNS).single()
-
-    const { data, error } = await query
+    const result = await saveAnnouncement(payload, draft.id)
     setSavingDraft(false)
-    if (error || !data) return toast.error(`Enregistrement impossible : ${error?.message ?? "erreur inconnue"}`)
+    if (!result.ok || !result.data) return toast.error(`Enregistrement impossible : ${result.ok ? "erreur inconnue" : result.error}`)
 
-    const saved = data as Announcement
+    const saved = result.data
     setItems((prev) => sortAnnouncements(draft.id ? prev.map((a) => (a.id === saved.id ? saved : a)) : [saved, ...prev]))
     toast.success(draft.id ? "Annonce mise à jour." : isLive(saved) ? "Annonce publiée sur le site." : "Annonce enregistrée.")
     setDraft(null)
@@ -203,17 +187,17 @@ export default function AnnouncementsManager({
   async function toggleActive(a: Announcement) {
     const next = !a.is_active
     setItems((prev) => prev.map((x) => (x.id === a.id ? { ...x, is_active: next } : x)))
-    const { error } = await supabase.from("site_announcements").update({ is_active: next, updated_at: new Date().toISOString() }).eq("id", a.id)
-    if (error) {
+    const result = await setAnnouncementActive(a.id, next)
+    if (!result.ok) {
       setItems((prev) => prev.map((x) => (x.id === a.id ? { ...x, is_active: a.is_active } : x)))
-      toast.error(`Modification impossible : ${error.message}`)
+      toast.error(`Modification impossible : ${result.error}`)
     }
   }
 
   async function confirmDelete() {
     if (!toDelete) return
-    const { error } = await supabase.from("site_announcements").delete().eq("id", toDelete.id)
-    if (error) return toast.error(`Suppression impossible : ${error.message}`)
+    const result = await deleteAnnouncement(toDelete.id)
+    if (!result.ok) return toast.error(`Suppression impossible : ${result.error}`)
     setItems((prev) => prev.filter((a) => a.id !== toDelete.id))
     toast.success("Annonce supprimée.")
     setToDelete(null)
