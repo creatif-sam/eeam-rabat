@@ -5,6 +5,7 @@ import { Suspense } from "react";
 import type { User } from "@supabase/supabase-js";
 import AuthCheck from "./AuthCheck";
 import DashboardContent from "./DashboardContent";
+import BrandedLoader from "@/components/BrandedLoader";
 
 type Profile = { role: string | null; full_name: string | null; avatar_url: string | null; approved: boolean };
 
@@ -14,7 +15,7 @@ export default function DashboardLayout({
   children: React.ReactNode
 }) {
   return (
-    <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Loading...</div>}>
+    <Suspense fallback={<BrandedLoader />}>
       <SidebarProvider>
         <AuthCheckWrapper>
           {({ user, profile }) => (

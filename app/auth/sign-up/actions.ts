@@ -7,6 +7,16 @@ import { createSupabaseAdminClient } from "@/lib/supabase/admin"
 import { notifyApproversOfSignup } from "@/lib/accounts/notify"
 import { CAPTCHA_ERROR, isHuman } from "@/lib/turnstile"
 
+/** Supabase auth errors are in English — show French messages instead. */
+function frenchAuthError(message: string) {
+  if (/already registered|already exists/i.test(message)) return "Un compte existe déjà avec cette adresse e-mail."
+  if (/at least \d+ characters|password should/i.test(message)) return "Le mot de passe est trop court (8 caractères minimum recommandés)."
+  if (/invalid email|email address .* invalid/i.test(message)) return "Adresse e-mail invalide."
+  if (/rate limit|too many/i.test(message)) return "Trop de tentatives. Réessayez dans quelques minutes."
+  if (/weak|pwned|compromised/i.test(message)) return "Ce mot de passe est trop faible. Choisissez-en un plus sûr."
+  return "Impossible de créer le compte pour le moment. Veuillez réessayer."
+}
+
 export type SignUpResult = { ok: true } | { ok: false; error: string }
 
 async function requestOrigin() {
@@ -39,7 +49,7 @@ export async function signUpAction(email: string, password: string, turnstileTok
     },
   })
 
-  if (error) return { ok: false, error: error.message }
+  if (error) return { ok: false, error: frenchAuthError(error.message) }
 
   const user = data.user
   // Supabase returns a user with no identities when the email is already

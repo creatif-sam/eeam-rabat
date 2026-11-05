@@ -1,5 +1,6 @@
 import { Suspense } from "react";
 import PastoralPage from "./PastoralPage";
+import BrandedLoader from "@/components/BrandedLoader";
 
 export const metadata = {
   title: "Entretien Pastoral – EEAM Rabat",
@@ -8,7 +9,7 @@ export const metadata = {
 
 export default function EntretienPastoralRoute() {
   return (
-    <Suspense fallback={<div className="min-h-screen flex items-center justify-center">Chargement...</div>}>
+    <Suspense fallback={<BrandedLoader />}>
       <PastoralPage />
     </Suspense>
   );

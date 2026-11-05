@@ -77,7 +77,7 @@ export function LoginForm({
                     id="email"
                     name="email"
                     type="email"
-                    placeholder="m@example.com"
+                    placeholder="exemple@email.com"
                     required
                     className="pl-10"
                   />

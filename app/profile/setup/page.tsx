@@ -1,9 +1,10 @@
 import { Suspense } from "react";
 import ProfileSetupWrapper from "./ProfileSetupWrapper";
+import BrandedLoader from "@/components/BrandedLoader";
 
 export default function ProfileSetupPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-slate-50">Loading...</div>}>
+    <Suspense fallback={<BrandedLoader />}>
       <ProfileSetupWrapper />
     </Suspense>
   );

@@ -6,9 +6,9 @@ import { toast } from "sonner";
 
 const REVENUE_CATEGORIES = [
   { value: "offrande", label: "Offrande" },
-  { value: "dime", label: "Dime" },
-  { value: "gifts", label: "Gifts" },
-  { value: "special_offering", label: "Special Offering" }
+  { value: "dime", label: "Dîme" },
+  { value: "gifts", label: "Dons" },
+  { value: "special_offering", label: "Offrande spéciale" }
 ];
 
 export default function CreateTransactionModal({

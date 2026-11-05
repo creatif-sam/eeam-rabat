@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Save, Calendar, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
+import WhatsAppHint from "@/components/public/WhatsAppHint";
 import { createClient } from "@/lib/supabase/client";
 import Turnstile, { type TurnstileHandle } from "@/components/Turnstile";
 import { bookCounselling } from "@/app/actions/public-forms";
@@ -293,8 +294,10 @@ export default function PastoralCounsellingForm() {
           placeholder="+212 6XX XXX XXX"
           required
         />
-        {phoneError && (
+        {phoneError ? (
           <p className="mt-1.5 text-sm text-rose-600 dark:text-rose-400">{phoneError}</p>
+        ) : (
+          <WhatsAppHint />
         )}
       </div>
 

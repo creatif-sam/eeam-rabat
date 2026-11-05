@@ -5,7 +5,7 @@ const siteUrl = process.env.VERCEL_URL
   : "http://localhost:3000";
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const routes = ["", "/inscription-membre", "/demande-de-priere", "/entretien-pastoral", "/politique-cookies", "/politique-de-confidentialite"];
+  const routes = ["", "/inscription-membre", "/priere", "/commissions", "/entretien-pastoral", "/politique-cookies", "/politique-de-confidentialite"];
 
   return routes.map(route => ({
     url: `${siteUrl}${route}`,

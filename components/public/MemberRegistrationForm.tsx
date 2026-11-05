@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
+import WhatsAppHint from "@/components/public/WhatsAppHint";
 import { createClient } from "@/lib/supabase/client";
 import Turnstile, { type TurnstileHandle } from "@/components/Turnstile";
 import { submitMemberRegistration } from "@/app/actions/public-forms";
@@ -270,8 +271,9 @@ export default function MemberRegistrationForm({ isEdit, initialData, onSuccess,
             <label className="text-sm font-bold dark:text-gray-300">Téléphone *</label>
             <div className="relative">
               <Phone className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-5 w-5" />
-              <input name="telephone" value={form.telephone} required placeholder="+212 ..." className={`${inputClass} pl-10`} onChange={handleChange} />
+              <input name="telephone" type="tel" inputMode="tel" autoComplete="tel" value={form.telephone} required placeholder="+212 6XX XXX XXX" className={`${inputClass} pl-10`} onChange={handleChange} />
             </div>
+            <WhatsAppHint />
           </div>
           <div className="space-y-2">
             <label className="text-sm font-bold dark:text-gray-300">Email</label>

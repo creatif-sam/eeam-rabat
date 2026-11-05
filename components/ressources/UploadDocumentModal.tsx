@@ -268,7 +268,7 @@ export default function UploadDocumentModal({
           {uploading && (
             <div className="space-y-1.5">
               <div className="flex justify-between text-xs text-gray-500">
-                <span>Upload en cours…</span>
+                <span>Envoi en cours…</span>
                 <span>{progress}%</span>
               </div>
               <div className="h-2 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
@@ -296,7 +296,7 @@ export default function UploadDocumentModal({
             className="flex-1 py-2.5 rounded-xl bg-cyan-600 hover:bg-cyan-700 text-white text-sm font-medium transition-colors disabled:opacity-60 flex items-center justify-center gap-2"
           >
             <Upload size={16} />
-            {uploading ? "Upload…" : "Ajouter"}
+            {uploading ? "Envoi…" : "Ajouter"}
           </button>
         </div>
       </div>

@@ -3,6 +3,7 @@
 import { useRef, useState } from "react";
 import { Save } from "lucide-react";
 import { toast } from "sonner";
+import WhatsAppHint from "@/components/public/WhatsAppHint";
 import Turnstile, { type TurnstileHandle } from "@/components/Turnstile";
 import { submitVolunteer } from "@/app/actions/public-forms";
 
@@ -86,8 +87,9 @@ export default function VolunteerForm() {
 
       <div>
         <label className={labelClass}>Téléphone *</label>
-        <input name="phone" placeholder="+212 6XX XXX XXX" required value={form.phone}
+        <input name="phone" type="tel" inputMode="tel" autoComplete="tel" placeholder="+212 6XX XXX XXX" required value={form.phone}
           onChange={handleChange} className={inputClass} />
+        <WhatsAppHint />
       </div>
 
       <div>

@@ -19,7 +19,7 @@ const COLUMNS: { key: Status; label: string; color: string; icon: any; bg: strin
   { key: "backlog",     label: "A faire",         color: "text-gray-500",   icon: Circle,       bg: "bg-gray-100 dark:bg-gray-800" },
   { key: "in_progress", label: "En cours",         color: "text-blue-600",   icon: Timer,        bg: "bg-blue-50 dark:bg-blue-900/20" },
   { key: "review",      label: "Revision",         color: "text-amber-600",  icon: AlertCircle,  bg: "bg-amber-50 dark:bg-amber-900/20" },
-  { key: "done",        label: "Termine",          color: "text-green-600",  icon: CheckCircle2, bg: "bg-green-50 dark:bg-green-900/20" },
+  { key: "done",        label: "Terminé",          color: "text-green-600",  icon: CheckCircle2, bg: "bg-green-50 dark:bg-green-900/20" },
 ];
 
 const PRIORITY_CFG: Record<Priority, { label: string; color: string; dot: string }> = {
@@ -120,8 +120,8 @@ export default function TaskyPage() {
     setLoadingAction(true);
     const { error } = await supabase.from("projects").insert(projectForm);
     setLoadingAction(false);
-    if (error) { toast.error("Impossible de creer le projet"); return; }
-    toast.success("Projet cree !");
+    if (error) { toast.error("Impossible de créer le projet"); return; }
+    toast.success("Projet créé !");
     setProjectForm({ name: "", description: "", color: "#06b6d4" });
     setShowProjectModal(false);
     loadAll();
@@ -138,7 +138,7 @@ export default function TaskyPage() {
             toast.error("Impossible de supprimer le projet.");
             return;
           }
-          toast.success("Projet supprime");
+          toast.success("Projet supprimé");
           if (activeProject === id) setActiveProject(null);
           loadAll();
         }
@@ -176,7 +176,7 @@ export default function TaskyPage() {
 
   async function createTask() {
     if (!taskForm.title.trim()) { toast.error("Le titre est requis"); return; }
-    if (!activeProject) { toast.error("Selectionnez un projet"); return; }
+    if (!activeProject) { toast.error("Sélectionnez un projet"); return; }
     setLoadingAction(true);
     const { error } = await supabase.from("tasks").insert({
       ...taskForm,
@@ -185,8 +185,8 @@ export default function TaskyPage() {
       project_id: activeProject,
     });
     setLoadingAction(false);
-    if (error) { toast.error("Impossible de creer la tache"); return; }
-    toast.success("Tache ajoutee !");
+    if (error) { toast.error("Impossible de créer la tâche"); return; }
+    toast.success("Tâche ajoutée !");
     if (taskForm.assigned_to) {
       const proj = projects.find(p => p.id === activeProject);
       sendTaskAssignmentEmail(taskForm.assigned_to, taskForm.title, proj?.name ?? "Projet", taskForm.priority, taskForm.due_date || undefined);
@@ -219,7 +219,7 @@ export default function TaskyPage() {
           }
           setTasks(prev => prev.filter(t => t.id !== id));
           setSelectedTask(null);
-          toast.success("Tache supprimee");
+          toast.success("Tâche supprimée");
         }
       },
       cancel: { label: "Annuler", onClick: () => {} }
@@ -239,7 +239,7 @@ export default function TaskyPage() {
     }).eq("id", editingTask.id);
     setLoadingAction(false);
     if (error) { toast.error("Erreur lors de la sauvegarde"); return; }
-    toast.success("Tache mise a jour");
+    toast.success("Tâche mise à jour");
     if (editingTask.assigned_to) {
       const proj = projects.find(p => p.id === editingTask.project_id);
       sendTaskAssignmentEmail(editingTask.assigned_to, editingTask.title, proj?.name ?? "Projet", editingTask.priority, editingTask.due_date || undefined);
@@ -258,7 +258,7 @@ export default function TaskyPage() {
     if (error) { toast.error("Erreur lors du commentaire"); return; }
     setCommentText(""); setMentionQuery("");
     loadComments(selectedTask.id);
-    toast.success("Commentaire publie");
+    toast.success("Commentaire publié");
   }
 
   function onCommentChange(value: string) {
@@ -317,7 +317,7 @@ export default function TaskyPage() {
         <div className="shrink-0 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 px-3 md:px-5 py-3 flex flex-wrap items-center gap-2 md:gap-3">
           <h1 className="font-bold text-gray-900 dark:text-white text-sm flex items-center gap-2 mr-0 md:mr-4 w-full md:w-auto">
             <FolderKanban size={16} className="text-cyan-600" />
-            {projects.find(p => p.id === activeProject)?.name ?? "Selectionnez un projet"}
+            {projects.find(p => p.id === activeProject)?.name ?? "Sélectionnez un projet"}
           </h1>
           <div className="relative flex-1 min-w-[180px] md:max-w-xs">
             <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
@@ -341,7 +341,7 @@ export default function TaskyPage() {
           {activeProject && (
             <button onClick={() => setShowTaskModal(true)}
               className="flex items-center justify-center gap-1.5 px-3 py-1.5 w-full sm:w-auto bg-cyan-600 hover:bg-cyan-700 text-white text-sm font-medium rounded-lg transition-colors shadow-sm">
-              <Plus size={14} /> Tache
+              <Plus size={14} /> Tâche
             </button>
           )}
         </div>
@@ -350,7 +350,7 @@ export default function TaskyPage() {
         {!activeProject ? (
           <div className="flex-1 flex flex-col items-center justify-center text-gray-400 gap-3">
             <FolderKanban size={48} className="opacity-30" />
-            <p className="text-sm">Selectionnez ou creez un projet</p>
+            <p className="text-sm">Sélectionnez ou créez un projet</p>
             <button onClick={() => setShowProjectModal(true)} className="px-4 py-2 bg-cyan-600 text-white rounded-lg text-sm hover:bg-cyan-700 transition-colors">Nouveau projet</button>
           </div>
         ) : viewMode === "board" ? (
@@ -410,7 +410,7 @@ export default function TaskyPage() {
                       {colTasks.length === 0 && (
                         <button onClick={() => { setTaskForm(prev => ({ ...prev, status: col.key })); setShowTaskModal(true); }}
                           className="w-full py-6 border-2 border-dashed border-gray-200 dark:border-gray-800 rounded-xl text-xs text-gray-400 hover:border-cyan-300 hover:text-cyan-500 transition-colors">
-                          + Ajouter une tache
+                          + Ajouter une tâche
                         </button>
                       )}
                     </div>
@@ -426,18 +426,18 @@ export default function TaskyPage() {
               <table className="w-full min-w-[760px] text-sm">
                 <thead>
                   <tr className="border-b border-gray-100 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50">
-                    <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Tache</th>
+                    <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Tâche</th>
                     <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Statut</th>
-                    <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Priorite</th>
+                    <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Priorité</th>
                     <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Assigne</th>
-                    <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Echeance</th>
+                    <th className="text-left px-4 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">Échéance</th>
                     <th className="px-4 py-3" />
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-50 dark:divide-gray-800/50">
                   {projectTasks.length === 0 && (
                     <tr><td colSpan={6} className="text-center py-12 text-gray-400 text-sm">
-                      Aucune tache <button onClick={() => setShowTaskModal(true)} className="text-cyan-600 underline">creer une tache</button>
+                      Aucune tâche <button onClick={() => setShowTaskModal(true)} className="text-cyan-600 underline">créer une tâche</button>
                     </td></tr>
                   )}
                   {projectTasks.map(task => {
@@ -516,7 +516,7 @@ export default function TaskyPage() {
                   ) : <StatusBadge s={selectedTask.status} />}
                 </div>
                 <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-3">
-                  <p className="text-[10px] text-gray-400 uppercase font-semibold tracking-wider mb-1.5">Priorite</p>
+                  <p className="text-[10px] text-gray-400 uppercase font-semibold tracking-wider mb-1.5">Priorité</p>
                   {editingTask ? (
                     <select value={editingTask.priority} onChange={e => setEditingTask({ ...editingTask, priority: e.target.value })}
                       className="w-full text-xs p-1.5 rounded-lg bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 outline-none">
@@ -543,7 +543,7 @@ export default function TaskyPage() {
                   })()}
                 </div>
                 <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-3">
-                  <p className="text-[10px] text-gray-400 uppercase font-semibold tracking-wider mb-1.5">Echeance</p>
+                  <p className="text-[10px] text-gray-400 uppercase font-semibold tracking-wider mb-1.5">Échéance</p>
                   {editingTask ? (
                     <input type="date" value={editingTask.due_date || ""} onChange={e => setEditingTask({ ...editingTask, due_date: e.target.value })}
                       className="w-full text-xs p-1.5 rounded-lg bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 outline-none" />
@@ -645,7 +645,7 @@ export default function TaskyPage() {
               <div>
                 <label className="text-xs font-semibold text-gray-500 mb-1.5 block">Nom du projet *</label>
                 <input value={projectForm.name} onChange={e => setProjectForm({ ...projectForm, name: e.target.value })}
-                  onKeyDown={e => e.key === "Enter" && createProject()} placeholder="Ex: Evenement de Noel"
+                  onKeyDown={e => e.key === "Enter" && createProject()} placeholder="Ex: Événement de Noël"
                   className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-sm outline-none focus:border-cyan-400 text-gray-800 dark:text-gray-200" />
               </div>
               <div>
@@ -661,7 +661,7 @@ export default function TaskyPage() {
               </div>
               <button onClick={createProject} disabled={loadingAction}
                 className="w-full flex items-center justify-center gap-2 py-3 bg-cyan-600 hover:bg-cyan-700 text-white font-semibold rounded-xl transition-colors disabled:opacity-60">
-                {loadingAction ? <Loader2 size={16} className="animate-spin" /> : <Plus size={16} />} Creer le projet
+                {loadingAction ? <Loader2 size={16} className="animate-spin" /> : <Plus size={16} />} Créer le projet
               </button>
             </div>
           </div>
@@ -673,12 +673,12 @@ export default function TaskyPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
           <div className="w-full max-w-lg bg-white dark:bg-gray-900 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-800 overflow-hidden">
             <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between">
-              <h2 className="font-bold text-gray-900 dark:text-white flex items-center gap-2"><Zap size={16} className="text-cyan-600" /> Nouvelle tache</h2>
+              <h2 className="font-bold text-gray-900 dark:text-white flex items-center gap-2"><Zap size={16} className="text-cyan-600" /> Nouvelle tâche</h2>
               <button onClick={() => setShowTaskModal(false)} aria-label="Fermer" className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-400 transition-colors"><X size={16} /></button>
             </div>
             <div className="p-4 sm:p-6 space-y-4">
               <input value={taskForm.title} onChange={e => setTaskForm({ ...taskForm, title: e.target.value })}
-                placeholder="Titre de la tache *"
+                placeholder="Titre de la tâche *"
                 className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-sm outline-none focus:border-cyan-400 text-gray-800 dark:text-gray-200 font-medium" />
               <textarea value={taskForm.description} onChange={e => setTaskForm({ ...taskForm, description: e.target.value })}
                 rows={3} placeholder="Description (optionnel)"
@@ -692,7 +692,7 @@ export default function TaskyPage() {
                   </select>
                 </div>
                 <div>
-                  <label className="text-xs font-semibold text-gray-500 mb-1.5 block">Priorite</label>
+                  <label className="text-xs font-semibold text-gray-500 mb-1.5 block">Priorité</label>
                   <select value={taskForm.priority} onChange={e => setTaskForm({ ...taskForm, priority: e.target.value as Priority })}
                     className="w-full px-3 py-2.5 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-sm outline-none text-gray-700 dark:text-gray-300">
                     <option value="low">Basse</option>
@@ -709,14 +709,14 @@ export default function TaskyPage() {
                   </select>
                 </div>
                 <div>
-                  <label className="text-xs font-semibold text-gray-500 mb-1.5 block">Echeance</label>
+                  <label className="text-xs font-semibold text-gray-500 mb-1.5 block">Échéance</label>
                   <input type="date" value={taskForm.due_date} onChange={e => setTaskForm({ ...taskForm, due_date: e.target.value })}
                     className="w-full px-3 py-2.5 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-sm outline-none text-gray-700 dark:text-gray-300" />
                 </div>
               </div>
               <button onClick={createTask} disabled={loadingAction}
                 className="w-full flex items-center justify-center gap-2 py-3 bg-cyan-600 hover:bg-cyan-700 text-white font-semibold rounded-xl transition-colors disabled:opacity-60">
-                {loadingAction ? <Loader2 size={16} className="animate-spin" /> : <Zap size={16} />} Creer la tache
+                {loadingAction ? <Loader2 size={16} className="animate-spin" /> : <Zap size={16} />} Créer la tâche
               </button>
             </div>
           </div>

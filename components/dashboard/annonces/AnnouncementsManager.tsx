@@ -234,8 +234,8 @@ export default function AnnouncementsManager({
 
       {setupMissing && (
         <Alert severity="warning">
-          Les tables du bandeau n&apos;existent pas encore. Exécutez{" "}
-          <strong>supabase/migrations/20261105_site_announcements.sql</strong> dans l&apos;éditeur SQL de Supabase, puis rechargez la page.
+          Impossible de charger les annonces : les tables <strong>site_settings</strong> et{" "}
+          <strong>site_announcements</strong> sont introuvables dans Supabase. Contactez l&apos;administrateur technique.
         </Alert>
       )}
 

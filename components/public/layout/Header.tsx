@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { LogIn, UserPlus } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { ThemeSwitcher } from "@/components/theme-switcher";
@@ -16,27 +17,32 @@ export default function Header({ onLogin, onSignUp }: { onLogin?: () => void; on
     <header className="bg-white dark:bg-gray-950 border-b border-gray-100 dark:border-gray-800 shadow-sm transition-colors duration-300">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4">
         <div className="flex items-center justify-between">
-          {/* Logo + Title */}
-          <div className="flex items-center gap-3">
+          {/* Logo + Title → homepage */}
+          <Link
+            href="/"
+            aria-label="EEAM Rabat — retour à l'accueil"
+            className="flex items-center gap-3 rounded-xl outline-none focus-visible:ring-2 focus-visible:ring-cyan-500 hover:opacity-90 transition-opacity"
+          >
             <div className="relative w-11 h-11 sm:w-14 sm:h-14">
               <Image
                 src="/images/eeam-logo.png"
                 alt="EEAM Logo"
                 fill
+                sizes="56px"
                 className="object-contain"
                 priority
               />
             </div>
 
             <div className="leading-tight">
-              <h1 className="text-lg sm:text-2xl font-bold text-gray-800 dark:text-white">
+              <span className="block text-lg sm:text-2xl font-bold text-gray-800 dark:text-white">
                 EEAM Rabat
-              </h1>
-              <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
+              </span>
+              <span className="block text-xs sm:text-sm text-gray-600 dark:text-gray-400">
                 Intranet Lead
-              </p>
+              </span>
             </div>
-          </div>
+          </Link>
 
           {/* Buttons + Theme Switcher */}
           <div className="flex items-center gap-2 sm:gap-3">

@@ -6,7 +6,6 @@ import { Lock, User, Users, HandHeart, FilePen, UserCheck, ClipboardList } from 
 type ServicesGridProps = {
   onMember: () => void;
   onVolunteer: () => void;
-  onJoinGroup: () => void;
   onRequest: () => void;
   onAttendance: () => void;
 };
@@ -16,7 +15,6 @@ const cardClass = "bg-white dark:bg-gray-900 rounded-2xl p-5 sm:p-8 shadow-lg bo
 export default function ServicesGrid({
   onMember,
   onVolunteer,
-  onJoinGroup,
   onRequest,
   onAttendance
 }: ServicesGridProps) {
@@ -51,7 +49,7 @@ export default function ServicesGrid({
         </div>
 
         {/* Rejoindre une Commission */}
-        <div onClick={onJoinGroup} className={cardClass}>
+        <Link href="/commissions" className={cardClass}>
           <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-purple-500 to-violet-600 rounded-2xl flex items-center justify-center mb-3 sm:mb-4 group-hover:scale-110 transition-transform shadow-lg">
             <Users className="text-xl sm:text-2xl text-white" />
           </div>
@@ -61,10 +59,10 @@ export default function ServicesGrid({
           <p className="text-gray-600 dark:text-gray-400 text-sm">
             Intégrez une commission ou cellule pour grandir ensemble
           </p>
-        </div>
+        </Link>
 
         {/* Demande de prière */}
-        <Link href="/demande-de-priere" className={cardClass}>
+        <Link href="/priere" className={cardClass}>
           <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-rose-500 to-pink-600 rounded-2xl flex items-center justify-center mb-3 sm:mb-4 group-hover:scale-110 transition-transform shadow-lg">
             <HandHeart className="text-xl sm:text-2xl text-white" />
           </div>

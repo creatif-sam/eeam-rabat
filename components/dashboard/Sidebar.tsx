@@ -100,7 +100,13 @@ function NavContent({
         }}
       >
         {expanded && (
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, minWidth: 0 }}>
+          <Box
+            component={Link}
+            href="/dashboard"
+            onClick={onNavigate}
+            aria-label="Retour à l'accueil du tableau de bord"
+            sx={{ display: "flex", alignItems: "center", gap: 1.5, minWidth: 0, color: "inherit", textDecoration: "none" }}
+          >
             <Avatar
               variant="rounded"
               sx={{ width: 34, height: 34, fontSize: 13, fontWeight: 700, bgcolor: "rgba(255,255,255,0.2)", color: "inherit" }}

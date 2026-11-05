@@ -32,5 +32,5 @@ Créer un fichier `.env.local` :
 
 ## Données
 
-- `supabase/seed/planning_paroissial_2026_2027.sql` : importe le planning paroissial 2026-2027 dans le calendrier (à exécuter dans l'éditeur SQL Supabase).
-- `docs/planning-paroissial-2026-2027.md` : le même planning en Markdown.
+- `docs/planning-paroissial-2026-2027.md` : le planning paroissial 2026-2027 (déjà importé dans le calendrier).
+- `docs/supabase-emails-fr.md` : modèles d'e-mails Supabase en français (confirmation d'inscription, mot de passe oublié).

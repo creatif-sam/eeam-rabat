@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Users } from "lucide-react";
 import { toast } from "sonner";
+import WhatsAppHint from "@/components/public/WhatsAppHint";
 import { createClient } from "@/lib/supabase/client";
 import Turnstile, { type TurnstileHandle } from "@/components/Turnstile";
 import { submitJoinGroup } from "@/app/actions/public-forms";
@@ -16,7 +17,7 @@ const inputClass = "w-full px-4 py-3 rounded-xl border transition-all focus:outl
 
 const labelClass = "block text-sm font-semibold text-gray-800 dark:text-gray-200 mb-1.5";
 
-export default function GroupJoinForm() {
+export default function GroupJoinForm({ onSuccess, showHeader = true }: { onSuccess?: () => void; showHeader?: boolean } = {}) {
   const supabase = createClient();
   const [groups, setGroups] = useState<Group[]>([]);
   const [loading, setLoading] = useState(false);
@@ -54,10 +55,12 @@ export default function GroupJoinForm() {
     }
     toast.success("Demande envoyée ! Vous serez contacté par le responsable du groupe.");
     setForm({ full_name: "", phone: "", email: "", group_id: "", motivation: "" });
+    onSuccess?.();
   };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
+      {showHeader && (
       <div className="flex gap-3 bg-cyan-50 dark:bg-cyan-900/20 border border-cyan-200 dark:border-cyan-800 rounded-xl p-4">
         <Users className="text-cyan-600 dark:text-cyan-400 mt-0.5" size={20} />
         <div className="text-sm text-cyan-800 dark:text-cyan-300">
@@ -65,16 +68,18 @@ export default function GroupJoinForm() {
           <p>Engagez-vous dans un service et participez activement à la vie de l’église</p>
         </div>
       </div>
+      )}
 
       <div>
         <label className={labelClass}>Nom complet *</label>
         <input name="full_name" value={form.full_name} onChange={handleChange}
-          className={inputClass} placeholder="aude nana" required />
+          className={inputClass} placeholder="Aude Nana" required />
       </div>
       <div>
         <label className={labelClass}>Téléphone *</label>
-        <input name="phone" value={form.phone} onChange={handleChange}
+        <input name="phone" type="tel" inputMode="tel" autoComplete="tel" value={form.phone} onChange={handleChange}
           className={inputClass} placeholder="+212 6XX XXX XXX" required />
+        <WhatsAppHint />
       </div>
       <div>
         <label className={labelClass}>Email <span className="font-normal text-gray-500 dark:text-gray-400">(optionnel)</span></label>

@@ -317,7 +317,7 @@ export default function ReportsTab() {
 
     const doc = new jsPDF({ orientation: "landscape" });
     doc.setFontSize(16);
-    doc.text("Rapport Dashboard EEAM", 14, 14);
+    doc.text("Rapport du tableau de bord – EEAM Rabat", 14, 14);
     doc.setFontSize(10);
     doc.text(`Période: ${periodLabel(selectedPeriod)}${startDate ? ` | ${startDate}` : ""}${endDate ? ` -> ${endDate}` : ""}`, 14, 21);
 
@@ -355,7 +355,7 @@ export default function ReportsTab() {
       <html>
       <head>
         <meta charset="utf-8" />
-        <title>Rapport Dashboard</title>
+        <title>Rapport du tableau de bord – EEAM Rabat</title>
         <style>
           body { font-family: Arial, sans-serif; padding: 24px; }
           h1, h2 { color: #0f172a; }
@@ -365,7 +365,7 @@ export default function ReportsTab() {
         </style>
       </head>
       <body>
-        <h1>Rapport Dashboard EEAM</h1>
+        <h1>Rapport du tableau de bord – EEAM Rabat</h1>
         <p><strong>Période:</strong> ${periodLabel(selectedPeriod)} ${startDate ? `| ${startDate}` : ""} ${endDate ? `-> ${endDate}` : ""}</p>
 
         <h2>KPI</h2>

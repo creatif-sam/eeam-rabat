@@ -159,7 +159,7 @@ export default function MembersPage() {
     query = applyFilters(query);
     const { data } = await query.order("prenom", { ascending: true }).order("nom", { ascending: true });
 
-    const headers = ["Nom", "Prenom", "Paroisse", "Genre", "Nationalite", "Telephone", "Email", "Baptise", "Commissions"];
+    const headers = ["Nom", "Prénom", "Paroisse", "Genre", "Nationalité", "Téléphone", "Email", "Baptisé", "Commissions"];
     const rows = (data ?? []).map(m => [
       m.nom, m.prenom, m.paroisse, m.genre, m.nationalite,
       m.telephone, m.email ?? "", m.baptise, (m.commissions ?? []).join(", ")
@@ -240,8 +240,8 @@ export default function MembersPage() {
                 <StatCard label="Total membres" value={stats.total} />
                 <StatCard label="Hommes" value={stats.men} />
                 <StatCard label="Femmes" value={stats.women} />
-                <StatCard label="Baptises" value={stats.baptised} />
-                <StatCard label="Nationalites" value={stats.nationalities} />
+                <StatCard label="Baptisés" value={stats.baptised} />
+                <StatCard label="Nationalités" value={stats.nationalities} />
               </div>
 
               <div className="bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 p-3 md:p-4 rounded-xl grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
@@ -281,9 +281,9 @@ export default function MembersPage() {
                   onChange={e => { setFilterBaptise(e.target.value as any); setCurrentPage(1); }}
                   className="border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-cyan-400 transition-colors"
                 >
-                  <option value="all">Bapteme</option>
-                  <option value="Oui">Baptise</option>
-                  <option value="Non">Non baptise</option>
+                  <option value="all">Baptême</option>
+                  <option value="Oui">Baptisé</option>
+                  <option value="Non">Non baptisé</option>
                 </select>
               </div>
 
@@ -295,8 +295,8 @@ export default function MembersPage() {
                       <th className="p-2 md:p-3 text-left text-gray-700 dark:text-gray-300">Nom</th>
                       <th className="p-2 md:p-3 hidden sm:table-cell text-gray-700 dark:text-gray-300">Paroisse</th>
                       <th className="p-2 md:p-3 hidden md:table-cell text-gray-700 dark:text-gray-300">Genre</th>
-                      <th className="p-2 md:p-3 text-gray-700 dark:text-gray-300">Telephone</th>
-                      <th className="p-2 md:p-3 hidden lg:table-cell text-gray-700 dark:text-gray-300">Baptise</th>
+                      <th className="p-2 md:p-3 text-gray-700 dark:text-gray-300">Téléphone</th>
+                      <th className="p-2 md:p-3 hidden lg:table-cell text-gray-700 dark:text-gray-300">Baptisé</th>
                       <th className="p-2 md:p-3 text-gray-700 dark:text-gray-300">Actions</th>
                     </tr>
                   </thead>
@@ -360,7 +360,7 @@ export default function MembersPage() {
                       onClick={() => setCurrentPage(p => p - 1)}
                       className="px-3 py-1 md:px-4 md:py-1 rounded bg-cyan-600 text-white hover:bg-cyan-700 disabled:bg-cyan-300 disabled:cursor-not-allowed text-sm"
                     >
-                      Precedent
+                      Précédent
                     </button>
                     <span className="text-xs md:text-sm text-gray-700 dark:text-gray-300">
                       Page {currentPage} sur {totalPages}
@@ -376,16 +376,16 @@ export default function MembersPage() {
                 )}
               </div>
 
-              <Modal open={showViewModal} onClose={() => setShowViewModal(false)} title="Details du membre">
+              <Modal open={showViewModal} onClose={() => setShowViewModal(false)} title="Détails du membre">
                 {selectedMember && (
                   <div className="space-y-3 text-sm">
                     <p><strong>Nom:</strong> {selectedMember.prenom} {selectedMember.nom}</p>
                     <p><strong>Paroisse:</strong> {selectedMember.paroisse}</p>
                     <p><strong>Genre:</strong> {selectedMember.genre}</p>
-                    <p><strong>Nationalite:</strong> {selectedMember.nationalite}</p>
-                    <p><strong>Telephone:</strong> {selectedMember.telephone}</p>
+                    <p><strong>Nationalité:</strong> {selectedMember.nationalite}</p>
+                    <p><strong>Téléphone:</strong> {selectedMember.telephone}</p>
                     <p><strong>Email:</strong> {selectedMember.email ?? "-"}</p>
-                    <p><strong>Baptise:</strong> {selectedMember.baptise}</p>
+                    <p><strong>Baptisé:</strong> {selectedMember.baptise}</p>
                     <p><strong>Commissions:</strong> {(selectedMember.commissions ?? []).join(", ")}</p>
                   </div>
                 )}

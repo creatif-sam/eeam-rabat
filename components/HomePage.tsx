@@ -12,7 +12,6 @@ import Footer from "@/components/public/Footer";
 import BaseModal from "@/components/modals/BaseModal";
 
 import VolunteerForm from "@/components/public/VolunteerForm";
-import JoinGroupForm from "@/components/public/JoinCommission";
 import RequestSubmissionForm from "@/components/public/RequestSubmissionForm";
 import AttendanceForm from "@/components/public/AttendanceForm";
 import PublicCalendar from "@/components/public/PublicCalender";
@@ -23,7 +22,6 @@ export default function HomePage() {
   const searchParams = useSearchParams();
   const [signUpOpen, setSignUpOpen] = useState(false);
   const [volunteerOpen, setVolunteerOpen] = useState(false);
-  const [joinGroupOpen, setJoinGroupOpen] = useState(false);
   const [requestOpen, setRequestOpen] = useState(false);
   const [attendanceOpen, setAttendanceOpen] = useState(false);
 
@@ -49,7 +47,6 @@ export default function HomePage() {
           <ServicesGrid
             onMember={() => router.push("/inscription-membre")}
             onVolunteer={() => setVolunteerOpen(true)}
-            onJoinGroup={() => setJoinGroupOpen(true)}
             onRequest={() => setRequestOpen(true)}
             onAttendance={() => setAttendanceOpen(true)}
           />
@@ -73,16 +70,6 @@ export default function HomePage() {
         headerClass="bg-gradient-to-r from-green-500 to-emerald-600"
       >
         <VolunteerForm />
-      </BaseModal>
-
-      <BaseModal
-        open={joinGroupOpen}
-        onClose={() => setJoinGroupOpen(false)}
-        title="Rejoindre un Groupe"
-        subtitle="Cellules et commissions"
-        headerClass="bg-gradient-to-r from-purple-500 to-violet-600"
-      >
-        <JoinGroupForm />
       </BaseModal>
 
       <BaseModal

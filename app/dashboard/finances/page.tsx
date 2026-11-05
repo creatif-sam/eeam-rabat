@@ -32,9 +32,9 @@ type Period = "week" | "month" | "quarter" | "year" | "custom";
 
 const REVENUE_CATEGORY_LABELS: Record<string, string> = {
   offrande: "Offrande",
-  dime: "Dime",
-  gifts: "Gifts",
-  special_offering: "Special Offering"
+  dime: "Dîme",
+  gifts: "Dons",
+  special_offering: "Offrande spéciale"
 };
 
 export default function FinancesTab() {
@@ -221,28 +221,28 @@ export default function FinancesTab() {
     const XLSX = await import("xlsx");
 
     const summaryRows = [
-      { Indicateur: "Date début", Valeur: startDate || "N/A" },
-      { Indicateur: "Date fin", Valeur: endDate || "N/A" },
+      { Indicateur: "Date début", Valeur: startDate || "—" },
+      { Indicateur: "Date fin", Valeur: endDate || "—" },
       { Indicateur: "Revenus totaux", Valeur: summaryFromRange.total_revenus },
       { Indicateur: "Dépenses totales", Valeur: summaryFromRange.total_depenses },
       { Indicateur: "Solde net", Valeur: summaryFromRange.solde_net },
       { Indicateur: "Offrandes", Valeur: revenueByType.offrande || 0 },
-      { Indicateur: "Dimes", Valeur: revenueByType.dime || 0 },
-      { Indicateur: "Gifts", Valeur: revenueByType.gifts || 0 },
-      { Indicateur: "Special Offering", Valeur: revenueByType.special_offering || 0 }
+      { Indicateur: "Dîmes", Valeur: revenueByType.dime || 0 },
+      { Indicateur: "Dons", Valeur: revenueByType.gifts || 0 },
+      { Indicateur: "Offrandes spéciales", Valeur: revenueByType.special_offering || 0 }
     ];
 
     const txRows = dateFilteredTransactions.map(tx => ({
       Date: tx.date_transaction,
       Description: tx.description,
-      Categorie: tx.categorie,
+      Catégorie: tx.categorie,
       Type: tx.type,
       Montant: Number(tx.montant || 0),
       TypeRevenu: tx.type === "revenu" ? (REVENUE_CATEGORY_LABELS[tx.categorie] || tx.categorie) : "-"
     }));
 
     const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(summaryRows), "Resume");
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(summaryRows), "Résumé");
     XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(txRows), "Transactions");
 
     const filename = `finance_essentiels_${startDate || "debut"}_${endDate || "fin"}.xlsx`;
@@ -384,19 +384,19 @@ export default function FinancesTab() {
           />
           <SummaryCard
             icon={<TrendingUp />}
-            label="Dime"
+            label="Dîme"
             value={formatCurrency(revenueByType.dime || 0)}
             color="blue"
           />
           <SummaryCard
             icon={<TrendingUp />}
-            label="Gifts"
+            label="Dons"
             value={formatCurrency(revenueByType.gifts || 0)}
             color="purple"
           />
           <SummaryCard
             icon={<TrendingUp />}
-            label="Special Offering"
+            label="Offrande spéciale"
             value={formatCurrency(revenueByType.special_offering || 0)}
             color="rose"
           />
