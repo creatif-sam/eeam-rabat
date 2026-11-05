@@ -12,8 +12,7 @@ import {
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import Link from "next/link"
-import { useEffect, useRef, useState } from "react"
-import Turnstile, { type TurnstileHandle } from "@/components/Turnstile"
+import { useEffect, useState } from "react"
 import { useSearchParams } from "next/navigation"
 import { login } from "@/app/auth/login/actions"
 import { Mail, Lock, Eye, EyeOff } from "lucide-react"
@@ -26,8 +25,6 @@ export function LoginForm({
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
-  const [captcha, setCaptcha] = useState<string | null>(null)
-  const captchaRef = useRef<TurnstileHandle>(null)
   const searchParams = useSearchParams()
 
   useEffect(() => {
@@ -63,7 +60,6 @@ export function LoginForm({
                     : "Une erreur est survenue"
                 )
                 toast.error("Connexion impossible. Vérifiez vos identifiants et réessayez.")
-                captchaRef.current?.reset()
                 setIsLoading(false)
               }
             }}
@@ -113,9 +109,7 @@ export function LoginForm({
                 </div>
               </div>
 
-              <Turnstile ref={captchaRef} onToken={setCaptcha} />
-
-              <Button type="submit" className="w-full" disabled={isLoading || !captcha}>
+              <Button type="submit" className="w-full" disabled={isLoading}>
                 {isLoading ? "Connexion..." : "Se connecter"}
               </Button>
             </div>
