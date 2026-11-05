@@ -31,6 +31,9 @@ export function LoginForm({
     if (searchParams.get("reason") === "session_expired") {
       toast.info("Votre session a expiré. Veuillez vous reconnecter.")
     }
+    if (searchParams.get("confirmed") === "1") {
+      toast.success("Adresse e-mail confirmée. Connectez-vous pour continuer.")
+    }
   }, [searchParams])
 
   return (

@@ -1,14 +1,25 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useCallback, useEffect, useState } from "react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import Badge from "@mui/material/Badge";
+import Box from "@mui/material/Box";
+import Paper from "@mui/material/Paper";
+import Skeleton from "@mui/material/Skeleton";
+import Stack from "@mui/material/Stack";
+import Tab from "@mui/material/Tab";
+import Tabs from "@mui/material/Tabs";
+import Typography from "@mui/material/Typography";
+import type { SvgIconComponent } from "@mui/icons-material";
 import {
-  ClipboardList,
-  HeartHandshake,
-  Users,
-  HandHeart,
-  FileText,
-  CalendarCheck
-} from "lucide-react";
+  DescriptionOutlined,
+  Diversity3Outlined,
+  EventAvailableOutlined,
+  GroupAddOutlined,
+  SupportAgentOutlined,
+  VolunteerActivismOutlined,
+} from "@mui/icons-material";
+import { createClient } from "@/lib/supabase/client";
 
 import PastoralCounsellingList from "@/components/dashboard/PastoralCounsellingList";
 import GroupRequestsDashboard from "@/components/dashboard/GroupRequestsDashboard";
@@ -17,68 +28,154 @@ import PrayerRequestsDashboard from "@/components/dashboard/PrayerRequestsDashbo
 import VolunteerRequestsDashboard from "@/components/dashboard/VolunteerRequestsDashboard";
 import CommissionRequestsDashboard from "@/components/dashboard/CommissionRequestsDashboard";
 
-type Tab =
-  | "attendance"
-  | "prayer"
-  | "volunteer"
-  | "pastoral"
-  | "group"
-  | "request";
+type TabKey = "attendance" | "volunteer" | "pastoral" | "group" | "prayer" | "request";
 
-export default function FormulairesPage() {
-  const [activeTab, setActiveTab] = useState<Tab>("attendance");
+const TABS: { key: TabKey; label: string; description: string; icon: SvgIconComponent }[] = [
+  { key: "attendance", label: "Assiduité aux cultes", description: "Suivi de la fréquentation des cultes", icon: EventAvailableOutlined },
+  { key: "volunteer", label: "Bénévoles", description: "Personnes souhaitant servir dans un ministère", icon: Diversity3Outlined },
+  { key: "pastoral", label: "Entretiens pastoraux", description: "Rendez-vous demandés avec un pasteur", icon: SupportAgentOutlined },
+  { key: "group", label: "Rejoindre une commission", description: "Demandes d'adhésion aux commissions", icon: GroupAddOutlined },
+  { key: "prayer", label: "Sujets de prière", description: "Demandes de prière reçues", icon: VolunteerActivismOutlined },
+  { key: "request", label: "Requêtes de responsables", description: "Demandes adressées par les responsables", icon: DescriptionOutlined },
+];
 
-  const tabs = [
-    { key: "attendance", label: "Assiduité aux Cultes", icon: CalendarCheck },
-    { key: "volunteer", label: "Devenir Bénévole", icon: HeartHandshake },
-    { key: "pastoral", label: "Entretiens Pastoraux", icon: ClipboardList },
-    { key: "group", label: "Rejoindre une Commission", icon: Users },
-    { key: "prayer", label: "Sujets de prières", icon: HandHeart },
-    { key: "request", label: "Requêtes de responsables", icon: FileText }
-  ] as const;
+const isTab = (v: string | null): v is TabKey => TABS.some(t => t.key === v);
+
+/** Pending counts shown as badges on each tab. */
+function usePendingCounts() {
+  const [counts, setCounts] = useState<Partial<Record<TabKey, number>>>({});
+
+  const refresh = useCallback(async () => {
+    const supabase = createClient();
+    const today = new Date().toISOString().slice(0, 10);
+    const pending = (table: string) =>
+      supabase.from(table).select("id", { count: "exact", head: true }).eq("processed", false);
+
+    const [volunteer, group, prayer, request, pastoral] = await Promise.all([
+      pending("volunteer_requests"),
+      pending("group_join_requests"),
+      pending("prayer_requests"),
+      pending("commission_requests"),
+      supabase
+        .from("pastoral_counselling")
+        .select("id", { count: "exact", head: true })
+        .not("confirmed", "is", true)
+        .gte("counselling_date", today),
+    ]);
+
+    setCounts({
+      volunteer: volunteer.count ?? undefined,
+      group: group.count ?? undefined,
+      prayer: prayer.count ?? undefined,
+      request: request.count ?? undefined,
+      pastoral: pastoral.error ? undefined : pastoral.count ?? undefined,
+    });
+  }, []);
+
+  useEffect(() => {
+    refresh();
+  }, [refresh]);
+
+  return { counts, refresh };
+}
+
+function FormulairesContent() {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const param = searchParams.get("tab");
+  const activeTab: TabKey = isTab(param) ? param : "attendance";
+  const { counts, refresh } = usePendingCounts();
+
+  const setTab = (key: TabKey) => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("tab", key);
+    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+  };
+
+  const current = TABS.find(t => t.key === activeTab)!;
+  const totalPending = Object.values(counts).reduce((a, b) => a + (b ?? 0), 0);
 
   return (
-    <div className="space-y-4 md:space-y-8">
-      <div>
-        <h1 className="text-xl md:text-2xl font-bold text-gray-800 dark:text-white">
+    <Stack spacing={3}>
+      <Box>
+        <Typography variant="h5" component="h1" sx={{ fontWeight: 700 }}>
           Formulaires
-        </h1>
-        <p className="text-gray-600 dark:text-gray-400 text-sm">
-          Consultation et traitement des demandes
-        </p>
-      </div>
+        </Typography>
+        <Typography variant="body2" color="text.secondary">
+          {totalPending > 0
+            ? `${totalPending} demande${totalPending > 1 ? "s" : ""} en attente de traitement`
+            : "Consultation et traitement des demandes"}
+        </Typography>
+      </Box>
 
-      <div className="flex flex-wrap gap-2 md:gap-3 border-b border-gray-200 dark:border-gray-700 pb-4">
-        {tabs.map(tab => {
-          const Icon = tab.icon;
-          const isActive = activeTab === tab.key;
+      <Paper variant="outlined" sx={{ borderRadius: 4, overflow: "hidden" }}>
+        <Tabs
+          value={activeTab}
+          onChange={(_, v: TabKey) => setTab(v)}
+          variant="scrollable"
+          scrollButtons="auto"
+          allowScrollButtonsMobile
+          sx={{
+            borderBottom: 1,
+            borderColor: "divider",
+            px: { xs: 0, md: 1 },
+            "& .MuiTab-root": { minHeight: 60, textTransform: "none", fontWeight: 600 },
+          }}
+        >
+          {TABS.map(t => {
+            const Icon = t.icon;
+            const count = counts[t.key] ?? 0;
+            return (
+              <Tab
+                key={t.key}
+                value={t.key}
+                iconPosition="start"
+                icon={<Icon fontSize="small" />}
+                label={
+                  <Badge
+                    badgeContent={count}
+                    color="secondary"
+                    max={99}
+                    sx={{ "& .MuiBadge-badge": { right: -14, top: 2 } }}
+                  >
+                    <span>{t.label}</span>
+                  </Badge>
+                }
+                sx={{ pr: count ? 3.5 : 2 }}
+              />
+            );
+          })}
+        </Tabs>
 
-          return (
-            <button
-              key={tab.key}
-              onClick={() => setActiveTab(tab.key)}
-              className={`flex items-center gap-2 px-3 md:px-4 py-2 rounded-xl text-xs md:text-sm font-medium transition ${
-                isActive
-                  ? "bg-cyan-600 text-white"
-                  : "bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
-              }`}
-            >
-              <Icon size={14} className="md:w-4 md:h-4" />
-              <span className="hidden sm:inline">{tab.label}</span>
-              <span className="sm:hidden">{tab.label.split(' ')[0]}</span>
-            </button>
-          );
-        })}
-      </div>
+        <Box sx={{ p: { xs: 2, md: 3 } }}>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 2.5 }}>
+            {current.description}
+          </Typography>
 
-      <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-800 p-4 md:p-6">
-        {activeTab === "attendance" && <AttendanceDashboard />}
-        {activeTab === "volunteer" && <VolunteerRequestsDashboard />}
-        {activeTab === "pastoral" && <PastoralCounsellingList />}
-        {activeTab === "group" && <GroupRequestsDashboard />}
-        {activeTab === "prayer" && <PrayerRequestsDashboard />}
-        {activeTab === "request" && <CommissionRequestsDashboard />}
-      </div>
-    </div>
+          {activeTab === "attendance" && <AttendanceDashboard />}
+          {activeTab === "volunteer" && <VolunteerRequestsDashboard onChanged={refresh} />}
+          {activeTab === "pastoral" && <PastoralCounsellingList />}
+          {activeTab === "group" && <GroupRequestsDashboard onChanged={refresh} />}
+          {activeTab === "prayer" && <PrayerRequestsDashboard onChanged={refresh} />}
+          {activeTab === "request" && <CommissionRequestsDashboard onChanged={refresh} />}
+        </Box>
+      </Paper>
+    </Stack>
+  );
+}
+
+export default function FormulairesPage() {
+  return (
+    <Suspense
+      fallback={
+        <Stack spacing={3}>
+          <Skeleton variant="text" width={200} height={40} />
+          <Skeleton variant="rounded" height={420} sx={{ borderRadius: 4 }} />
+        </Stack>
+      }
+    >
+      <FormulairesContent />
+    </Suspense>
   );
 }

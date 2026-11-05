@@ -37,7 +37,7 @@ export default function WelcomeSection() {
             titleVisible ? "opacity-100 translate-y-0" : "opacity-0 -translate-y-4"
           }`}
       >
-        ✨ EEAM — Paroisse de Rabat
+        EEAM — Paroisse de Rabat
       </div>
 
       {/* Main animated title */}

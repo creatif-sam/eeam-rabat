@@ -1,92 +1,67 @@
 "use client";
 
 import { useState } from "react";
-import { Edit, Save, X } from "lucide-react";
+import Button from "@mui/material/Button";
+import Dialog from "@mui/material/Dialog";
+import DialogActions from "@mui/material/DialogActions";
+import DialogContent from "@mui/material/DialogContent";
+import DialogTitle from "@mui/material/DialogTitle";
+import TextField from "@mui/material/TextField";
+import { EditOutlined, SaveOutlined } from "@mui/icons-material";
 
 export default function WelcomeMessageEditor() {
-  const [isEditing, setIsEditing] = useState(false);
+  const [open, setOpen] = useState(false);
   const [message, setMessage] = useState("");
 
-  const handleSave = () => {
-    if (message.trim()) {
-      localStorage.setItem('welcome-message', message.trim());
-      // Dispatch a custom event to notify other components
-      window.dispatchEvent(new CustomEvent('welcome-message-updated', {
-        detail: { message: message.trim() }
-      }));
-      setIsEditing(false);
-      setMessage("");
-    }
-  };
-
-  const handleCancel = () => {
-    setIsEditing(false);
+  const close = () => {
+    setOpen(false);
     setMessage("");
   };
 
-  if (!isEditing) {
-    return (
-      <button
-        onClick={() => setIsEditing(true)}
-        className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg hover:from-blue-600 hover:to-purple-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
-      >
-        <Edit size={16} />
-        Modifier le message du trimestre
-      </button>
-    );
-  }
+  const handleSave = () => {
+    const value = message.trim();
+    if (!value) return;
+    localStorage.setItem("welcome-message", value);
+    // Notify other components
+    window.dispatchEvent(new CustomEvent("welcome-message-updated", { detail: { message: value } }));
+    close();
+  };
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-gray-800">
-            Modifier le message du trimestre
-          </h3>
-          <button
-            onClick={handleCancel}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-          >
-            <X size={20} className="text-gray-500" />
-          </button>
-        </div>
+    <>
+      <Button
+        variant="contained"
+        startIcon={<EditOutlined />}
+        onClick={() => setOpen(true)}
+        sx={{ bgcolor: "rgba(255,255,255,0.18)", color: "#fff", "&:hover": { bgcolor: "rgba(255,255,255,0.28)" }, flexShrink: 0 }}
+      >
+        Modifier le message du trimestre
+      </Button>
 
-        <div className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Nouveau message du trimestre
-            </label>
-            <textarea
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-              placeholder="Entrez le nouveau message du trimestre..."
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
-              rows={3}
-              maxLength={200}
-            />
-            <p className="text-xs text-gray-500 mt-1">
-              {message.length}/200 caractères
-            </p>
-          </div>
-
-          <div className="flex gap-3">
-            <button
-              onClick={handleCancel}
-              className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
-            >
-              Annuler
-            </button>
-            <button
-              onClick={handleSave}
-              disabled={!message.trim()}
-              className="flex-1 px-4 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg hover:from-blue-600 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-            >
-              <Save size={16} className="inline mr-2" />
-              Sauvegarder
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
+      <Dialog open={open} onClose={close} fullWidth maxWidth="sm">
+        <DialogTitle>Modifier le message du trimestre</DialogTitle>
+        <DialogContent>
+          <TextField
+            autoFocus
+            fullWidth
+            multiline
+            minRows={3}
+            margin="dense"
+            label="Nouveau message du trimestre"
+            placeholder="Entrez le nouveau message du trimestre..."
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+            slotProps={{ htmlInput: { maxLength: 200 } }}
+            helperText={`${message.length}/200 caractères`}
+          />
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <Button onClick={close}>Annuler</Button>
+          <Button variant="contained" startIcon={<SaveOutlined />} onClick={handleSave} disabled={!message.trim()}>
+            Sauvegarder
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </>
   );
 }

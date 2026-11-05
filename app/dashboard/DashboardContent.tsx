@@ -1,17 +1,10 @@
 "use client";
 
+import Box from "@mui/material/Box";
 import Header from "@/components/dashboard/Header";
 import MobileBottomNav from "@/components/dashboard/MobileBottomNav";
 import Sidebar from "@/components/dashboard/Sidebar";
-import { useSidebar } from "@/components/dashboard/SidebarContext";
 import type { User } from "@supabase/supabase-js";
-
-type Profile = {
-  role: string | null;
-  full_name: string | null;
-  avatar_url: string | null;
-  approved: boolean;
-};
 
 export default function DashboardContent({
   children,
@@ -22,18 +15,16 @@ export default function DashboardContent({
   user: User;
   role: string | null;
 }) {
-  const { isDesktopExpanded } = useSidebar();
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950 transition-colors duration-300">
+    <Box sx={{ display: "flex", minHeight: "100vh", bgcolor: "background.default", color: "text.primary" }}>
       <Sidebar role={role} />
-      <div className={`transition-all duration-300 ${
-        isDesktopExpanded ? 'md:ml-72' : 'md:ml-20'
-      }`}>
+      <Box sx={{ flexGrow: 1, minWidth: 0, display: "flex", flexDirection: "column" }}>
         <Header user={user} />
-        <main className="p-4 md:p-8 pt-16 md:pt-8 pb-24 md:pb-8">{children}</main>
-      </div>
+        <Box component="main" sx={{ flexGrow: 1, p: { xs: 2, md: 4 }, pb: { xs: 12, md: 4 } }}>
+          {children}
+        </Box>
+      </Box>
       <MobileBottomNav role={role} />
-    </div>
+    </Box>
   );
 }

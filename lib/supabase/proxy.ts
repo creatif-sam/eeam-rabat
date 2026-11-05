@@ -74,7 +74,15 @@ export async function updateSession(request: NextRequest) {
     request.nextUrl.pathname === "/" ||
     PUBLIC_PATH_PREFIXES.some((p) => request.nextUrl.pathname.startsWith(p));
 
-  if (!isPublicPath && !user) {
+  // Only the members area and private APIs require a session. Anything else
+  // (including unknown URLs) falls through so visitors get the real 404 page
+  // instead of being bounced to the login screen.
+  const PROTECTED_PREFIXES = ["/dashboard", "/protected", "/profile", "/api"];
+  const isProtectedPath = PROTECTED_PREFIXES.some(
+    (p) => request.nextUrl.pathname === p || request.nextUrl.pathname.startsWith(p + "/"),
+  );
+
+  if (isProtectedPath && !isPublicPath && !user) {
     // no user, potentially respond by redirecting the user to the login page
     const url = request.nextUrl.clone();
     const hadSessionCookie = request.cookies.getAll().some((c) => c.name.startsWith("sb-"));

@@ -1,472 +1,668 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
-  Calendar,
+  CalendarDays,
   ChevronLeft,
   ChevronRight,
   Clock,
-  MapPin,
-  X,
+  Download,
   ExternalLink,
-  Loader2,
-  RefreshCw
+  LayoutGrid,
+  List,
+  MapPin,
+  RefreshCw,
+  X,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
 
-// Parses a "YYYY-MM-DD" string as a local calendar date (avoids the UTC
-// midnight shift that `new Date("YYYY-MM-DD")` introduces for timezones
-// behind UTC, which can place an event on the wrong day in the grid).
-function parseLocalDate(dateStr: string): Date {
-  const [y, m, d] = dateStr.split("-").map(Number);
-  return new Date(y, m - 1, d);
-}
+/* ------------------------------------------------------------------ */
+/* Types & date helpers                                                */
+/* ------------------------------------------------------------------ */
 
-type Event = {
+type DbEvent = {
   id: string;
   title: string;
   description: string | null;
-  event_date: string; // Format: YYYY-MM-DD
-  start_time: string; // Format: HH:MM
-  end_time: string;   // Format: HH:MM
-  location: string;
-  color: string;
-  is_recurring: boolean;
+  event_date: string; // YYYY-MM-DD
+  start_time: string | null; // HH:MM or HH:MM:SS
+  end_time: string | null;
+  location: string | null;
+  color: string | null; // Tailwind bg class, e.g. "bg-blue-500"
+  is_recurring: boolean | null;
   recurring_type: string | null;
   recurring_end_date: string | null;
-  date: Date;
 };
 
-function expandEventsForMonth(events: Event[], year: number, month: number): Event[] {
-  const monthStart = new Date(year, month, 1);
-  const monthEnd = new Date(year, month + 1, 0);
-  const result: Event[] = [];
+type Occurrence = DbEvent & { key: string; date: Date; dateStr: string };
 
-  for (const event of events) {
-    const isRecurring =
-      event.is_recurring &&
-      event.recurring_type &&
-      event.recurring_type !== "none";
+const MONTHS = ["janvier", "février", "mars", "avril", "mai", "juin", "juillet", "août", "septembre", "octobre", "novembre", "décembre"];
+const WEEKDAYS_SHORT = ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"];
+const DEFAULT_COLOR = "bg-cyan-600";
+const MAX_DESKTOP_TILES = 3;
+const SWIPE_THRESHOLD_PX = 50;
+const DAY_MS = 86_400_000;
 
-    if (!isRecurring) {
-      const eventDate = parseLocalDate(event.event_date);
-      if (eventDate >= monthStart && eventDate <= monthEnd) result.push(event);
+/** "YYYY-MM-DD" → local Date (no UTC shift). */
+function parseLocalDate(s: string) {
+  const [y, m, d] = s.split("-").map(Number);
+  return new Date(y, m - 1, d);
+}
+
+/** Local Date → "YYYY-MM-DD" (never toISOString, which converts to UTC). */
+function toDateStr(d: Date) {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+
+function sameDay(a: Date, b: Date) {
+  return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+}
+
+/** "19:00:00" → "19h00" */
+function fmtTime(t: string | null) {
+  if (!t) return "";
+  const [h, m] = t.split(":");
+  return `${Number(h)}h${m ?? "00"}`;
+}
+
+function fmtTimeRange(e: DbEvent) {
+  const s = fmtTime(e.start_time);
+  const end = fmtTime(e.end_time);
+  if (!s) return "Toute la journée";
+  return end ? `${s} – ${end}` : s;
+}
+
+function fmtLongDate(d: Date) {
+  const s = d.toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+  return s.charAt(0).toUpperCase() + s.slice(1);
+}
+
+/** Add n months keeping the day, clamped to the target month's length (Jan 31 → Feb 28). */
+function addMonthsClamped(start: Date, n: number) {
+  const y = start.getFullYear();
+  const m = start.getMonth() + n;
+  const last = new Date(y, m + 1, 0).getDate();
+  return new Date(y, m, Math.min(start.getDate(), last));
+}
+
+/** All occurrences of every event that fall within [from, to] (inclusive, local days). */
+function expandEvents(events: DbEvent[], from: Date, to: Date): Occurrence[] {
+  const out: Occurrence[] = [];
+  const push = (e: DbEvent, d: Date) => {
+    const dateStr = toDateStr(d);
+    out.push({ ...e, key: `${e.id}_${dateStr}`, date: d, dateStr });
+  };
+
+  for (const e of events) {
+    const start = parseLocalDate(e.event_date);
+    const type = e.is_recurring ? e.recurring_type : null;
+
+    if (!type || type === "none") {
+      if (start >= from && start <= to) push(e, start);
       continue;
     }
 
-    const eventStart = parseLocalDate(event.event_date);
-    const recurEnd = event.recurring_end_date
-      ? parseLocalDate(event.recurring_end_date)
-      : monthEnd;
+    const recurEnd = e.recurring_end_date ? parseLocalDate(e.recurring_end_date) : to;
+    const limit = recurEnd < to ? recurEnd : to;
+    if (start > limit) continue;
 
-    let current = new Date(eventStart);
-    while (current <= monthEnd && current <= recurEnd) {
-      if (current >= monthStart) {
-        result.push({
-          ...event,
-          id: `${event.id}_${current.toISOString().split("T")[0]}`,
-          date: new Date(current),
-          event_date: current.toISOString().split("T")[0],
-        });
+    if (type === "daily" || type === "weekly") {
+      const step = type === "daily" ? 1 : 7;
+      // Jump straight to the first occurrence in range instead of iterating from the series start
+      const daysBetween = Math.round((from.getTime() - start.getTime()) / DAY_MS);
+      let n = Math.max(0, Math.ceil(daysBetween / step));
+      for (;;) {
+        const d = new Date(start.getFullYear(), start.getMonth(), start.getDate() + n * step);
+        if (d > limit) break;
+        if (d >= from) push(e, d);
+        n++;
       }
-      const d = new Date(current);
-      switch (event.recurring_type) {
-        case "daily":   d.setDate(d.getDate() + 1); break;
-        case "weekly":  d.setDate(d.getDate() + 7); break;
-        case "monthly": d.setMonth(d.getMonth() + 1); break;
-        case "yearly":  d.setFullYear(d.getFullYear() + 1); break;
-        default: current = new Date(recurEnd.getTime() + 1); continue;
+    } else if (type === "monthly" || type === "yearly") {
+      const step = type === "monthly" ? 1 : 12;
+      const monthsBetween = (from.getFullYear() - start.getFullYear()) * 12 + (from.getMonth() - start.getMonth());
+      let n = Math.max(0, Math.floor(monthsBetween / step) - 1);
+      for (;;) {
+        const d = addMonthsClamped(start, n * step);
+        if (d > limit) break;
+        if (d >= from) push(e, d);
+        n++;
       }
-      current = d;
+    } else if (start >= from && start <= to) {
+      push(e, start);
     }
   }
-  return result;
+
+  return out.sort((a, b) => a.date.getTime() - b.date.getTime() || (a.start_time ?? "").localeCompare(b.start_time ?? ""));
 }
 
-const MAX_DESKTOP_TILES = 3;
-const SWIPE_THRESHOLD_PX = 50;
+/* ------------------------------------------------------------------ */
+/* Add-to-calendar                                                     */
+/* ------------------------------------------------------------------ */
+
+function compactDateTime(dateStr: string, time: string | null) {
+  const hhmm = (time ?? "00:00").slice(0, 5).replace(":", "");
+  return `${dateStr.replace(/-/g, "")}T${hhmm}00`;
+}
+
+function endDateTime(ev: Occurrence) {
+  if (ev.end_time) return compactDateTime(ev.dateStr, ev.end_time);
+  // Default to one hour when no end time is set
+  const [h, m] = (ev.start_time ?? "00:00").split(":").map(Number);
+  const end = new Date(ev.date.getFullYear(), ev.date.getMonth(), ev.date.getDate(), h + 1, m || 0);
+  return compactDateTime(toDateStr(end), `${end.getHours()}:${String(end.getMinutes()).padStart(2, "0")}`.padStart(5, "0"));
+}
+
+function googleCalendarUrl(ev: Occurrence) {
+  const params = new URLSearchParams({
+    action: "TEMPLATE",
+    text: ev.title,
+    dates: `${compactDateTime(ev.dateStr, ev.start_time)}/${endDateTime(ev)}`,
+    // Interpret the times above as Morocco local time
+    ctz: "Africa/Casablanca",
+    details: ev.description ?? "",
+    location: ev.location ?? "",
+  });
+  return `https://calendar.google.com/calendar/render?${params.toString()}`;
+}
+
+function icsEscape(s: string) {
+  return s.replace(/\\/g, "\\\\").replace(/\n/g, "\\n").replace(/,/g, "\\,").replace(/;/g, "\\;");
+}
+
+function downloadIcs(ev: Occurrence) {
+  const now = new Date().toISOString().replace(/[-:]/g, "").split(".")[0] + "Z";
+  const ics = [
+    "BEGIN:VCALENDAR",
+    "VERSION:2.0",
+    "PRODID:-//EEAM Rabat//Calendrier//FR",
+    "BEGIN:VEVENT",
+    `UID:${ev.key}@eeam-rabat`,
+    `DTSTAMP:${now}`,
+    `DTSTART;TZID=Africa/Casablanca:${compactDateTime(ev.dateStr, ev.start_time)}`,
+    `DTEND;TZID=Africa/Casablanca:${endDateTime(ev)}`,
+    `SUMMARY:${icsEscape(ev.title)}`,
+    ev.description ? `DESCRIPTION:${icsEscape(ev.description)}` : "",
+    ev.location ? `LOCATION:${icsEscape(ev.location)}` : "",
+    "END:VEVENT",
+    "END:VCALENDAR",
+  ]
+    .filter(Boolean)
+    .join("\r\n");
+
+  const url = URL.createObjectURL(new Blob([ics], { type: "text/calendar;charset=utf-8" }));
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `${ev.title.replace(/[^\w\-]+/g, "_").slice(0, 60) || "evenement"}.ics`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+/* ------------------------------------------------------------------ */
+/* Small presentational pieces                                         */
+/* ------------------------------------------------------------------ */
+
+function EventRow({ ev, onOpen, dimmed }: { ev: Occurrence; onOpen: () => void; dimmed?: boolean }) {
+  return (
+    <button
+      onClick={onOpen}
+      className={`group w-full flex items-stretch gap-3 text-left rounded-2xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 hover:border-gray-200 dark:hover:border-gray-700 hover:shadow-md transition-all overflow-hidden ${
+        dimmed ? "opacity-60" : ""
+      }`}
+    >
+      <span className={`w-1.5 shrink-0 ${ev.color || DEFAULT_COLOR}`} />
+      <span className="flex-1 min-w-0 py-3 pr-3">
+        <span className="flex items-center gap-2">
+          <span className="font-bold text-gray-900 dark:text-white truncate">{ev.title}</span>
+          {ev.is_recurring && <RefreshCw size={12} className="text-gray-400 shrink-0" aria-label="Récurrent" />}
+        </span>
+        <span className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-gray-500 dark:text-gray-400">
+          <span className="inline-flex items-center gap-1.5">
+            <Clock size={14} /> {fmtTimeRange(ev)}
+          </span>
+          {ev.location && (
+            <span className="inline-flex items-center gap-1.5 min-w-0">
+              <MapPin size={14} className="shrink-0" /> <span className="truncate">{ev.location}</span>
+            </span>
+          )}
+        </span>
+      </span>
+      <ChevronRight size={18} className="self-center mr-3 text-gray-300 group-hover:text-gray-500 shrink-0" />
+    </button>
+  );
+}
+
+function CalendarSkeleton() {
+  return (
+    <section className="p-4 sm:p-8 animate-pulse" aria-busy="true" aria-label="Chargement du calendrier">
+      <div className="flex justify-between mb-8">
+        <div className="h-9 w-48 rounded-xl bg-gray-100 dark:bg-gray-800" />
+        <div className="h-11 w-40 rounded-xl bg-gray-100 dark:bg-gray-800" />
+      </div>
+      <div className="grid grid-cols-7 gap-1 sm:gap-2">
+        {Array.from({ length: 42 }).map((_, i) => (
+          <div key={i} className="h-12 sm:h-24 rounded-xl bg-gray-100 dark:bg-gray-800" />
+        ))}
+      </div>
+    </section>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* Main component                                                      */
+/* ------------------------------------------------------------------ */
 
 export default function PublicCalendar() {
-  const [events, setEvents] = useState<Event[]>([]);
+  const [events, setEvents] = useState<DbEvent[]>([]);
   const [loading, setLoading] = useState(true);
-  const [currentDate, setCurrentDate] = useState<Date | null>(null);
   const [today, setToday] = useState<Date | null>(null);
-  const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
-  const [dayEventsList, setDayEventsList] = useState<Event[] | null>(null);
+  const [month, setMonth] = useState<Date | null>(null); // first day of displayed month
+  const [selectedDay, setSelectedDay] = useState<Date | null>(null);
+  const [view, setView] = useState<"month" | "agenda">("month");
+  const [openEvent, setOpenEvent] = useState<Occurrence | null>(null);
   const touchStartX = useRef(0);
 
   useEffect(() => {
     const now = new Date();
-    setCurrentDate(now);
-    setToday(now);
-    fetchEvents();
+    const t = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    setToday(t);
+    setSelectedDay(t);
+    setMonth(new Date(t.getFullYear(), t.getMonth(), 1));
+
+    (async () => {
+      const supabase = createClient();
+      const cutoff = toDateStr(new Date(now.getFullYear() - 2, now.getMonth(), 1));
+      const { data, error } = await supabase
+        .from("events")
+        .select("id,title,description,event_date,start_time,end_time,location,color,is_recurring,recurring_type,recurring_end_date")
+        // Recent/future one-off events + every recurring series (may have started long ago)
+        .or(`event_date.gte.${cutoff},is_recurring.eq.true`);
+
+      if (error) {
+        console.error("Error fetching events:", error);
+        toast.error("Impossible de charger le calendrier des événements.");
+      } else {
+        setEvents((data ?? []) as DbEvent[]);
+      }
+      setLoading(false);
+    })();
   }, []);
 
-  // Close whichever modal is open on Escape, so keyboard/mobile users
-  // aren't stuck with only the small X button to dismiss it.
+  // Escape closes the detail sheet; lock page scroll while it's open
   useEffect(() => {
-    if (!selectedEvent && !dayEventsList) return;
-    const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        setSelectedEvent(null);
-        setDayEventsList(null);
-      }
+    if (!openEvent) return;
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setOpenEvent(null);
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    window.addEventListener("keydown", onKey);
+    return () => {
+      document.body.style.overflow = prevOverflow;
+      window.removeEventListener("keydown", onKey);
     };
-    window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
-  }, [selectedEvent, dayEventsList]);
+  }, [openEvent]);
+
+  // 6-week grid, Monday first
+  const gridDays = useMemo(() => {
+    if (!month) return [];
+    const offset = (month.getDay() + 6) % 7;
+    const first = new Date(month.getFullYear(), month.getMonth(), 1 - offset);
+    return Array.from({ length: 42 }, (_, i) => new Date(first.getFullYear(), first.getMonth(), first.getDate() + i));
+  }, [month]);
+
+  const occurrences = useMemo(
+    () => (gridDays.length ? expandEvents(events, gridDays[0], gridDays[gridDays.length - 1]) : []),
+    [events, gridDays]
+  );
+
+  const byDay = useMemo(() => {
+    const map = new Map<string, Occurrence[]>();
+    for (const o of occurrences) {
+      const list = map.get(o.dateStr);
+      if (list) list.push(o);
+      else map.set(o.dateStr, [o]);
+    }
+    return map;
+  }, [occurrences]);
+
+  if (loading || !month || !today || !selectedDay) return <CalendarSkeleton />;
+
+  const monthEvents = occurrences.filter((o) => o.date.getMonth() === month.getMonth() && o.date.getFullYear() === month.getFullYear());
+  const selectedEvents = byDay.get(toDateStr(selectedDay)) ?? [];
+  const isCurrentMonth = month.getFullYear() === today.getFullYear() && month.getMonth() === today.getMonth();
 
   const goToMonth = (offset: number) => {
-    setCurrentDate(d => (d ? new Date(d.getFullYear(), d.getMonth() + offset, 1) : d));
+    const next = new Date(month.getFullYear(), month.getMonth() + offset, 1);
+    setMonth(next);
+    const isTodayMonth = next.getFullYear() === today.getFullYear() && next.getMonth() === today.getMonth();
+    setSelectedDay(isTodayMonth ? today : next);
   };
 
-  const handleTouchStart = (e: React.TouchEvent) => {
-    touchStartX.current = e.touches[0].clientX;
+  const goToday = () => {
+    setMonth(new Date(today.getFullYear(), today.getMonth(), 1));
+    setSelectedDay(today);
   };
 
-  const handleTouchEnd = (e: React.TouchEvent) => {
-    const delta = e.changedTouches[0].clientX - touchStartX.current;
-    if (Math.abs(delta) < SWIPE_THRESHOLD_PX) return;
-    goToMonth(delta > 0 ? -1 : 1);
-  };
-
-  const fetchEvents = async () => {
-    const supabase = createClient();
-    const twoYearsAgo = new Date();
-    twoYearsAgo.setFullYear(twoYearsAgo.getFullYear() - 2);
-    const cutoff = twoYearsAgo.toISOString().split("T")[0];
-
-    const { data, error } = await supabase
-      .from("events")
-      .select("id,title,description,event_date,start_time,end_time,location,color,is_recurring,recurring_type,recurring_end_date")
-      // Keep recent/future one-off events plus all recurring events
-      // (a recurring series can still be active today even if it started
-      // years ago, so it must not be excluded by the date cutoff).
-      .or(`event_date.gte.${cutoff},is_recurring.eq.true`);
-
-    if (error) {
-      console.error("Error fetching events:", error);
-      toast.error("Impossible de charger le calendrier des événements.");
-    } else if (data) {
-      setEvents(data.map(e => ({ ...e, date: parseLocalDate(e.event_date) })));
+  const selectDay = (d: Date) => {
+    if (d.getMonth() !== month.getMonth()) {
+      setMonth(new Date(d.getFullYear(), d.getMonth(), 1));
     }
-    setLoading(false);
+    setSelectedDay(d);
   };
 
-  // Helper: Create Google Calendar URL
-  const getGoogleCalendarUrl = (event: Event) => {
-    const base = "https://www.google.com/calendar/render?action=TEMPLATE";
-    const fmtDate = event.event_date.replace(/-/g, "");
-    const fmtStart = event.start_time.replace(/:/g, "");
-    const fmtEnd = event.end_time.replace(/:/g, "");
-    
-    const dates = `${fmtDate}T${fmtStart}00/${fmtDate}T${fmtEnd}00`;
-
-    // ctz tells Google Calendar to interpret the date/time above as
-    // Morocco local time instead of UTC, otherwise the saved event shows
-    // up at the wrong hour in the visitor's calendar.
-    return `${base}&text=${encodeURIComponent(event.title)}&dates=${dates}&ctz=${encodeURIComponent("Africa/Casablanca")}&details=${encodeURIComponent(event.description || "")}&location=${encodeURIComponent(event.location)}`;
-  };
-
-  if (loading || !currentDate || !today) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[400px] bg-white dark:bg-gray-900 rounded-3xl border border-gray-100 dark:border-gray-800 shadow-sm">
-        <Loader2 className="h-8 w-8 animate-spin text-primary mb-2" />
-        <p className="text-gray-500 dark:text-gray-400 font-medium">Chargement du calendrier...</p>
-      </div>
-    );
+  // Agenda view: group the month's events by day
+  const agendaGroups: { date: Date; items: Occurrence[] }[] = [];
+  for (const o of monthEvents) {
+    const last = agendaGroups[agendaGroups.length - 1];
+    if (last && sameDay(last.date, o.date)) last.items.push(o);
+    else agendaGroups.push({ date: o.date, items: [o] });
   }
 
-  const getDaysInMonth = (date: Date) => {
-    const year = date.getFullYear();
-    const month = date.getMonth();
-    const firstDay = new Date(year, month, 1);
-    const lastDay = new Date(year, month + 1, 0);
-    return { daysInMonth: lastDay.getDate(), startingDayOfWeek: firstDay.getDay() };
-  };
-
-  const expandedEvents = expandEventsForMonth(events, currentDate.getFullYear(), currentDate.getMonth());
-
-  const getEventsForDate = (date: Date) =>
-    expandedEvents.filter(e => e.date.toDateString() === date.toDateString());
-
-  const { daysInMonth, startingDayOfWeek } = getDaysInMonth(currentDate);
-  const monthNames = ["Janvier","Février","Mars","Avril","Mai","Juin","Juillet","Août","Septembre","Octobre","Novembre","Décembre"];
-  const dayNames = ["Dim","Lun","Mar","Mer","Jeu","Ven","Sam"];
-  const calendarDays = [...Array.from({ length: startingDayOfWeek }, () => null), ...Array.from({ length: daysInMonth }, (_, i) => i + 1)];
+  const monthLabel = `${MONTHS[month.getMonth()].charAt(0).toUpperCase()}${MONTHS[month.getMonth()].slice(1)} ${month.getFullYear()}`;
 
   return (
-    <section className="bg-white dark:bg-gray-900 rounded-2xl sm:rounded-[2.5rem] shadow-2xl border border-gray-100 dark:border-gray-800 p-3 sm:p-10 transition-all duration-300">
-      
-      {/* HEADER: Month Navigation */}
-      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-6 sm:mb-10">
-        <div className="space-y-1">
-          <h2 className="text-2xl sm:text-3xl font-black flex items-center gap-3 text-gray-900 dark:text-white">
-            <div className="p-2 bg-primary/10 rounded-xl">
-              <Calendar className="text-primary h-7 w-7" />
-            </div>
-            Événements
-          </h2>
-          <p className="text-gray-500 dark:text-gray-400 font-bold px-1">
-            {monthNames[currentDate.getMonth()]} {currentDate.getFullYear()}
-          </p>
-        </div>
-
-        {/* Legend (desktop only — mobile uses dots, not colored blocks, so this copy doesn't apply there and just eats vertical space above the fold) */}
-        <div className="hidden sm:flex items-center gap-2 text-xs text-gray-400 dark:text-gray-500 bg-gray-50 dark:bg-gray-800/60 border border-gray-100 dark:border-gray-700 rounded-2xl px-4 py-2">
-          <span className="w-2.5 h-2.5 rounded-full bg-blue-500 flex-shrink-0" />
-          <span className="font-medium">Couleur = événement</span>
-          <span className="mx-1 text-gray-300 dark:text-gray-600">·</span>
-          <span>Cliquez pour voir</span>
-        </div>
-
-        <div className="flex gap-3 bg-gray-50 dark:bg-gray-900 p-1.5 rounded-2xl border border-gray-100 dark:border-gray-800">
-          <button
-            onClick={() => goToMonth(-1)}
-            aria-label="Mois précédent"
-            className="p-3 rounded-xl hover:bg-white dark:hover:bg-gray-800 text-gray-600 dark:text-gray-300 hover:shadow-sm transition-all"
-          >
-            <ChevronLeft size={24} />
-          </button>
-          <button
-            onClick={() => setCurrentDate(new Date(today.getFullYear(), today.getMonth(), 1))}
-            className="px-4 rounded-xl hover:bg-white dark:hover:bg-gray-800 text-gray-600 dark:text-gray-300 hover:shadow-sm transition-all text-sm font-bold"
-          >
-            Aujourd&apos;hui
-          </button>
-          <button
-            onClick={() => goToMonth(1)}
-            aria-label="Mois suivant"
-            className="p-3 rounded-xl hover:bg-white dark:hover:bg-gray-800 text-gray-600 dark:text-gray-300 hover:shadow-sm transition-all"
-          >
-            <ChevronRight size={24} />
-          </button>
-        </div>
-      </div>
-
-      {/* GRID: Day Names */}
-      <div className="grid grid-cols-7 gap-1 sm:gap-6 mb-2 sm:mb-4 px-0 sm:px-2">
-        {dayNames.map(day => (
-          <div key={day} className="text-center font-black text-[9px] sm:text-xs uppercase tracking-[0.1em] sm:tracking-[0.2em] text-gray-400 dark:text-gray-600">
-            {day}
+    <section className="p-3 sm:p-8">
+      {/* Header */}
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between mb-5 sm:mb-8">
+        <div className="flex items-center gap-3">
+          <div className="p-2.5 rounded-2xl bg-cyan-50 dark:bg-cyan-900/30 text-cyan-600 dark:text-cyan-400">
+            <CalendarDays size={26} />
           </div>
-        ))}
-      </div>
+          <div>
+            <h2 className="text-2xl sm:text-3xl font-black text-gray-900 dark:text-white leading-tight">{monthLabel}</h2>
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              {monthEvents.length === 0
+                ? "Aucun événement ce mois-ci"
+                : `${monthEvents.length} événement${monthEvents.length > 1 ? "s" : ""} ce mois-ci`}
+            </p>
+          </div>
+        </div>
 
-      {/* GRID: Calendar Days (swipeable on touch devices) */}
-      <div
-        className="grid grid-cols-7 gap-1 sm:gap-4"
-        onTouchStart={handleTouchStart}
-        onTouchEnd={handleTouchEnd}
-      >
-        {calendarDays.map((day, index) => {
-          if (!day) return <div key={`empty-${index}`} className="aspect-square opacity-0" />;
+        <div className="flex flex-wrap items-center gap-2">
+          {/* View toggle */}
+          <div className="flex p-1 rounded-xl bg-gray-100 dark:bg-gray-800" role="tablist" aria-label="Affichage">
+            {([
+              ["month", "Mois", LayoutGrid],
+              ["agenda", "Agenda", List],
+            ] as const).map(([value, label, Icon]) => (
+              <button
+                key={value}
+                role="tab"
+                aria-selected={view === value}
+                onClick={() => setView(value)}
+                className={`inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-semibold transition-all ${
+                  view === value
+                    ? "bg-white dark:bg-gray-900 text-gray-900 dark:text-white shadow-sm"
+                    : "text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200"
+                }`}
+              >
+                <Icon size={15} /> {label}
+              </button>
+            ))}
+          </div>
 
-          const date = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
-          const isToday = date.toDateString() === today.toDateString();
-          const dayEvents = getEventsForDate(date);
-          const hasEvents = dayEvents.length > 0;
-
-          // Tapping/clicking anywhere in the cell (not just a specific event
-          // tile/dot) opens something: the single event directly, or a
-          // picker list if the day has more than one. This matters most on
-          // mobile, where the dots alone are too small to reliably tap.
-          const handleCellActivate = () => {
-            if (!hasEvents) return;
-            if (dayEvents.length === 1) setSelectedEvent(dayEvents[0]);
-            else setDayEventsList(dayEvents);
-          };
-
-          return (
-            <div
-              key={`${currentDate.getFullYear()}-${currentDate.getMonth()}-${day}`}
-              role={hasEvents ? "button" : undefined}
-              tabIndex={hasEvents ? 0 : undefined}
-              aria-label={hasEvents ? `${day} ${monthNames[currentDate.getMonth()]} — ${dayEvents.length} événement${dayEvents.length > 1 ? "s" : ""}` : undefined}
-              onClick={handleCellActivate}
-              onKeyDown={e => {
-                if (hasEvents && (e.key === "Enter" || e.key === " ")) {
-                  e.preventDefault();
-                  handleCellActivate();
-                }
-              }}
-              className={`min-h-[46px] sm:min-h-[110px] border-2 rounded-xl sm:rounded-3xl p-1 sm:p-3 transition-all relative ${
-                hasEvents ? "cursor-pointer" : ""
-              } ${
-                isToday
-                  ? "bg-primary/[0.03] border-primary shadow-lg shadow-primary/5 dark:bg-primary/5"
-                  : "bg-white dark:bg-gray-900 border-gray-50 dark:border-gray-800 hover:border-gray-200 dark:hover:border-gray-700 hover:shadow-md"
-              }`}
-            >
-              <div className={`font-black text-[10px] sm:text-lg mb-1 sm:mb-2 ${isToday ? "text-primary" : "text-gray-400 dark:text-gray-600"}`}>
-                {day}
-              </div>
-
-              {/* Desktop: full event tiles, capped so one busy day doesn't stretch the whole row */}
-              <div className="hidden sm:flex flex-col gap-1.5">
-                {dayEvents.slice(0, MAX_DESKTOP_TILES).map(ev => (
-                  <button
-                    key={ev.id}
-                    onClick={e => { e.stopPropagation(); setSelectedEvent(ev); }}
-                    className={`${ev.color} text-white text-[11px] font-bold px-2 py-1.5 rounded-xl w-full text-left truncate hover:scale-[1.03] transition-transform shadow-sm`}
-                  >
-                    {ev.title}
-                  </button>
-                ))}
-                {dayEvents.length > MAX_DESKTOP_TILES && (
-                  <button
-                    onClick={e => { e.stopPropagation(); setDayEventsList(dayEvents); }}
-                    className="text-[11px] font-bold text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 text-left px-2"
-                  >
-                    +{dayEvents.length - MAX_DESKTOP_TILES} de plus
-                  </button>
-                )}
-              </div>
-
-              {/* Mobile: colored dot indicators (padding enlarges the tap target beyond the visible dot) */}
-              <div className="flex sm:hidden flex-wrap gap-0.5 mt-0.5">
-                {dayEvents.slice(0, 3).map(ev => (
-                  <button
-                    key={ev.id}
-                    onClick={e => { e.stopPropagation(); setSelectedEvent(ev); }}
-                    aria-label={ev.title}
-                    title={ev.title}
-                    className="relative flex-shrink-0 p-1.5 -m-1.5"
-                  >
-                    <span className={`${ev.color} w-2 h-2 rounded-full block`} />
-                    {ev.is_recurring && (
-                      <span className="absolute top-0 right-0 text-[6px] text-gray-400">↻</span>
-                    )}
-                  </button>
-                ))}
-                {dayEvents.length > 3 && (
-                  <button
-                    onClick={e => { e.stopPropagation(); setDayEventsList(dayEvents); }}
-                    className="text-[8px] text-gray-400 leading-none underline p-1.5 -m-1.5"
-                  >
-                    +{dayEvents.length - 3}
-                  </button>
-                )}
-              </div>
-            </div>
-          );
-        })}
-      </div>
-
-      {/* MODAL: Event Details */}
-      {selectedEvent && (
-        <div
-          className="fixed inset-0 bg-gray-900/60 dark:bg-black/80 backdrop-blur-md flex items-center justify-center z-50 p-4 animate-in fade-in duration-300"
-          onClick={() => setSelectedEvent(null)}
-        >
-          <div
-            onClick={e => e.stopPropagation()}
-            className="bg-white dark:bg-gray-900 rounded-[2.5rem] w-full max-w-xl max-h-[90vh] shadow-2xl border border-gray-100 dark:border-gray-800 relative overflow-hidden flex flex-col"
-          >
-            {/* Decorative background element (stays fixed above the scrolling content) */}
-            <div className={`absolute top-0 left-0 w-full h-2 z-10 ${selectedEvent.color}`} />
-
+          {/* Month navigation */}
+          <div className="flex items-center gap-1 ml-auto lg:ml-0">
             <button
-              onClick={() => setSelectedEvent(null)}
-              aria-label="Fermer"
-              className="absolute top-8 right-8 z-10 p-2.5 rounded-2xl bg-gray-50 dark:bg-gray-800 text-gray-500 hover:text-gray-900 dark:hover:text-white transition-all hover:rotate-90"
+              onClick={() => goToMonth(-1)}
+              aria-label="Mois précédent"
+              className="p-2.5 rounded-xl border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
             >
-              <X size={20} />
+              <ChevronLeft size={20} />
             </button>
-
-            <div className="p-8 sm:p-10 overflow-y-auto">
-              <div className="mb-8">
-                <div className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest text-white mb-6 shadow-md ${selectedEvent.color}`}>
-                  {selectedEvent.is_recurring ? <><RefreshCw size={10} /> Récurrent</> : "Événement Paroisse"}
-                </div>
-
-                <h3 className="text-3xl sm:text-4xl font-black text-gray-900 dark:text-white leading-tight">
-                  {selectedEvent.title}
-                </h3>
-              </div>
-
-              {selectedEvent.description && (
-                <p className="text-gray-600 dark:text-gray-400 mb-8 leading-relaxed text-lg">
-                  {selectedEvent.description}
-                </p>
-              )}
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 p-6 bg-gray-50 dark:bg-gray-800/50 rounded-3xl border border-gray-100 dark:border-gray-700">
-                <div className="flex items-center gap-4 text-gray-700 dark:text-gray-200">
-                  <div className="p-3 rounded-2xl bg-white dark:bg-gray-800 shadow-sm text-primary">
-                    <Clock size={20} />
-                  </div>
-                  <div className="flex flex-col">
-                    <span className="text-[10px] font-black uppercase text-gray-400">Horaire</span>
-                    <span className="font-bold">{selectedEvent.start_time} — {selectedEvent.end_time}</span>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-4 text-gray-700 dark:text-gray-200">
-                  <div className="p-3 rounded-2xl bg-white dark:bg-gray-800 shadow-sm text-primary">
-                    <MapPin size={20} />
-                  </div>
-                  <div className="flex flex-col">
-                    <span className="text-[10px] font-black uppercase text-gray-400">Lieu</span>
-                    <span className="font-bold truncate max-w-[150px]">{selectedEvent.location}</span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="mt-10 flex flex-col gap-3">
-                <a
-                  href={getGoogleCalendarUrl(selectedEvent)}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center justify-center gap-3 w-full py-5 px-6 rounded-2xl bg-cyan-600 hover:bg-cyan-700 text-white font-black text-lg shadow-xl shadow-cyan-600/20 hover:shadow-cyan-600/40 hover:-translate-y-1 transition-all"
-                >
-                  <ExternalLink size={20} />
-                  Ajouter à mon Agenda
-                </a>
-
-                <button
-                  onClick={() => setSelectedEvent(null)}
-                  className="w-full py-4 text-gray-500 dark:text-gray-400 font-bold hover:text-gray-900 dark:hover:text-white transition-colors"
-                >
-                  Retour au calendrier
-                </button>
-              </div>
-            </div>
+            <button
+              onClick={goToday}
+              disabled={isCurrentMonth && sameDay(selectedDay, today)}
+              className="px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 text-sm font-semibold text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 disabled:opacity-50 disabled:cursor-default transition-colors"
+            >
+              Aujourd&apos;hui
+            </button>
+            <button
+              onClick={() => goToMonth(1)}
+              aria-label="Mois suivant"
+              className="p-2.5 rounded-xl border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+            >
+              <ChevronRight size={20} />
+            </button>
           </div>
+        </div>
+      </div>
+
+      {view === "month" ? (
+        <>
+          {/* Weekday header */}
+          <div className="grid grid-cols-7 gap-1 sm:gap-2 mb-1 sm:mb-2">
+            {WEEKDAYS_SHORT.map((d) => (
+              <div key={d} className="text-center text-[10px] sm:text-xs font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500 py-1">
+                {d}
+              </div>
+            ))}
+          </div>
+
+          {/* Day grid (swipe to change month on touch devices) */}
+          <div
+            className="grid grid-cols-7 gap-1 sm:gap-2"
+            onTouchStart={(e) => (touchStartX.current = e.touches[0].clientX)}
+            onTouchEnd={(e) => {
+              const delta = e.changedTouches[0].clientX - touchStartX.current;
+              if (Math.abs(delta) >= SWIPE_THRESHOLD_PX) goToMonth(delta > 0 ? -1 : 1);
+            }}
+          >
+            {gridDays.map((d) => {
+              const inMonth = d.getMonth() === month.getMonth();
+              const isToday = sameDay(d, today);
+              const isSelected = sameDay(d, selectedDay);
+              const isPast = d < today;
+              const dayEvents = byDay.get(toDateStr(d)) ?? [];
+
+              return (
+                <div
+                  key={d.getTime()}
+                  role="button"
+                  tabIndex={0}
+                  aria-pressed={isSelected}
+                  aria-label={`${d.getDate()} ${MONTHS[d.getMonth()]}${dayEvents.length ? ` — ${dayEvents.length} événement${dayEvents.length > 1 ? "s" : ""}` : ""}`}
+                  onClick={() => selectDay(d)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      selectDay(d);
+                    }
+                  }}
+                  className={`relative min-h-[52px] sm:min-h-[112px] rounded-xl sm:rounded-2xl border p-1 sm:p-2 text-left cursor-pointer transition-all outline-none focus-visible:ring-2 focus-visible:ring-cyan-500 ${
+                    isSelected
+                      ? "border-cyan-500 bg-cyan-50/70 dark:bg-cyan-900/20 shadow-sm"
+                      : inMonth
+                        ? "border-gray-100 dark:border-gray-800 bg-white dark:bg-gray-900 hover:border-gray-300 dark:hover:border-gray-600"
+                        : "border-transparent bg-gray-50/60 dark:bg-gray-800/30"
+                  }`}
+                >
+                  <div className="flex justify-center sm:justify-start">
+                    <span
+                      className={`inline-flex items-center justify-center w-7 h-7 rounded-full text-xs sm:text-sm font-bold ${
+                        isToday
+                          ? "bg-cyan-600 text-white"
+                          : !inMonth
+                            ? "text-gray-300 dark:text-gray-600"
+                            : isPast
+                              ? "text-gray-400 dark:text-gray-500"
+                              : "text-gray-800 dark:text-gray-100"
+                      }`}
+                    >
+                      {d.getDate()}
+                    </span>
+                  </div>
+
+                  {/* Desktop: event chips */}
+                  <div className="hidden sm:flex flex-col gap-1 mt-1">
+                    {dayEvents.slice(0, MAX_DESKTOP_TILES).map((ev) => (
+                      <button
+                        key={ev.key}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedDay(d);
+                          setOpenEvent(ev);
+                        }}
+                        title={`${fmtTimeRange(ev)} · ${ev.title}`}
+                        className={`${ev.color || DEFAULT_COLOR} ${!inMonth || isPast ? "opacity-60" : ""} text-white text-[11px] font-semibold px-2 py-1 rounded-lg w-full text-left truncate hover:brightness-110 transition`}
+                      >
+                        {ev.start_time && <span className="opacity-80 mr-1">{fmtTime(ev.start_time)}</span>}
+                        {ev.title}
+                      </button>
+                    ))}
+                    {dayEvents.length > MAX_DESKTOP_TILES && (
+                      <span className="text-[11px] font-semibold text-gray-500 dark:text-gray-400 px-1">
+                        +{dayEvents.length - MAX_DESKTOP_TILES} autre{dayEvents.length - MAX_DESKTOP_TILES > 1 ? "s" : ""}
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Mobile: dots */}
+                  {dayEvents.length > 0 && (
+                    <div className="flex sm:hidden justify-center gap-0.5 mt-1">
+                      {dayEvents.slice(0, 3).map((ev) => (
+                        <span key={ev.key} className={`${ev.color || DEFAULT_COLOR} w-1.5 h-1.5 rounded-full ${!inMonth ? "opacity-50" : ""}`} />
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Selected day panel */}
+          <div className="mt-6 sm:mt-8" aria-live="polite">
+            <h3 className="text-base sm:text-lg font-bold text-gray-900 dark:text-white mb-3">
+              {sameDay(selectedDay, today) ? "Aujourd'hui · " : ""}
+              {fmtLongDate(selectedDay)}
+            </h3>
+            {selectedEvents.length ? (
+              <div className="flex flex-col gap-2">
+                {selectedEvents.map((ev) => (
+                  <EventRow key={ev.key} ev={ev} onOpen={() => setOpenEvent(ev)} dimmed={selectedDay < today} />
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-gray-500 dark:text-gray-400 rounded-2xl border border-dashed border-gray-200 dark:border-gray-700 px-4 py-5 text-center">
+                Aucun événement ce jour.
+              </p>
+            )}
+          </div>
+        </>
+      ) : (
+        /* Agenda view */
+        <div className="flex flex-col gap-6">
+          {agendaGroups.length === 0 ? (
+            <p className="text-sm text-gray-500 dark:text-gray-400 rounded-2xl border border-dashed border-gray-200 dark:border-gray-700 px-4 py-10 text-center">
+              Aucun événement prévu en {MONTHS[month.getMonth()]}.
+            </p>
+          ) : (
+            agendaGroups.map(({ date, items }) => {
+              const past = date < today;
+              const isToday = sameDay(date, today);
+              return (
+                <div key={date.getTime()} className="flex gap-3 sm:gap-5">
+                  <div className={`w-12 sm:w-14 shrink-0 text-center ${past ? "opacity-50" : ""}`}>
+                    <div className="text-[11px] font-bold uppercase text-gray-400">
+                      {date.toLocaleDateString("fr-FR", { weekday: "short" }).replace(".", "")}
+                    </div>
+                    <div
+                      className={`mx-auto mt-0.5 w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center text-lg sm:text-xl font-black ${
+                        isToday ? "bg-cyan-600 text-white" : "text-gray-900 dark:text-white"
+                      }`}
+                    >
+                      {date.getDate()}
+                    </div>
+                  </div>
+                  <div className="flex-1 min-w-0 flex flex-col gap-2">
+                    {items.map((ev) => (
+                      <EventRow key={ev.key} ev={ev} onOpen={() => setOpenEvent(ev)} dimmed={past} />
+                    ))}
+                  </div>
+                </div>
+              );
+            })
+          )}
         </div>
       )}
 
-      {/* MODAL: Day overflow list (mobile) */}
-      {dayEventsList && (
+      {/* Event detail: bottom sheet on mobile, dialog on desktop */}
+      {openEvent && (
         <div
-          className="fixed inset-0 bg-gray-900/60 dark:bg-black/80 backdrop-blur-md flex items-center justify-center z-50 p-4"
-          onClick={() => setDayEventsList(null)}
+          className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-gray-900/60 dark:bg-black/70 backdrop-blur-sm sm:p-4"
+          onClick={() => setOpenEvent(null)}
         >
           <div
-            onClick={e => e.stopPropagation()}
-            className="bg-white dark:bg-gray-900 rounded-3xl p-6 w-full max-w-sm max-h-[80vh] overflow-y-auto shadow-2xl border border-gray-100 dark:border-gray-800"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="event-title"
+            onClick={(e) => e.stopPropagation()}
+            className="relative w-full sm:max-w-lg max-h-[90vh] overflow-y-auto bg-white dark:bg-gray-900 rounded-t-3xl sm:rounded-3xl shadow-2xl border border-gray-100 dark:border-gray-800"
           >
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-black text-gray-900 dark:text-white">Événements du jour</h3>
-              <button
-                onClick={() => setDayEventsList(null)}
-                aria-label="Fermer"
-                className="p-2 rounded-xl bg-gray-50 dark:bg-gray-800 text-gray-500 hover:text-gray-900 dark:hover:text-white transition-all"
-              >
-                <X size={18} />
-              </button>
-            </div>
-            <div className="flex flex-col gap-2">
-              {dayEventsList.map(ev => (
-                <button
-                  key={ev.id}
-                  onClick={() => { setSelectedEvent(ev); setDayEventsList(null); }}
-                  className={`${ev.color} text-white text-sm font-bold px-3 py-2.5 rounded-xl w-full text-left truncate hover:scale-[1.02] transition-transform shadow-sm`}
+            <div className={`h-2 ${openEvent.color || DEFAULT_COLOR}`} />
+            <div className="sm:hidden mx-auto mt-2 h-1 w-10 rounded-full bg-gray-200 dark:bg-gray-700" />
+
+            <button
+              onClick={() => setOpenEvent(null)}
+              aria-label="Fermer"
+              className="absolute top-5 right-5 p-2 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-500 hover:text-gray-900 dark:hover:text-white transition-colors"
+            >
+              <X size={18} />
+            </button>
+
+            <div className="p-6 sm:p-8">
+              {openEvent.is_recurring && (
+                <span className="inline-flex items-center gap-1.5 mb-3 px-2.5 py-1 rounded-full bg-gray-100 dark:bg-gray-800 text-xs font-semibold text-gray-600 dark:text-gray-300">
+                  <RefreshCw size={12} /> Événement récurrent
+                </span>
+              )}
+              <h3 id="event-title" className="pr-10 text-2xl sm:text-3xl font-black text-gray-900 dark:text-white leading-tight">
+                {openEvent.title}
+              </h3>
+
+              <ul className="mt-5 space-y-3 text-gray-700 dark:text-gray-200">
+                <li className="flex items-start gap-3">
+                  <CalendarDays size={20} className="mt-0.5 text-cyan-600 dark:text-cyan-400 shrink-0" />
+                  <span className="font-semibold">{fmtLongDate(openEvent.date)}</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <Clock size={20} className="mt-0.5 text-cyan-600 dark:text-cyan-400 shrink-0" />
+                  <span className="font-semibold">{fmtTimeRange(openEvent)}</span>
+                </li>
+                {openEvent.location && (
+                  <li className="flex items-start gap-3">
+                    <MapPin size={20} className="mt-0.5 text-cyan-600 dark:text-cyan-400 shrink-0" />
+                    <a
+                      href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(openEvent.location)}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="font-semibold break-words hover:underline"
+                    >
+                      {openEvent.location}
+                    </a>
+                  </li>
+                )}
+              </ul>
+
+              {openEvent.description && (
+                <p className="mt-5 text-gray-600 dark:text-gray-400 leading-relaxed whitespace-pre-line">{openEvent.description}</p>
+              )}
+
+              <div className="mt-7 grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <a
+                  href={googleCalendarUrl(openEvent)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-cyan-600 hover:bg-cyan-700 text-white font-bold transition-colors"
                 >
-                  {ev.title}
+                  <ExternalLink size={18} /> Google Agenda
+                </a>
+                <button
+                  onClick={() => downloadIcs(openEvent)}
+                  className="inline-flex items-center justify-center gap-2 py-3 px-4 rounded-xl border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-100 font-bold hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                >
+                  <Download size={18} /> Apple / Outlook (.ics)
                 </button>
-              ))}
+              </div>
             </div>
           </div>
         </div>

@@ -1,10 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { createClient } from "@/lib/supabase/client";
-import { CheckCircle, XCircle, Users, Eye } from "lucide-react";
+import Chip from "@mui/material/Chip";
+import RequestInbox from "@/components/dashboard/forms/RequestInbox";
 
-type Request = {
+type GroupRequest = {
   id: string;
   full_name: string;
   phone: string;
@@ -12,199 +11,58 @@ type Request = {
   motivation: string;
   created_at: string;
   processed: boolean;
-  group: { name: string };
+  group_name: string;
 };
 
-export default function GroupRequestsDashboard() {
-  const supabase = createClient();
-  const [requests, setRequests] = useState<Request[]>([]);
-  const [stats, setStats] = useState<Record<string, number>>({});
-  const [loading, setLoading] = useState(true);
-  const [selected, setSelected] = useState<Request | null>(null);
-  // Pending requests are what admins act on day-to-day; showing everything
-  // by default means this query grows unbounded as the church's history grows.
-  const [showProcessed, setShowProcessed] = useState(false);
+// Supabase returns the related commission as an object (many-to-one);
+// handle an array too in case the relationship is declared the other way.
+const mapRow = (r: Record<string, unknown>): GroupRequest => {
+  const rel = r.groupes_commissions as { name?: string } | { name?: string }[] | null;
+  const group_name = (Array.isArray(rel) ? rel[0]?.name : rel?.name) ?? "Commission inconnue";
+  return { ...(r as unknown as GroupRequest), group_name };
+};
 
-  useEffect(() => {
-    loadData();
-  }, [showProcessed]);
-
-  const loadData = async () => {
-    let query = supabase
-      .from("group_join_requests")
-      .select(
-        `
-        id,
-        full_name,
-        phone,
-        email,
-        motivation,
-        created_at,
-        processed,
-        groupes_commissions(name)
-        `
-      )
-      .order("created_at", { ascending: false });
-
-    if (!showProcessed) {
-      query = query.eq("processed", false);
-    }
-
-    const { data } = await query;
-
-    // Transform the data to match the expected type
-    const transformedData = (data || []).map(item => ({
-      ...item,
-      group: item.groupes_commissions && item.groupes_commissions.length > 0 ? { name: item.groupes_commissions[0].name } : { name: '' }
-    }));
-
-    const statMap: Record<string, number> = {};
-    transformedData?.forEach(r => {
-      statMap[r.group.name] = (statMap[r.group.name] || 0) + 1;
-    });
-
-    setRequests(transformedData);
-    setStats(statMap);
-    setLoading(false);
-  };
-
-  const updateStatus = async (id: string) => {
-    await supabase
-      .from("group_join_requests")
-      .update({ processed: true })
-      .eq("id", id);
-
-    loadData();
-  };
-
-  if (loading) {
-    return <p className="text-gray-500">Chargement des demandes</p>;
-  }
-
+export default function GroupRequestsDashboard({ onChanged }: { onChanged?: () => void }) {
   return (
-    <div className="space-y-8">
-      <label className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
-        <input
-          type="checkbox"
-          checked={showProcessed}
-          onChange={e => setShowProcessed(e.target.checked)}
-        />
-        Inclure les demandes traitées
-      </label>
-
-      {/* Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {Object.entries(stats).map(([group, count]) => (
-          <div
-            key={group}
-            className="border border-gray-200 dark:border-gray-700 rounded-xl p-4 bg-gray-50 dark:bg-gray-800 flex items-center gap-3"
-          >
-            <Users className="text-cyan-600" />
-            <div>
-              <p className="text-sm text-gray-500 dark:text-gray-400">{group}</p>
-              <p className="text-xl font-bold text-gray-800 dark:text-white">{count}</p>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* Table */}
-      <div className="overflow-x-auto">
-        <table className="min-w-full border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden">
-          <thead className="bg-gray-50 dark:bg-gray-700">
-            <tr className="text-left text-sm text-gray-600 dark:text-gray-300">
-              <th className="px-4 py-3">Nom</th>
-              <th className="px-4 py-3">Téléphone</th>
-              <th className="px-4 py-3">Commission</th>
-              <th className="px-4 py-3">Date</th>
-              <th className="px-4 py-3 text-right">Actions</th>
-            </tr>
-          </thead>
-
-          <tbody>
-            {requests.map(req => (
-              <tr
-                key={req.id}
-                className={`border-t border-gray-100 dark:border-gray-700 text-sm ${
-                  req.processed ? "bg-green-50 dark:bg-green-900/10" : "hover:bg-gray-50 dark:hover:bg-gray-700/50"
-                }`}
-              >
-                <td className="px-4 py-3 font-medium text-gray-800 dark:text-gray-200">{req.full_name}</td>
-                <td className="px-4 py-3 text-gray-700 dark:text-gray-300">{req.phone}</td>
-                <td className="px-4 py-3 text-gray-700 dark:text-gray-300">{req.group.name}</td>
-                <td className="px-4 py-3 text-gray-600 dark:text-gray-400">
-                  {new Date(req.created_at).toLocaleDateString()}
-                </td>
-                <td className="px-4 py-3 text-right">
-                  <div className="flex justify-end gap-3">
-                    <button
-                      onClick={() => setSelected(req)}
-                      className="p-2 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300"
-                      title="Voir la demande"
-                    >
-                      <Eye size={16} />
-                    </button>
-
-                    {!req.processed && (
-                      <>
-                        <button
-                          onClick={() => updateStatus(req.id)}
-                          className="flex items-center gap-1 px-3 py-2 rounded-lg bg-green-600 text-white text-xs hover:bg-green-700"
-                        >
-                          <CheckCircle size={14} />
-                          Approuver
-                        </button>
-                        <button
-                          onClick={() => updateStatus(req.id)}
-                          className="flex items-center gap-1 px-3 py-2 rounded-lg bg-red-600 text-white text-xs hover:bg-red-700"
-                        >
-                          <XCircle size={14} />
-                          Rejeter
-                        </button>
-                      </>
-                    )}
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      {/* View modal */}
-      {selected && (
-        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-900 rounded-2xl p-6 w-full max-w-md space-y-4 border border-gray-200 dark:border-gray-700 shadow-xl">
-            <h3 className="text-lg font-semibold text-gray-800 dark:text-white">
-              Détails de la demande
-            </h3>
-
-            <p className="text-gray-800 dark:text-gray-200"><strong>Nom</strong> {selected.full_name}</p>
-            <p className="text-gray-800 dark:text-gray-200"><strong>Téléphone</strong> {selected.phone}</p>
-            {selected.email && (
-              <p className="text-gray-800 dark:text-gray-200"><strong>Email</strong> {selected.email}</p>
-            )}
-            <p className="text-gray-800 dark:text-gray-200"><strong>Commission</strong> {selected.group.name}</p>
-            <p className="text-gray-800 dark:text-gray-200">
-              <strong>Date</strong>{" "}
-              {new Date(selected.created_at).toLocaleString()}
-            </p>
-            <p className="text-gray-800 dark:text-gray-200"><strong>Motivation</strong></p>
-            <p className="text-gray-700 dark:text-gray-300 text-sm bg-gray-50 dark:bg-gray-800 p-3 rounded-lg">
-              {selected.motivation}
-            </p>
-
-            <div className="flex justify-end pt-4">
-              <button
-                onClick={() => setSelected(null)}
-                className="px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 text-sm"
-              >
-                Fermer
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
+    <RequestInbox<GroupRequest>
+      table="group_join_requests"
+      select="id, full_name, phone, email, motivation, created_at, processed, groupes_commissions(name)"
+      mapRow={mapRow}
+      primary={r => r.full_name}
+      secondary={r => `${r.group_name} · ${r.phone}`}
+      columns={[
+        { label: "Nom", render: r => <strong>{r.full_name}</strong> },
+        { label: "Téléphone", render: r => r.phone },
+        { label: "Commission", render: r => <Chip label={r.group_name} size="small" color="primary" variant="outlined" /> },
+      ]}
+      searchText={r => [r.full_name, r.phone, r.email, r.group_name, r.motivation].join(" ")}
+      extraFilter={{
+        label: "Commission",
+        options: [],
+        fromRows: rows => rows.map(r => r.group_name),
+        match: (r, v) => r.group_name === v,
+      }}
+      details={r => [
+        { label: "Commission", value: r.group_name },
+        { label: "Téléphone", value: r.phone },
+        { label: "Email", value: r.email },
+      ]}
+      longText={r => ({ label: "Motivation", value: r.motivation })}
+      contact={r => ({ phone: r.phone, email: r.email })}
+      exportSheet={{
+        fileName: "demandes_commissions",
+        sheetName: "Rejoindre commission",
+        row: r => ({
+          Nom: r.full_name,
+          Téléphone: r.phone,
+          Email: r.email || "",
+          Commission: r.group_name,
+          Motivation: r.motivation,
+          Traité: r.processed ? "Oui" : "Non",
+          Date: new Date(r.created_at).toLocaleDateString("fr-FR"),
+        }),
+      }}
+      onChanged={onChanged}
+    />
   );
 }

@@ -45,6 +45,7 @@ export default function ProfileSetupForm({
 
     const { error: upsertError } = await supabase.from("profiles").upsert({
       id: user.id,
+      email: user.email,
       full_name: fullName,
       phone,
       church,

@@ -84,7 +84,7 @@ export default function EventsSection() {
                   weekday: "long",
                   day: "numeric",
                   month: "long"
-                })} · {event.start_time}
+                })} · {event.start_time ? event.start_time.slice(0, 5) : "Toute la journée"}
               </div>
               <div className="flex items-center gap-2">
                 {event.is_online ? <Video size={12} /> : <MapPin size={12} />}

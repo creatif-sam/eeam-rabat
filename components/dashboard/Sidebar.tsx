@@ -1,166 +1,238 @@
 "use client"
 
 import React from "react"
-import {
-  Home,
-  Droplet,
-  Calendar,
-  GraduationCap,
-  Users,
-  UserCog,
-  Menu,
-  X,
-  ChevronRight,
-  DollarSign,
-  UsersRound,
-  FileText,
-  MapPin,
-  ClipboardList,
-  ListTodo,
-  Settings,
-  BookOpen,
-  Package
-} from "lucide-react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
+import Avatar from "@mui/material/Avatar"
+import Box from "@mui/material/Box"
+import Divider from "@mui/material/Divider"
+import Drawer from "@mui/material/Drawer"
+import IconButton from "@mui/material/IconButton"
+import List from "@mui/material/List"
+import ListItemButton from "@mui/material/ListItemButton"
+import ListItemIcon from "@mui/material/ListItemIcon"
+import ListItemText from "@mui/material/ListItemText"
+import Tooltip from "@mui/material/Tooltip"
+import Typography from "@mui/material/Typography"
+import type { SvgIconComponent } from "@mui/icons-material"
+import {
+  AssessmentOutlined,
+  AssignmentOutlined,
+  ChecklistOutlined,
+  ChevronLeft,
+  EventOutlined,
+  GroupsOutlined,
+  HomeOutlined,
+  Inventory2Outlined,
+  ManageAccountsOutlined,
+  Menu as MenuIcon,
+  MenuBookOutlined,
+  PaymentsOutlined,
+  PeopleAltOutlined,
+  PlaceOutlined,
+  ReceiptLongOutlined,
+  SchoolOutlined,
+  SettingsOutlined,
+  WaterDropOutlined,
+} from "@mui/icons-material"
 import { useSidebar } from "./SidebarContext"
 
+export const DRAWER_WIDTH = 280
+export const DRAWER_COLLAPSED_WIDTH = 76
+
 const ADMIN_ROLES = ["admin", "pastor"]
-const PASTORAL_ROLES = ["admin", "pastor"]
 const FINANCIAL_ROLES = ["admin", "pastor", "treasurer"]
 
-const allMenuItems = [
-  { label: "Accueil", icon: Home, route: "/dashboard", roles: null },
-  { label: "Annexe de J5", icon: MapPin, route: "/dashboard/annexe-j5", roles: null },
-  { label: "Baptêmes", icon: Droplet, route: "/dashboard/baptemes", roles: null },
-  { label: "Commissions", icon: Users, route: "/dashboard/groupes", roles: null },
-  { label: "Événements", icon: Calendar, route: "/dashboard/events", roles: null },
-  { label: "Finance", icon: DollarSign, route: "/dashboard/finances", roles: FINANCIAL_ROLES },
-  { label: "Formations", icon: GraduationCap, route: "/dashboard/formations", roles: null },
-  { label: "Formulaires", icon: ClipboardList, route: "/dashboard/formulaires", roles: null },
-  { label: "Logistique", icon: Package, route: "/dashboard/logistique", roles: ADMIN_ROLES },
-  { label: "Logs", icon: FileText, route: "/dashboard/logs", roles: ADMIN_ROLES },
-  { label: "Membres", icon: UsersRound, route: "/dashboard/membres", roles: null },
-  { label: "Paramètres", icon: Settings, route: "/dashboard/settings", roles: ADMIN_ROLES },
-  { label: "Planify", icon: ListTodo, route: "/dashboard/tasky", roles: null },
-  { label: "Rapports", icon: FileText, route: "/dashboard/rapports", roles: null },
-  { label: "Ressources", icon: BookOpen, route: "/dashboard/ressources", roles: null },
-  { label: "Utilisateurs", icon: UserCog, route: "/dashboard/users", roles: ADMIN_ROLES },
+type MenuItem = { label: string; icon: SvgIconComponent; route: string; roles: string[] | null }
+
+const allMenuItems: MenuItem[] = [
+  { label: "Accueil", icon: HomeOutlined, route: "/dashboard", roles: null },
+  { label: "Annexe de J5", icon: PlaceOutlined, route: "/dashboard/annexe-j5", roles: null },
+  { label: "Baptêmes", icon: WaterDropOutlined, route: "/dashboard/baptemes", roles: null },
+  { label: "Commissions", icon: GroupsOutlined, route: "/dashboard/groupes", roles: null },
+  { label: "Événements", icon: EventOutlined, route: "/dashboard/events", roles: null },
+  { label: "Finance", icon: PaymentsOutlined, route: "/dashboard/finances", roles: FINANCIAL_ROLES },
+  { label: "Formations", icon: SchoolOutlined, route: "/dashboard/formations", roles: null },
+  { label: "Formulaires", icon: AssignmentOutlined, route: "/dashboard/formulaires", roles: null },
+  { label: "Logistique", icon: Inventory2Outlined, route: "/dashboard/logistique", roles: ADMIN_ROLES },
+  { label: "Logs", icon: ReceiptLongOutlined, route: "/dashboard/logs", roles: ADMIN_ROLES },
+  { label: "Membres", icon: PeopleAltOutlined, route: "/dashboard/membres", roles: null },
+  { label: "Paramètres", icon: SettingsOutlined, route: "/dashboard/settings", roles: ADMIN_ROLES },
+  { label: "Planify", icon: ChecklistOutlined, route: "/dashboard/tasky", roles: null },
+  { label: "Rapports", icon: AssessmentOutlined, route: "/dashboard/rapports", roles: null },
+  { label: "Ressources", icon: MenuBookOutlined, route: "/dashboard/ressources", roles: null },
+  { label: "Utilisateurs", icon: ManageAccountsOutlined, route: "/dashboard/users", roles: ADMIN_ROLES },
 ]
 
-export default function Sidebar({ role }: { role: string | null }) {
-  const { isMobileOpen, setIsMobileOpen, isDesktopExpanded, toggleSidebar } = useSidebar()
+function isRouteActive(pathname: string, route: string) {
+  if (route === "/dashboard") return pathname === route
+  return pathname === route || pathname.startsWith(route + "/")
+}
+
+function NavContent({
+  items,
+  expanded,
+  onToggle,
+  onNavigate,
+}: {
+  items: MenuItem[]
+  expanded: boolean
+  onToggle: () => void
+  onNavigate?: () => void
+}) {
   const pathname = usePathname()
 
-  const menuItems = allMenuItems.filter(item =>
-    item.roles === null || (role != null && item.roles.includes(role))
+  return (
+    <Box sx={{ display: "flex", flexDirection: "column", height: "100%" }}>
+      {/* Brand */}
+      <Box
+        sx={{
+          height: 64,
+          flexShrink: 0,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: expanded ? "space-between" : "center",
+          px: expanded ? 2 : 1,
+          bgcolor: "secondary.main",
+          color: "secondary.contrastText",
+        }}
+      >
+        {expanded && (
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, minWidth: 0 }}>
+            <Avatar
+              variant="rounded"
+              sx={{ width: 34, height: 34, fontSize: 13, fontWeight: 700, bgcolor: "rgba(255,255,255,0.2)", color: "inherit" }}
+            >
+              EE
+            </Avatar>
+            <Typography variant="h6" noWrap sx={{ fontWeight: 700 }}>
+              EEAM Rabat
+            </Typography>
+          </Box>
+        )}
+        <IconButton
+          onClick={onToggle}
+          color="inherit"
+          aria-label={expanded ? "Réduire le menu" : "Développer le menu"}
+        >
+          {expanded ? <ChevronLeft /> : <MenuIcon />}
+        </IconButton>
+      </Box>
+
+      {/* Navigation */}
+      <List component="nav" sx={{ flex: 1, overflowY: "auto", px: expanded ? 1.5 : 1, py: 1.5 }}>
+        {items.map((item) => {
+          const Icon = item.icon
+          const active = isRouteActive(pathname, item.route)
+          const button = (
+            <ListItemButton
+              key={item.route}
+              component={Link}
+              href={item.route}
+              onClick={onNavigate}
+              selected={active}
+              sx={(theme) => ({
+                mb: 0.5,
+                minHeight: 44,
+                justifyContent: expanded ? "flex-start" : "center",
+                px: expanded ? 2 : 1.5,
+                "&.Mui-selected": {
+                  bgcolor: "rgba(var(--mui-palette-primary-mainChannel) / 0.14)",
+                  color: "primary.main",
+                  "& .MuiListItemIcon-root": { color: "primary.main" },
+                  "&:hover": { bgcolor: "rgba(var(--mui-palette-primary-mainChannel) / 0.2)" },
+                },
+              })}
+            >
+              <ListItemIcon sx={{ minWidth: 0, mr: expanded ? 2 : 0, justifyContent: "center" }}>
+                <Icon fontSize="small" />
+              </ListItemIcon>
+              {expanded && (
+                <ListItemText
+                  primary={item.label}
+                  slotProps={{ primary: { noWrap: true, sx: { fontSize: 14, fontWeight: active ? 600 : 500 } } }}
+                />
+              )}
+            </ListItemButton>
+          )
+
+          return expanded ? (
+            button
+          ) : (
+            <Tooltip key={item.route} title={item.label} placement="right">
+              {button}
+            </Tooltip>
+          )
+        })}
+      </List>
+
+      <Divider />
+      <Box sx={{ p: 2, textAlign: "center", flexShrink: 0 }}>
+        {expanded ? (
+          <Typography variant="caption" color="text.secondary">
+            EEAM Rabat © {new Date().getFullYear()}
+          </Typography>
+        ) : (
+          <Box sx={{ width: 24, height: 4, mx: "auto", borderRadius: 2, bgcolor: "divider" }} />
+        )}
+      </Box>
+    </Box>
+  )
+}
+
+export default function Sidebar({ role }: { role: string | null }) {
+  const { isMobileOpen, setIsMobileOpen, isDesktopExpanded, setIsDesktopExpanded } = useSidebar()
+
+  const items = allMenuItems.filter(
+    (item) => item.roles === null || (role != null && item.roles.includes(role))
   )
 
-  // showLabel: true when sidebar is fully open (mobile overlay OR desktop expanded)
-  const showLabel = isMobileOpen || isDesktopExpanded
-
-  const closeMobileSidebar = () => setIsMobileOpen(false)
+  const desktopWidth = isDesktopExpanded ? DRAWER_WIDTH : DRAWER_COLLAPSED_WIDTH
 
   return (
     <>
-      {/* Mobile menu button */}
-      <button
-        onClick={() => setIsMobileOpen(true)}
-        className="fixed top-4 left-4 z-50 md:hidden p-2 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
+      {/* Mobile: temporary drawer */}
+      <Drawer
+        variant="temporary"
+        open={isMobileOpen}
+        onClose={() => setIsMobileOpen(false)}
+        ModalProps={{ keepMounted: true }}
+        sx={{
+          display: { xs: "block", md: "none" },
+          "& .MuiDrawer-paper": { width: DRAWER_WIDTH, boxSizing: "border-box" },
+        }}
       >
-        <Menu size={20} />
-      </button>
-
-      {/* Overlay for mobile */}
-      {isMobileOpen && (
-        <div
-          className="fixed inset-0 bg-black/50 z-40 md:hidden"
-          onClick={() => setIsMobileOpen(false)}
+        <NavContent
+          items={items}
+          expanded
+          onToggle={() => setIsMobileOpen(false)}
+          onNavigate={() => setIsMobileOpen(false)}
         />
-      )}
+      </Drawer>
 
-      <aside
-        className={`fixed left-0 top-0 h-screen bg-white dark:bg-gray-900 shadow-2xl transition-all duration-300 z-50 flex flex-col overflow-hidden
-          ${isMobileOpen ? "w-72" : isDesktopExpanded ? "w-0 md:w-72" : "w-0 md:w-20"}`}
+      {/* Desktop: permanent mini-variant drawer */}
+      <Drawer
+        variant="permanent"
+        open
+        sx={(theme) => ({
+          display: { xs: "none", md: "block" },
+          width: desktopWidth,
+          flexShrink: 0,
+          transition: theme.transitions.create("width", { duration: theme.transitions.duration.standard }),
+          "& .MuiDrawer-paper": {
+            width: desktopWidth,
+            boxSizing: "border-box",
+            overflowX: "hidden",
+            transition: theme.transitions.create("width", { duration: theme.transitions.duration.standard }),
+          },
+        })}
       >
-        {/* Brand header */}
-        <div className={`h-16 md:h-20 flex items-center border-b border-white/20 bg-gradient-to-r from-rose-600 to-rose-700 shrink-0 transition-all duration-300
-          ${showLabel ? "px-4 md:px-5 justify-between" : "justify-center px-2"}`}
-        >
-          {showLabel && (
-            <div className="flex items-center gap-2 min-w-0">
-              <div className="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center flex-shrink-0">
-                <span className="text-white text-xs font-bold">EE</span>
-              </div>
-              <span className="text-lg font-bold text-white tracking-tight truncate">
-                EEAM Rabat
-              </span>
-            </div>
-          )}
-          <button
-            onClick={toggleSidebar}
-            className="p-2 rounded-lg hover:bg-white/20 transition-colors text-white flex-shrink-0"
-            title={showLabel ? "Réduire" : "Développer"}
-            aria-label={showLabel ? "Réduire le menu" : "Développer le menu"}
-          >
-            {showLabel ? <X size={18} /> : <Menu size={18} />}
-          </button>
-        </div>
-
-        {/* Navigation */}
-        <nav className={`flex-1 overflow-y-auto dark:bg-gray-900 space-y-0.5 transition-all duration-300
-          ${showLabel ? "p-3" : "p-2"}`}
-        >
-          {menuItems.map(item => {
-            const Icon = item.icon
-            const isActive = pathname === item.route
-
-            return (
-              <Link
-                key={item.label}
-                href={item.route}
-                onClick={closeMobileSidebar}
-                title={!showLabel ? item.label : undefined}
-                className={`flex items-center rounded-xl transition-all duration-200 group
-                  ${showLabel
-                    ? "gap-3 px-3 py-2.5"
-                    : "justify-center p-3"
-                  }
-                  ${isActive
-                    ? "bg-gradient-to-r from-cyan-500 to-cyan-600 text-white shadow-md shadow-cyan-500/25"
-                    : "text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-cyan-600 dark:hover:text-cyan-400"
-                  }`}
-              >
-                <Icon
-                  size={18}
-                  className="flex-shrink-0 transition-transform duration-200 group-hover:scale-110"
-                />
-                {showLabel && (
-                  <>
-                    <span className="font-medium flex-1 text-left text-sm truncate">
-                      {item.label}
-                    </span>
-                    {isActive && <ChevronRight size={14} className="flex-shrink-0 opacity-70" />}
-                  </>
-                )}
-              </Link>
-            )
-          })}
-        </nav>
-
-        {/* Footer */}
-        <div className={`border-t border-gray-100 dark:border-gray-800 shrink-0 transition-all duration-300
-          ${showLabel ? "p-4" : "p-2 flex justify-center"}`}
-        >
-          {showLabel ? (
-            <p className="text-xs text-gray-400 dark:text-gray-600 text-center">
-              EEAM Rabat © 2026
-            </p>
-          ) : (
-            <div className="w-6 h-1 bg-gray-200 dark:bg-gray-700 rounded-full" />
-          )}
-        </div>
-      </aside>
+        <NavContent
+          items={items}
+          expanded={isDesktopExpanded}
+          onToggle={() => setIsDesktopExpanded(!isDesktopExpanded)}
+        />
+      </Drawer>
     </>
   )
 }

@@ -4,6 +4,7 @@ import { useMemo, useState } from "react"
 import { ShieldAlert, ShieldCheck, UsersRound, Search, CheckCircle, XCircle, Clock } from "lucide-react"
 import { toast } from "sonner"
 import { createClient } from "@/lib/supabase/client"
+import { sendApprovalEmail } from "@/app/dashboard/users/actions"
 
 type ProfileRecord = {
   id: string
@@ -56,9 +57,10 @@ export default function UsersAdminPanel({
 
   const filteredProfiles = useMemo(() => {
     const term = search.trim().toLowerCase()
-    if (!term) return profiles
+    const pendingFirst = [...profiles].sort((a, b) => Number(!!a.approved) - Number(!!b.approved))
+    if (!term) return pendingFirst
 
-    return profiles.filter(profile => {
+    return pendingFirst.filter(profile => {
       const haystack = [
         profile.full_name,
         profile.email,
@@ -105,6 +107,13 @@ export default function UsersAdminPanel({
 
     toast.success(approve ? "Utilisateur approuvé." : "Accès révoqué.")
     setSavingId(null)
+
+    if (approve) {
+      // Let the person know they can now log in (non-blocking)
+      void sendApprovalEmail(profileId).then(res => {
+        if (!res.ok) toast.warning("Approuvé, mais l'e-mail de confirmation n'a pas pu être envoyé.")
+      })
+    }
   }
 
   const stats = useMemo(() => {

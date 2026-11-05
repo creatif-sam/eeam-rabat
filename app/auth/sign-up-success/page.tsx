@@ -20,7 +20,7 @@ export default function Page() {
             </CardHeader>
             <CardContent>
               <p className="text-sm text-muted-foreground">
-                Vous vous êtes inscrit avec succès. Veuillez vérifier votre boîte mail afin de confirmer votre compte avant de vous connecter.
+                Vous vous êtes inscrit avec succès. Cliquez sur le lien reçu par e-mail pour confirmer votre adresse, puis complétez votre profil. Les administrateurs ont été prévenus et approuveront votre accès ; vous recevrez un e-mail de confirmation.
               </p>
             </CardContent>
           </Card>

@@ -7,6 +7,7 @@ import CookieBanner from "@/components/CookieBanner"
 import { CookieManager } from "@/components/CookieManager"
 import PWAInstallPrompt from "@/components/PWAInstallPrompt"
 import NormalizeBody from "@/components/NormalizeBody"
+import MuiProvider from "@/components/MuiProvider"
 
 export default function ClientProviders({
   children
@@ -22,7 +23,7 @@ export default function ClientProviders({
   return (
     <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
       <NormalizeBody />
-      {children}
+      <MuiProvider>{children}</MuiProvider>
       <Toaster richColors position="top-right" />
       <CookieManager />
       {mounted && <CookieBanner />}

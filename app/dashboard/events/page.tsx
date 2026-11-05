@@ -237,7 +237,7 @@ export default function EventsTab() {
         (i + 1).toString(),
         e.title,
         new Date(e.event_date).toLocaleDateString("fr-FR"),
-        `${e.start_time} - ${e.end_time}`,
+        e.start_time ? `${e.start_time.slice(0, 5)} - ${e.end_time?.slice(0, 5) ?? ""}` : "Toute la journée",
         TYPE_LABELS[e.type] ?? e.type,
         e.is_online ? e.location : e.location,
         e.is_online ? `Oui — ${e.location}` : "Non",
@@ -404,7 +404,7 @@ export default function EventsTab() {
                 </p>
                 <p className="text-xs md:text-sm text-gray-500 dark:text-gray-400 flex items-center gap-2">
                   <Clock size={12} />
-                  {ev.start_time} - {ev.end_time}
+                  {ev.start_time ? `${ev.start_time.slice(0, 5)} - ${ev.end_time?.slice(0, 5) ?? ""}` : "Toute la journée"}
                 </p>
                 {ev.location && (
                   <p className="text-xs md:text-sm text-gray-500 dark:text-gray-400 flex items-center gap-2">
@@ -452,7 +452,7 @@ export default function EventsTab() {
               </div>
               <div className="flex items-center gap-2.5 text-sm md:text-base text-gray-700 dark:text-gray-300">
                 <Clock size={16} className="text-gray-400 dark:text-gray-500 shrink-0" />
-                <span>{selectedEvent.start_time} - {selectedEvent.end_time}</span>
+                <span>{selectedEvent.start_time ? `${selectedEvent.start_time.slice(0, 5)} - ${selectedEvent.end_time?.slice(0, 5) ?? ""}` : "Toute la journée"}</span>
               </div>
               {selectedEvent.location && (
                 <div className="flex items-center gap-2.5 text-sm md:text-base text-gray-700 dark:text-gray-300">
