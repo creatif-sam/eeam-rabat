@@ -63,6 +63,8 @@ export default async function UsersPage() {
     id: profile.id,
     full_name: profile.full_name ?? null,
     email: profile.email ?? null,
+    phone: profile.phone ?? null,
+    avatar_url: profile.avatar_url ?? null,
     role: profile.role ?? null,
     church: profile.church ?? null,
     completed: profile.completed ?? null,

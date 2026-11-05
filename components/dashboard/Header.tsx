@@ -151,6 +151,16 @@ export default function Header({ user }: { user: User }) {
     loadNotifications()
   }, [supabase, user.id])
 
+  // The profile page broadcasts saved changes so the header updates instantly
+  useEffect(() => {
+    const onUpdate = (e: Event) => {
+      const detail = (e as CustomEvent<Partial<Profile>>).detail
+      setProfile((prev) => ({ role: prev?.role ?? null, full_name: null, avatar_url: null, ...prev, ...detail }))
+    }
+    window.addEventListener("profile-updated", onUpdate)
+    return () => window.removeEventListener("profile-updated", onUpdate)
+  }, [])
+
   async function markAllRead() {
     const unreadIds = notifications.filter((n) => !n.read).map((n) => n.id)
     if (!unreadIds.length) return

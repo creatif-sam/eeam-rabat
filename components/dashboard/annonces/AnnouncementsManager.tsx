@@ -232,7 +232,7 @@ export default function AnnouncementsManager({
           slotProps={{ title: { sx: { fontWeight: 600 } } }}
         />
         <CardContent sx={{ pt: 0 }}>
-          <Paper variant="outlined" sx={{ overflow: "hidden", borderRadius: 2 }}>
+          <Paper variant="outlined" sx={{ overflow: "hidden", borderRadius: 1 }}>
             {preview.theme.theme.trim() || preview.announcements.length ? (
               <AnnouncementBar preview={preview} />
             ) : (
@@ -390,7 +390,7 @@ export default function AnnouncementsManager({
           <DialogContent>
             <Stack spacing={2.25} sx={{ pt: 1 }}>
               {/* Mini preview */}
-              <Paper variant="outlined" sx={{ overflow: "hidden", borderRadius: 2 }}>
+              <Paper variant="outlined" sx={{ overflow: "hidden", borderRadius: 1 }}>
                 <AnnouncementBar
                   preview={{
                     theme: { label: "", theme: "", reference: "" },

@@ -46,7 +46,7 @@ export default function PrivacyPolicy() {
         <PolicyItem
           icon={Database}
           title="Données collectées"
-          text="Les informations collectées via nos formulaires peuvent inclure le nom, le prénom, les coordonnées, la date de naissance ainsi que toute information volontairement fournie."
+          text="Les informations collectées via nos formulaires peuvent inclure le nom, le prénom, les coordonnées ainsi que toute information volontairement fournie."
         />
 
         <PolicyItem

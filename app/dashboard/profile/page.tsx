@@ -12,7 +12,7 @@ export default async function ProfilePage() {
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("id, full_name, phone, avatar_url, role, church")
+    .select("id, full_name, phone, avatar_url, role, church, approved, created_at")
     .eq("id", user.id)
     .maybeSingle()
 
@@ -23,42 +23,32 @@ export default async function ProfilePage() {
       .from("profiles")
       .insert({
         id: user.id,
+        email: user.email,
         full_name: user.user_metadata?.full_name ?? "",
         role: "membre_cp",
         church: "EEAM Rabat"
       })
-      .select()
+      .select("id, full_name, phone, avatar_url, role, church, approved, created_at")
       .single()
-
-    safeProfile = created ?? {
-      id: user.id,
-      full_name: user.user_metadata?.full_name ?? "",
-      phone: "",
-      avatar_url: null,
-      role: "membre_cp",
-      church: "EEAM Rabat"
-    }
-  }
-
-  const profileForForm = safeProfile ?? {
-    id: user.id,
-    full_name: user.user_metadata?.full_name ?? "",
-    phone: "",
-    avatar_url: null,
-    role: "membre_cp",
-    church: "EEAM Rabat"
+    safeProfile = created
   }
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-gray-100">Mon profil</h1>
-        <p className="text-sm md:text-base text-gray-600 dark:text-gray-400 mt-1">
-          Gérez vos informations personnelles et votre photo de profil.
-        </p>
-      </div>
-
-      <ProfileForm profile={profileForForm} email={user.email ?? ""} />
-    </div>
+    <ProfileForm
+      email={user.email ?? ""}
+      lastSignIn={user.last_sign_in_at ?? null}
+      profile={
+        safeProfile ?? {
+          id: user.id,
+          full_name: user.user_metadata?.full_name ?? "",
+          phone: "",
+          avatar_url: null,
+          role: "membre_cp",
+          church: "EEAM Rabat",
+          approved: null,
+          created_at: user.created_at ?? null
+        }
+      }
+    />
   )
 }

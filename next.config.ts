@@ -2,6 +2,10 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   cacheComponents: true,
+  // Profile photos (≤ 2 MB) are uploaded through a server action
+  experimental: {
+    serverActions: { bodySizeLimit: "3mb" },
+  },
   // The Turnstile site key is public by design; expose TURNSTILE_SITE_KEY to
   // the browser bundle (the secret key stays server-only).
   env: {

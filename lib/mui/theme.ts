@@ -28,7 +28,7 @@ const theme = createTheme({
       },
     },
   },
-  shape: { borderRadius: 12 },
+  shape: { borderRadius: 8 },
   typography: {
     fontFamily: [
       "Roboto",
@@ -47,7 +47,7 @@ const theme = createTheme({
   components: {
     MuiCard: {
       defaultProps: { variant: "outlined" },
-      styleOverrides: { root: { borderRadius: 16 } },
+      styleOverrides: { root: { borderRadius: 10 } },
     },
     MuiPaper: {
       styleOverrides: { root: { backgroundImage: "none" } },
@@ -56,7 +56,7 @@ const theme = createTheme({
       defaultProps: { disableElevation: true },
     },
     MuiListItemButton: {
-      styleOverrides: { root: { borderRadius: 12 } },
+      styleOverrides: { root: { borderRadius: 8 } },
     },
   },
 })

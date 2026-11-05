@@ -39,7 +39,6 @@ export async function submitMemberRegistration(input: Record<string, unknown>, t
     prenom: str(input.prenom, 100),
     genre: str(input.genre, 20),
     nationalite: str(input.nationalite, 100),
-    date_naissance: optStr(input.date_naissance, 10),
     telephone: str(input.telephone, 30),
     email: optStr(input.email, 200),
     profession: str(input.profession, 150),

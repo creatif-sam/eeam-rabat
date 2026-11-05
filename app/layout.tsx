@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next"
 import Script from "next/script"
+import { Suspense } from "react"
 import "./globals.css"
 import ClientProviders from "@/components/ClientProviders"
 import WhatsAppButton from "@/components/WhatsAppButton"
@@ -65,7 +66,9 @@ export default function RootLayout({
           {children}
         </ClientProviders>
 
-        <WhatsAppButton />
+        <Suspense fallback={null}>
+          <WhatsAppButton />
+        </Suspense>
 
         {/* Capture the install prompt before React hydrates (it only fires once) */}
         <Script id="pwa-install-capture" strategy="beforeInteractive">

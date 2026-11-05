@@ -71,7 +71,7 @@ type Tile = { label: string; desc?: string; icon: SvgIconComponent; color: strin
 /** Soft tonal icon badge (Material 3 "tonal" style). */
 function TonalIcon({ icon: Icon, color, size = 44 }: { icon: SvgIconComponent; color: string; size?: number }) {
   return (
-    <Avatar variant="rounded" sx={{ width: size, height: size, bgcolor: `${color}1f`, color, borderRadius: 3 }}>
+    <Avatar variant="rounded" sx={{ width: size, height: size, bgcolor: `${color}1f`, color, borderRadius: 1.5 }}>
       <Icon fontSize="small" />
     </Avatar>
   )
@@ -94,7 +94,7 @@ function SectionHeader({ title, href }: { title: string; href?: string }) {
 
 function EmptyState({ icon: Icon, text }: { icon: SvgIconComponent; text: string }) {
   return (
-    <Paper variant="outlined" sx={{ py: 5, textAlign: "center", borderRadius: 4, borderStyle: "dashed" }}>
+    <Paper variant="outlined" sx={{ py: 5, textAlign: "center", borderRadius: 1.5, borderStyle: "dashed" }}>
       <Icon sx={{ color: "text.disabled", mb: 1 }} />
       <Typography variant="body2" color="text.secondary">
         {text}
@@ -147,7 +147,7 @@ export default function DashboardHome({
         sx={{
           position: "relative",
           overflow: "hidden",
-          borderRadius: 5,
+          borderRadius: 2,
           p: { xs: 3, md: 5 },
           color: "#fff",
           background: "linear-gradient(135deg, #0891b2 0%, #2563eb 55%, #4338ca 100%)",
@@ -193,7 +193,7 @@ export default function DashboardHome({
               severity="warning"
               icon={<VerifiedUserOutlined />}
               variant="outlined"
-              sx={{ borderRadius: 3, alignItems: "center" }}
+              sx={{ borderRadius: 1.25, alignItems: "center" }}
               action={
                 <Button component={Link} href="/dashboard/users" color="warning" endIcon={<ArrowForward />}>
                   Examiner

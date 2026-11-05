@@ -56,6 +56,9 @@ export default {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
+        xl: "0.625rem",   // 10px
+        "2xl": "0.75rem", // 12px
+        "3xl": "1rem",    // 16px
       },
     },
   },

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { MapPin, Mail, Shield, Heart, Phone, ExternalLink, Cookie, Settings } from "lucide-react";
+import { MapPin, Mail, Shield, Phone, ExternalLink, Cookie, Settings } from "lucide-react";
 import { useState } from "react";
 import CookieSettingsModal from "@/components/CookieSettingsModal";
 import InstallAppButton from "@/components/pwa/InstallAppButton";
@@ -145,11 +145,6 @@ export default function Footer() {
             <p className="text-gray-500 text-sm text-center sm:text-left">
               &copy; {currentYear} Église Évangélique Au Maroc — Paroisse de Rabat. Tous droits réservés.
             </p>
-            <div className="flex items-center gap-2 text-gray-500 text-sm">
-              <span>Fait avec</span>
-              <Heart size={13} className="text-rose-400 fill-rose-400" />
-              <span>pour la gloire de Dieu</span>
-            </div>
           </div>
         </div>
       </footer>

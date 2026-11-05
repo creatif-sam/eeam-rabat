@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 
 import Header from "@/components/public/layout/Header";
 import WelcomeSection from "@/components/public/sections/WelcomeSection";
+import VerseOfTheDay from "@/components/VerseOfTheDay";
 import ServicesGrid from "@/components/public/sections/ServicesGrid";
 import EventsSection from "@/components/public/sections/EventsSection";
 import MobileNavbar from "@/components/public/MobileNavbar";
@@ -42,6 +43,8 @@ export default function HomePage() {
         <div id="home">
           <WelcomeSection />
         </div>
+
+        <VerseOfTheDay />
 
         <div id="services">
           <ServicesGrid

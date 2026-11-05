@@ -25,7 +25,7 @@ const BENEFITS = [
 
 const CHECKLIST = [
   "Votre paroisse (centre-ville ou annexe J5)",
-  "Identité : nom, date de naissance, nationalité",
+  "Identité : nom, genre, nationalité",
   "Coordonnées : téléphone, adresse / quartier",
   "Baptême (année si baptisé) et commissions souhaitées",
 ];

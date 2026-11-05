@@ -109,7 +109,7 @@ function FormulairesContent() {
         </Typography>
       </Box>
 
-      <Paper variant="outlined" sx={{ borderRadius: 4, overflow: "hidden" }}>
+      <Paper variant="outlined" sx={{ borderRadius: 1.5, overflow: "hidden" }}>
         <Tabs
           value={activeTab}
           onChange={(_, v: TabKey) => setTab(v)}
@@ -171,7 +171,7 @@ export default function FormulairesPage() {
       fallback={
         <Stack spacing={3}>
           <Skeleton variant="text" width={200} height={40} />
-          <Skeleton variant="rounded" height={420} sx={{ borderRadius: 4 }} />
+          <Skeleton variant="rounded" height={420} sx={{ borderRadius: 1.5 }} />
         </Stack>
       }
     >

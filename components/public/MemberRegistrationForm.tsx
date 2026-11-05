@@ -41,7 +41,6 @@ export default function MemberRegistrationForm({ isEdit, initialData, onSuccess,
     prenom: "",
     genre: "",
     nationalite: "",
-    date_naissance: "",
     telephone: "",
     email: "",
     profession: "",
@@ -66,7 +65,6 @@ export default function MemberRegistrationForm({ isEdit, initialData, onSuccess,
         prenom: initialData.prenom || "",
         genre: initialData.genre || "",
         nationalite: initialData.nationalite || "",
-        date_naissance: initialData.date_naissance || "",
         telephone: initialData.telephone || "",
         email: initialData.email || "",
         profession: initialData.profession || "",
@@ -153,7 +151,6 @@ export default function MemberRegistrationForm({ isEdit, initialData, onSuccess,
       prenom: form.prenom.trim(),
       genre: form.genre,
       nationalite: form.nationalite.trim(),
-      date_naissance: form.date_naissance || null,
       telephone: form.telephone.trim(),
       email: form.email || null,
       profession: form.profession.trim(),
@@ -264,10 +261,6 @@ export default function MemberRegistrationForm({ isEdit, initialData, onSuccess,
         {/* Contact */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-2">
-            <label className="text-sm font-bold dark:text-gray-300">Date de Naissance *</label>
-            <input type="date" name="date_naissance" value={form.date_naissance} className={inputClass} onChange={handleChange} required />
-          </div>
-          <div className="space-y-2">
             <label className="text-sm font-bold dark:text-gray-300">Téléphone *</label>
             <div className="relative">
               <Phone className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-5 w-5" />
@@ -279,7 +272,7 @@ export default function MemberRegistrationForm({ isEdit, initialData, onSuccess,
             <label className="text-sm font-bold dark:text-gray-300">Email</label>
             <input type="email" name="email" value={form.email} placeholder="email@domaine.com" className={inputClass} onChange={handleChange} />
           </div>
-          <div className="space-y-2">
+          <div className="md:col-span-2 space-y-2">
             <label className="text-sm font-bold dark:text-gray-300">Profession *</label>
             <input name="profession" value={form.profession} required placeholder="Votre métier" className={inputClass} onChange={handleChange} />
           </div>
