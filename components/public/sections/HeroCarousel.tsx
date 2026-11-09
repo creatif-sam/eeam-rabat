@@ -59,11 +59,14 @@ function buildSlides(theme: YearTheme, hero: HeroContent, occurrences: Occurrenc
   // 1 — Vision de l'année
   slides.push({
     id: "annee",
-    badge: `Vision de l'année ${year}`,
+    // "Année ecclésiale 2026-2027" → "Vision de l'année ecclésiale 2026-2027" (no doubled "année")
+    badge: year.toLowerCase().startsWith("année")
+      ? `Vision de l'${year.charAt(0).toLowerCase()}${year.slice(1)}`
+      : `Vision de l'année ${year}`,
     title: theme.theme || DEFAULT_YEAR_THEME,
     text: hero.yearVision || undefined,
     rows: [
-      { big: year, small: "Année ecclésiale" },
+      { big: year, small: "Année en cours" },
       ...(theme.reference ? [{ big: theme.reference, small: "Texte de référence" }] : []),
     ],
   });
@@ -234,12 +237,12 @@ export default function HeroCarousel() {
 
       {/* Controls: pause + dots */}
       {count > 1 && (
-        <div className="absolute right-4 top-4 sm:right-6 sm:top-6 z-20 flex items-center gap-2.5 rounded-full border border-white/20 bg-white/10 px-2.5 py-2 backdrop-blur-md">
+        <div className="absolute right-4 top-4 sm:right-6 sm:top-6 z-20 flex items-center gap-2.5 rounded-[8px] border border-white/20 bg-white/10 px-2.5 py-2 backdrop-blur-md">
           <button
             type="button"
             onClick={() => setUserPaused((p) => !p)}
             aria-label={userPaused ? "Lancer le défilement" : "Mettre en pause"}
-            className="grid h-6 w-6 place-items-center rounded-full text-white/90 hover:bg-white/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#90d9e0]"
+            className="grid h-6 w-6 place-items-center rounded-[5px] text-white/90 hover:bg-white/15 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#90d9e0]"
           >
             {userPaused ? <Play size={14} fill="currentColor" /> : <Pause size={14} fill="currentColor" />}
           </button>
@@ -279,7 +282,7 @@ export default function HeroCarousel() {
           aria-label={`${current + 1} sur ${count} : ${slide.badge}`}
           className={`max-w-2xl transition-opacity duration-500 ${loaded ? "opacity-100" : "opacity-0"} motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-4 motion-safe:duration-700`}
         >
-          <span className="inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/10 px-3.5 py-1.5 text-xs sm:text-sm font-semibold backdrop-blur-sm">
+          <span className="inline-flex items-center gap-2 rounded-[7px] border border-white/25 bg-white/10 px-3.5 py-1.5 text-xs sm:text-sm font-semibold backdrop-blur-sm">
             <span className="relative flex h-2 w-2">
               <span className="absolute inline-flex h-full w-full rounded-full bg-[#de6370] opacity-75 motion-safe:animate-ping" />
               <span className="relative inline-flex h-2 w-2 rounded-full bg-[#de6370]" />
@@ -295,7 +298,7 @@ export default function HeroCarousel() {
           {slide.cta && (
             <a
               href={slide.cta.href}
-              className="mt-6 inline-flex items-center gap-2 rounded-full bg-[#4ec2cd] px-5 py-2.5 text-sm font-semibold text-[#0d2d30] hover:bg-[#90d9e0] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+              className="mt-6 inline-flex items-center gap-2 rounded-[7px] bg-[#4ec2cd] px-5 py-2.5 text-sm font-semibold text-[#0d2d30] hover:bg-[#90d9e0] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
             >
               {slide.cta.label}
               <ArrowRight size={16} />
