@@ -2,16 +2,15 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Home, Users, Calendar, Clock, ChevronUp, LogIn, UserPlus } from "lucide-react";
+import { Home, Users, Calendar, Clock, ChevronUp, LogIn } from "lucide-react";
 
 interface MobileNavbarProps {
   onNavigate?: (section: string) => void;
   onLogin?: () => void;
-  onSignUp?: () => void;
   onMember?: () => void;
 }
 
-export default function MobileNavbar({ onNavigate, onLogin, onSignUp, onMember }: MobileNavbarProps) {
+export default function MobileNavbar({ onNavigate, onLogin, onMember }: MobileNavbarProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const router = useRouter();
 
@@ -64,7 +63,7 @@ export default function MobileNavbar({ onNavigate, onLogin, onSignUp, onMember }
         {/* Expandable Quick Actions */}
         <div className={`overflow-hidden transition-all duration-300 ${isExpanded ? 'max-h-32 pb-4' : 'max-h-0'}`}>
           <div className="px-4 pt-2 border-t border-gray-100 dark:border-gray-800">
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-1 gap-2">
               <button
                 onClick={() => {
                   onLogin ? onLogin() : router.push("/auth/login");
@@ -74,16 +73,6 @@ export default function MobileNavbar({ onNavigate, onLogin, onSignUp, onMember }
               >
                 <LogIn size={16} />
                 Connexion
-              </button>
-              <button
-                onClick={() => {
-                  if (onSignUp) onSignUp();
-                  setIsExpanded(false);
-                }}
-                className="flex items-center justify-center gap-2 p-3 bg-white dark:bg-gray-900 border-2 border-cyan-500 text-cyan-600 dark:text-cyan-400 rounded-lg text-sm font-medium"
-              >
-                <UserPlus size={16} />
-                S'inscrire
               </button>
             </div>
           </div>

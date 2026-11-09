@@ -3,10 +3,138 @@
 import { headers } from "next/headers"
 import { createSupabaseServerClient } from "@/lib/supabase/server"
 import { createSupabaseAdminClient } from "@/lib/supabase/admin"
-import { notifyUserApproved } from "@/lib/accounts/notify"
+import { notifyUserApproved, notifyUserInvited } from "@/lib/accounts/notify"
 import { DELETE_PHRASE, deletionName } from "@/lib/accounts/delete"
+import { generateTempPassword } from "@/lib/accounts/temp-password"
 
 const APPROVER_ROLES = ["admin", "pastor", "corps_pastoral"]
+const GRANTABLE_ROLES = ["admin", "pastor", "membre_cp", "treasurer"]
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+
+/** Signed-in caller, only if they are an administrator. */
+async function requireAdmin() {
+  const supabase = await createSupabaseServerClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: "Session expirée. Reconnectez-vous." as const }
+  const { data: me } = await supabase.from("profiles").select("role").eq("id", user.id).maybeSingle()
+  if ((me?.role ?? "").trim().toLowerCase() !== "admin") {
+    return { error: "Seuls les administrateurs peuvent gérer les accès." as const }
+  }
+  return { supabase, user }
+}
+
+export type GrantAccessResult =
+  | { ok: true; tempPassword: string; profile: { id: string; email: string; full_name: string | null; role: string; approved: true; completed: false; church: null; created_at: string } ; emailSent: boolean }
+  | { ok: false; error: string }
+
+/**
+ * Creates an account for someone with a one-time password. The person must
+ * replace it at first sign-in (app_metadata.must_change_password, which only
+ * the service role can write — users cannot clear it themselves).
+ * Administrators only. The password is returned once and never stored or logged.
+ */
+export async function grantAccess(input: {
+  email: string
+  fullName?: string
+  role?: string
+  sendWelcomeEmail?: boolean
+}): Promise<GrantAccessResult> {
+  const auth = await requireAdmin()
+  if ("error" in auth) return { ok: false, error: auth.error! }
+
+  const email = (input.email ?? "").trim().toLowerCase()
+  const fullName = (input.fullName ?? "").trim() || null
+  const role = GRANTABLE_ROLES.includes(input.role ?? "") ? input.role! : "membre_cp"
+  if (!EMAIL_RE.test(email)) return { ok: false, error: "Adresse e-mail invalide." }
+
+  const admin = createSupabaseAdminClient()
+  if (!admin) return { ok: false, error: "Indisponible : la clé SUPABASE_SERVICE_ROLE_KEY n'est pas configurée." }
+
+  const tempPassword = generateTempPassword()
+  const { data, error } = await admin.auth.admin.createUser({
+    email,
+    password: tempPassword,
+    email_confirm: true,
+    app_metadata: { must_change_password: true },
+    user_metadata: fullName ? { full_name: fullName } : undefined,
+  })
+  if (error || !data.user) {
+    if (/already|exists|registered/i.test(error?.message ?? "")) {
+      return { ok: false, error: "Un compte existe déjà avec cette adresse. Utilisez « Nouveau mot de passe temporaire » sur sa ligne." }
+    }
+    console.error("[users] grant access:", error?.message)
+    return { ok: false, error: "Impossible de créer l'accès pour le moment." }
+  }
+
+  const created_at = new Date().toISOString()
+  const { error: profileError } = await admin
+    .from("profiles")
+    .upsert({ id: data.user.id, email, full_name: fullName, role, approved: true }, { onConflict: "id" })
+  if (profileError) {
+    // Don't leave a half-created account behind
+    await admin.auth.admin.deleteUser(data.user.id)
+    console.error("[users] grant access profile:", profileError.message)
+    return { ok: false, error: "Impossible de créer le profil. Aucun compte n'a été créé." }
+  }
+
+  await auth.supabase.from("activity_logs").insert({
+    actor_user_id: auth.user.id,
+    action: "user_invited",
+    entity_type: "profiles",
+    entity_id: data.user.id,
+    description: `Granted access to ${email} (${role})`,
+    metadata: { target_user_id: data.user.id, target_email: email, role },
+  })
+
+  let emailSent = false
+  if (input.sendWelcomeEmail) {
+    const origin = (await headers()).get("origin")
+    emailSent = !!(await notifyUserInvited({ email, fullName, origin }))
+  }
+
+  return {
+    ok: true,
+    tempPassword,
+    emailSent,
+    profile: { id: data.user.id, email, full_name: fullName, role, approved: true, completed: false, church: null, created_at },
+  }
+}
+
+/**
+ * Replaces someone's password with a new one-time password (forgotten
+ * password, never signed in…). They must change it at next sign-in.
+ */
+export async function resetTempPassword(targetId: string): Promise<{ ok: true; tempPassword: string; email: string | null } | { ok: false; error: string }> {
+  const auth = await requireAdmin()
+  if ("error" in auth) return { ok: false, error: auth.error! }
+  if (targetId === auth.user.id) {
+    return { ok: false, error: "Changez votre propre mot de passe depuis votre profil." }
+  }
+
+  const admin = createSupabaseAdminClient()
+  if (!admin) return { ok: false, error: "Indisponible : la clé SUPABASE_SERVICE_ROLE_KEY n'est pas configurée." }
+
+  const tempPassword = generateTempPassword()
+  const { data, error } = await admin.auth.admin.updateUserById(targetId, {
+    password: tempPassword,
+    app_metadata: { must_change_password: true },
+  })
+  if (error || !data.user) {
+    console.error("[users] reset temp password:", error?.message)
+    return { ok: false, error: "Impossible de réinitialiser le mot de passe." }
+  }
+
+  await auth.supabase.from("activity_logs").insert({
+    actor_user_id: auth.user.id,
+    action: "user_password_reset",
+    entity_type: "profiles",
+    entity_id: targetId,
+    description: `Issued a temporary password to ${data.user.email ?? targetId}`,
+    metadata: { target_user_id: targetId },
+  })
+
+  return { ok: true, tempPassword, email: data.user.email ?? null }
+}
 
 /** Emails a user that their account was approved. Caller must be an approver. */
 export async function sendApprovalEmail(profileId: string): Promise<{ ok: boolean }> {

@@ -12,6 +12,8 @@ Vérifiez aussi que **Site URL** (Authentication → URL Configuration) est l'ad
 
 ## Confirm signup
 
+> Plus utilisé : l'inscription publique est supprimée. Les comptes sont créés par un administrateur (Utilisateurs → « Donner un accès ») avec une adresse déjà confirmée. Gardez « Allow new users to sign up » désactivé dans Supabase (Authentication → Sign In / Providers).
+
 **Objet :** `Confirmez votre inscription – EEAM Rabat`
 
 ```html

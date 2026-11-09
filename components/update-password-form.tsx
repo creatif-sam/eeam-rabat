@@ -21,8 +21,9 @@ const MIN_LENGTH = 8;
 
 export function UpdatePasswordForm({
   className,
+  firstLogin = false,
   ...props
-}: React.ComponentPropsWithoutRef<"div">) {
+}: React.ComponentPropsWithoutRef<"div"> & { firstLogin?: boolean }) {
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [show, setShow] = useState(false);
@@ -49,21 +50,30 @@ export function UpdatePasswordForm({
     if (!result.ok) {
       setError(
         /session/i.test(result.error)
-          ? "Votre lien a expiré. Demandez un nouveau lien de réinitialisation."
+          ? firstLogin
+            ? "Votre session a expiré. Reconnectez-vous avec le mot de passe temporaire."
+            : "Votre lien a expiré. Demandez un nouveau lien de réinitialisation."
           : result.error
       );
       return;
     }
-    toast.success("Mot de passe mis à jour.");
-    router.push("/dashboard");
+    toast.success(firstLogin ? "Bienvenue ! Votre mot de passe est enregistré." : "Mot de passe mis à jour.");
+    router.replace("/dashboard");
+    router.refresh();
   };
 
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <Card>
         <CardHeader>
-          <CardTitle className="text-2xl">Nouveau mot de passe</CardTitle>
-          <CardDescription>Choisissez un nouveau mot de passe pour votre compte.</CardDescription>
+          <CardTitle className="text-2xl">
+            {firstLogin ? "Choisissez votre mot de passe" : "Nouveau mot de passe"}
+          </CardTitle>
+          <CardDescription>
+            {firstLogin
+              ? "Vous vous êtes connecté avec un mot de passe temporaire. Choisissez maintenant votre mot de passe personnel : vous seul le connaîtrez."
+              : "Choisissez un nouveau mot de passe pour votre compte."}
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit}>

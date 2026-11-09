@@ -16,12 +16,10 @@ import VolunteerForm from "@/components/public/VolunteerForm";
 import RequestSubmissionForm from "@/components/public/RequestSubmissionForm";
 import AttendanceForm from "@/components/public/AttendanceForm";
 import PublicCalendar from "@/components/public/PublicCalender";
-import { SignUpForm } from "@/components/sign-up-form";
 
 export default function HomePage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [signUpOpen, setSignUpOpen] = useState(false);
   const [volunteerOpen, setVolunteerOpen] = useState(false);
   const [requestOpen, setRequestOpen] = useState(false);
   const [attendanceOpen, setAttendanceOpen] = useState(false);
@@ -30,14 +28,12 @@ export default function HomePage() {
     const modal = searchParams.get('modal');
     if (modal === 'login') {
       router.replace("/auth/login");
-    } else if (modal === 'signup') {
-      setSignUpOpen(true);
     }
   }, [searchParams, router]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950 transition-colors duration-300">
-      <Header onSignUp={() => setSignUpOpen(true)} />
+      <Header />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
         <div id="home">
@@ -95,16 +91,6 @@ export default function HomePage() {
         <AttendanceForm />
       </BaseModal>
 
-      <BaseModal
-        open={signUpOpen}
-        onClose={() => setSignUpOpen(false)}
-        title="Créer un compte"
-        subtitle="Rejoignez notre communauté"
-        headerClass="bg-gradient-to-r from-green-500 to-emerald-600"
-      >
-        <SignUpForm />
-      </BaseModal>
-
       <MobileNavbar
         onNavigate={(section) => {
           const element = document.getElementById(section);
@@ -112,7 +98,6 @@ export default function HomePage() {
             element.scrollIntoView({ behavior: "smooth" });
           }
         }}
-        onSignUp={() => setSignUpOpen(true)}
         onMember={() => router.push("/inscription-membre")}
       />
 

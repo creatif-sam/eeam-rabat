@@ -13,6 +13,14 @@ export default async function AuthCheck() {
     redirect("/auth/login");
   }
 
+  // Accounts created (or reset) by an administrator carry a one-time
+  // password: nothing is reachable until the person picks their own.
+  // getUser() reads the live record, so this cannot be stale; only the
+  // service role can write app_metadata, so users cannot clear it themselves.
+  if ((user.app_metadata as Record<string, unknown> | null)?.must_change_password === true) {
+    redirect("/auth/update-password?first=1");
+  }
+
   const { data: profile } = await supabase
     .from("profiles")
     .select("*")

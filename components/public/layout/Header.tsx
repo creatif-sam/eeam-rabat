@@ -2,13 +2,13 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { LogIn, UserPlus } from "lucide-react";
+import { LogIn } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { ThemeSwitcher } from "@/components/theme-switcher";
 import AnnouncementBar from "@/components/public/AnnouncementBar";
 import InstallAppButton from "@/components/pwa/InstallAppButton";
 
-export default function Header({ onLogin, onSignUp }: { onLogin?: () => void; onSignUp?: () => void }) {
+export default function Header({ onLogin }: { onLogin?: () => void }) {
   const router = useRouter();
 
   return (
@@ -48,24 +48,6 @@ export default function Header({ onLogin, onSignUp }: { onLogin?: () => void; on
           <div className="flex items-center gap-2 sm:gap-3">
             <ThemeSwitcher />
             <InstallAppButton />
-
-            <button
-              onClick={() =>
-                onSignUp ? onSignUp() : router.push("/auth/sign-up")
-              }
-              className="flex items-center justify-center gap-2
-                px-3 py-3 sm:px-6 sm:py-3
-                bg-white dark:bg-gray-900 border-2 border-cyan-500 dark:border-cyan-400
-                text-cyan-600 dark:text-cyan-400
-                rounded-xl shadow-lg
-                hover:bg-cyan-50 dark:hover:bg-gray-800 transition"
-              aria-label="S'inscrire"
-            >
-              <UserPlus size={20} />
-              <span className="hidden sm:inline font-medium">
-                S'inscrire
-              </span>
-            </button>
 
             <button
               onClick={() =>

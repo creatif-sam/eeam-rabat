@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache"
 import { createSupabaseServerClient } from "@/lib/supabase/server"
+import { createSupabaseAdminClient } from "@/lib/supabase/admin"
 
 /**
  * Profile writes run on the server so they use the logged-in session
@@ -85,6 +86,18 @@ export async function changePassword(password: string): Promise<Result> {
     if (/weak|pwned/i.test(error.message)) return { ok: false, error: "Ce mot de passe est trop faible." }
     console.error("[profile] password:", error.message)
     return { ok: false, error: "Impossible de changer le mot de passe pour le moment." }
+  }
+
+  // The one-time password set by an administrator has now been replaced.
+  if ((user.app_metadata as Record<string, unknown> | null)?.must_change_password === true) {
+    const admin = createSupabaseAdminClient()
+    const { error: flagError } = admin
+      ? await admin.auth.admin.updateUserById(user.id, { app_metadata: { must_change_password: false } })
+      : { error: new Error("SUPABASE_SERVICE_ROLE_KEY not set") }
+    if (flagError) {
+      console.error("[profile] clear must_change_password:", flagError.message)
+      return { ok: false, error: "Mot de passe changé, mais l'accès n'a pas pu être débloqué. Contactez un administrateur." }
+    }
   }
   return { ok: true }
 }

@@ -126,15 +126,10 @@ export function LoginForm({
               </Button>
             </div>
 
-            <div className="mt-4 text-center text-sm">
-              Vous n’avez pas de compte ?{" "}
-              <Link
-                href="/?modal=signup"
-                className="underline underline-offset-4"
-              >
-                Créer un compte
-              </Link>
-            </div>
+            <p className="mt-4 text-center text-sm text-gray-500 dark:text-gray-400">
+              L’accès se fait sur invitation. Pour obtenir un compte,
+              contactez un administrateur.
+            </p>
           </form>
         </CardContent>
       </Card>

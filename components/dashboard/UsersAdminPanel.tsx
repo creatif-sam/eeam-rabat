@@ -1,11 +1,12 @@
 "use client"
 
 import { useCallback, useMemo, useState } from "react"
-import { ShieldAlert, ShieldCheck, UsersRound, Search, CheckCircle, XCircle, Clock, Trash2, Eye } from "lucide-react"
+import { ShieldAlert, ShieldCheck, UsersRound, Search, CheckCircle, XCircle, Clock, Trash2, Eye, KeyRound, UserPlus, Loader2 } from "lucide-react"
 import { toast } from "sonner"
 import { createClient } from "@/lib/supabase/client"
-import { sendApprovalEmail } from "@/app/dashboard/users/actions"
+import { resetTempPassword, sendApprovalEmail } from "@/app/dashboard/users/actions"
 import DeleteAccountDialog from "@/components/dashboard/DeleteAccountDialog"
+import GrantAccessDialog, { TempPasswordReveal, type IssuedPassword } from "@/components/dashboard/GrantAccessDialog"
 import UserDetailsDialog from "@/components/dashboard/UserDetailsDialog"
 
 type ProfileRecord = {
@@ -56,6 +57,20 @@ export default function UsersAdminPanel({
   const [toDelete, setToDelete] = useState<ProfileRecord | null>(null)
   const [viewingId, setViewingId] = useState<string | null>(null)
   const closeDetails = useCallback(() => setViewingId(null), [])
+  const [grantOpen, setGrantOpen] = useState(false)
+  const [issued, setIssued] = useState<IssuedPassword | null>(null)
+  const closeIssued = useCallback(() => setIssued(null), [])
+  const [resettingId, setResettingId] = useState<string | null>(null)
+
+  async function handleResetPassword(profile: ProfileRecord) {
+    const who = profile.full_name ?? profile.email ?? "cette personne"
+    if (!window.confirm(`Générer un nouveau mot de passe temporaire pour ${who} ?\n\nSon mot de passe actuel ne fonctionnera plus et il devra en choisir un nouveau à la connexion.`)) return
+    setResettingId(profile.id)
+    const result = await resetTempPassword(profile.id)
+    setResettingId(null)
+    if (!result.ok) return void toast.error(result.error)
+    setIssued({ email: result.email ?? profile.email ?? "", fullName: profile.full_name, tempPassword: result.tempPassword, isNew: false })
+  }
 
   const canManageRoles = normalizeRole(currentUserRole) === "admin"
   const canApprove = ["admin", "pastor"].includes(normalizeRole(currentUserRole) ?? "")
@@ -184,13 +199,26 @@ export default function UsersAdminPanel({
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">
-          Utilisateurs
-        </h1>
-        <p className="text-sm md:text-base text-gray-600 dark:text-gray-400">
-          Vue d'ensemble des profils. Les administrateurs peuvent modifier les rôles.
-        </p>
+      <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
+        <div>
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">
+            Utilisateurs
+          </h1>
+          <p className="text-sm md:text-base text-gray-600 dark:text-gray-400">
+            {canManageRoles
+              ? "L'accès se fait sur invitation : donnez un accès, transmettez le mot de passe temporaire."
+              : "Vue d'ensemble des profils. Les administrateurs peuvent modifier les rôles."}
+          </p>
+        </div>
+        {canManageRoles && (
+          <button
+            onClick={() => setGrantOpen(true)}
+            className="inline-flex items-center justify-center gap-2 rounded-lg bg-cyan-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-cyan-700 transition-colors shrink-0"
+          >
+            <UserPlus size={16} />
+            Donner un accès
+          </button>
+        )}
       </div>
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
@@ -357,6 +385,16 @@ export default function UsersAdminPanel({
                   {canManageRoles && (
                     <td className="p-3 text-right">
                       {profile.id !== currentUserId && (
+                        <div className="inline-flex items-center gap-1">
+                        <button
+                          onClick={() => void handleResetPassword(profile)}
+                          disabled={resettingId === profile.id}
+                          title="Nouveau mot de passe temporaire"
+                          aria-label={`Nouveau mot de passe temporaire pour ${profile.full_name ?? profile.email ?? "cet utilisateur"}`}
+                          className="rounded-lg p-2 text-gray-400 hover:bg-cyan-50 hover:text-cyan-600 dark:hover:bg-cyan-900/20 dark:hover:text-cyan-400 transition-colors disabled:opacity-40"
+                        >
+                          {resettingId === profile.id ? <Loader2 size={16} className="animate-spin" /> : <KeyRound size={16} />}
+                        </button>
                         <button
                           onClick={() => setToDelete(profile)}
                           title="Supprimer le compte"
@@ -365,6 +403,7 @@ export default function UsersAdminPanel({
                         >
                           <Trash2 size={16} />
                         </button>
+                        </div>
                       )}
                     </td>
                   )}
@@ -382,6 +421,18 @@ export default function UsersAdminPanel({
       </div>
 
       <UserDetailsDialog userId={viewingId} onClose={closeDetails} />
+
+      <GrantAccessDialog
+        open={grantOpen}
+        onClose={() => setGrantOpen(false)}
+        onGranted={(profile, password) => {
+          setProfiles(prev => [profile, ...prev.filter(p => p.id !== profile.id)])
+          setGrantOpen(false)
+          setIssued(password)
+        }}
+      />
+
+      <TempPasswordReveal issued={issued} onClose={closeIssued} />
 
       <DeleteAccountDialog
         target={toDelete}
