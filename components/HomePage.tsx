@@ -12,7 +12,6 @@ import MobileNavbar from "@/components/public/MobileNavbar";
 import Footer from "@/components/public/Footer";
 import BaseModal from "@/components/modals/BaseModal";
 
-import VolunteerForm from "@/components/public/VolunteerForm";
 import RequestSubmissionForm from "@/components/public/RequestSubmissionForm";
 import AttendanceForm from "@/components/public/AttendanceForm";
 import PublicCalendar from "@/components/public/PublicCalender";
@@ -20,7 +19,6 @@ import PublicCalendar from "@/components/public/PublicCalender";
 export default function HomePage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [volunteerOpen, setVolunteerOpen] = useState(false);
   const [requestOpen, setRequestOpen] = useState(false);
   const [attendanceOpen, setAttendanceOpen] = useState(false);
 
@@ -45,7 +43,7 @@ export default function HomePage() {
         <div id="services">
           <ServicesGrid
             onMember={() => router.push("/inscription-membre")}
-            onVolunteer={() => setVolunteerOpen(true)}
+            onVolunteer={() => router.push("/devenir-benevole")}
             onRequest={() => setRequestOpen(true)}
             onAttendance={() => setAttendanceOpen(true)}
           />
@@ -60,16 +58,6 @@ export default function HomePage() {
         </div>
 
       </main>
-
-      <BaseModal
-        open={volunteerOpen}
-        onClose={() => setVolunteerOpen(false)}
-        title="Devenir Bénévole"
-        subtitle="Servez dans un ministère"
-        headerClass="bg-gradient-to-r from-green-500 to-emerald-600"
-      >
-        <VolunteerForm />
-      </BaseModal>
 
       <BaseModal
         open={requestOpen}

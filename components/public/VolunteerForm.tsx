@@ -14,7 +14,7 @@ const inputClass = "w-full px-4 py-3 rounded-xl border transition-all focus:outl
 
 const labelClass = "block text-sm font-semibold text-gray-800 dark:text-gray-200 mb-1.5";
 
-export default function VolunteerForm() {
+export default function VolunteerForm({ onSuccess, className = "max-w-xl" }: { onSuccess?: () => void; className?: string } = {}) {
   const [loading, setLoading] = useState(false);
   const [captcha, setCaptcha] = useState<string | null>(null);
   const captchaRef = useRef<TurnstileHandle>(null);
@@ -60,12 +60,13 @@ export default function VolunteerForm() {
       toast.error(result.error);
       return;
     }
-    toast.success("Candidature envoyée ! Nous vous contacterons bientôt.");
     setForm({ first_name: "", last_name: "", email: "", phone: "", ministry: "", skills: "", availability: [] });
+    if (onSuccess) onSuccess();
+    else toast.success("Candidature envoyée ! Nous vous contacterons bientôt.");
   };
 
   return (
-    <form onSubmit={handleSubmit} className="max-w-xl space-y-6">
+    <form onSubmit={handleSubmit} className={`${className} space-y-6`}>
       <div className="grid md:grid-cols-2 gap-4">
         <div>
           <label className={labelClass}>Prénom *</label>
