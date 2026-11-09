@@ -16,6 +16,7 @@ import {
   Save
 } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
+import { toast } from "sonner"
 import Image from "next/image"
 
 type Group = {
@@ -110,7 +111,7 @@ export default function GroupesTab() {
       }
     } catch (error) {
       console.error('Error uploading photo:', error)
-      alert('Erreur lors du téléchargement de la photo')
+      toast.error("Erreur lors du téléchargement de la photo")
     } finally {
       setUploading(false)
     }
@@ -154,10 +155,10 @@ export default function GroupesTab() {
       }
 
       setIsEditing(false)
-      alert('Commission mise à jour avec succès!')
+      toast.success("Commission mise à jour avec succès !")
     } catch (error) {
       console.error('Error saving commission:', error)
-      alert('Erreur lors de la sauvegarde')
+      toast.error("Erreur lors de la sauvegarde")
     } finally {
       setSaving(false)
     }

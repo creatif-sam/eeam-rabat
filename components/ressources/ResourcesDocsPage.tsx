@@ -173,7 +173,15 @@ export default function ResourcesDocsPage({ role }: { role: string | null }) {
       );
       return;
     }
-    if (!confirm(`Supprimer la catégorie « ${cat.name} » ?`)) return;
+    toast(`Supprimer la catégorie « ${cat.name} » ?`, {
+      description: "Cette action est définitive.",
+      duration: 10000,
+      action: { label: "Supprimer", onClick: () => void deleteCategory(cat) },
+      cancel: { label: "Annuler", onClick: () => {} },
+    });
+  };
+
+  const deleteCategory = async (cat: Category) => {
     const { error } = await supabase
       .from("resource_categories")
       .delete()
