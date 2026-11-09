@@ -9,10 +9,13 @@ const PRIVILEGED_ROLES = ["admin", "pastor"]
 
 export default function SettingsClient({
   role,
-  initialSettings
+  initialSettings,
+  embedded = false
 }: {
   role: string | null
   initialSettings: Record<string, string>
+  /** Inside the "Site public" page, which provides its own title. */
+  embedded?: boolean
 }) {
   const supabase = createClient()
   const isPrivileged = role != null && PRIVILEGED_ROLES.includes(role)
@@ -56,14 +59,16 @@ export default function SettingsClient({
   return (
     <div className="space-y-6">
       {/* Page header */}
-      <div>
-        <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">
-          Paramètres
-        </h1>
-        <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-          Configuration et sécurité de l'application
-        </p>
-      </div>
+      {!embedded && (
+        <div>
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">
+            Paramètres
+          </h1>
+          <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+            Configuration et sécurité de l'application
+          </p>
+        </div>
+      )}
 
       {isPrivileged ? (
         <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 shadow-sm overflow-hidden">

@@ -1,7 +1,21 @@
 import type { NextConfig } from "next";
 
+// Homepage hero photos uploaded from the dashboard live in Supabase Storage.
+const supabaseHost = (() => {
+  try {
+    return new URL(process.env.NEXT_PUBLIC_SUPABASE_URL ?? "").hostname;
+  } catch {
+    return null;
+  }
+})();
+
 const nextConfig: NextConfig = {
   cacheComponents: true,
+  images: {
+    remotePatterns: supabaseHost
+      ? [{ protocol: "https", hostname: supabaseHost, pathname: "/storage/v1/object/public/**" }]
+      : [],
+  },
   // Profile photos (≤ 2 MB) are uploaded through a server action
   experimental: {
     serverActions: { bodySizeLimit: "3mb" },

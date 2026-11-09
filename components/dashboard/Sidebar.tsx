@@ -18,7 +18,6 @@ import type { SvgIconComponent } from "@mui/icons-material"
 import {
   AssessmentOutlined,
   AssignmentOutlined,
-  CampaignOutlined,
   ChecklistOutlined,
   ChevronLeft,
   EventOutlined,
@@ -31,9 +30,9 @@ import {
   PaymentsOutlined,
   PeopleAltOutlined,
   PlaceOutlined,
+  PublicOutlined,
   ReceiptLongOutlined,
   SchoolOutlined,
-  SettingsOutlined,
   WaterDropOutlined,
 } from "@mui/icons-material"
 import { useSidebar } from "./SidebarContext"
@@ -48,7 +47,6 @@ type MenuItem = { label: string; icon: SvgIconComponent; route: string; roles: s
 
 const allMenuItems: MenuItem[] = [
   { label: "Accueil", icon: HomeOutlined, route: "/dashboard", roles: null },
-  { label: "Annonces", icon: CampaignOutlined, route: "/dashboard/annonces", roles: ADMIN_ROLES },
   { label: "Annexe de J5", icon: PlaceOutlined, route: "/dashboard/annexe-j5", roles: null },
   { label: "Baptêmes", icon: WaterDropOutlined, route: "/dashboard/baptemes", roles: null },
   { label: "Commissions", icon: GroupsOutlined, route: "/dashboard/groupes", roles: null },
@@ -59,10 +57,10 @@ const allMenuItems: MenuItem[] = [
   { label: "Logistique", icon: Inventory2Outlined, route: "/dashboard/logistique", roles: ADMIN_ROLES },
   { label: "Logs", icon: ReceiptLongOutlined, route: "/dashboard/logs", roles: ADMIN_ROLES },
   { label: "Membres", icon: PeopleAltOutlined, route: "/dashboard/membres", roles: null },
-  { label: "Paramètres", icon: SettingsOutlined, route: "/dashboard/settings", roles: ADMIN_ROLES },
   { label: "Planify", icon: ChecklistOutlined, route: "/dashboard/tasky", roles: null },
   { label: "Rapports", icon: AssessmentOutlined, route: "/dashboard/rapports", roles: null },
   { label: "Ressources", icon: MenuBookOutlined, route: "/dashboard/ressources", roles: null },
+  { label: "Site public", icon: PublicOutlined, route: "/dashboard/site", roles: ADMIN_ROLES },
   { label: "Utilisateurs", icon: ManageAccountsOutlined, route: "/dashboard/users", roles: ADMIN_ROLES },
 ]
 

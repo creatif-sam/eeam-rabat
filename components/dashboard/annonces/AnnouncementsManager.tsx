@@ -108,11 +108,14 @@ export default function AnnouncementsManager({
   setupMissing,
   initialTheme,
   initialAnnouncements,
+  embedded = false,
 }: {
   userId: string
   setupMissing: boolean
   initialTheme: YearTheme
   initialAnnouncements: Announcement[]
+  /** Inside the "Site public" page, which provides its own title. */
+  embedded?: boolean
 }) {
   const [theme, setTheme] = useState<YearTheme>(initialTheme)
   const [savedTheme, setSavedTheme] = useState<YearTheme>(initialTheme)
@@ -207,14 +210,16 @@ export default function AnnouncementsManager({
 
   return (
     <Stack spacing={3}>
-      <Box>
-        <Typography variant="h5" component="h1" sx={{ fontWeight: 700 }}>
-          Annonces du site
-        </Typography>
-        <Typography variant="body2" color="text.secondary">
-          Thème de l&apos;année ecclésiale et annonces affichées dans le bandeau en haut du site public.
-        </Typography>
-      </Box>
+      {!embedded && (
+        <Box>
+          <Typography variant="h5" component="h1" sx={{ fontWeight: 700 }}>
+            Annonces du site
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            Thème de l&apos;année ecclésiale et annonces affichées dans le bandeau en haut du site public.
+          </Typography>
+        </Box>
+      )}
 
       {setupMissing && (
         <Alert severity="warning">

@@ -30,14 +30,13 @@ import {
   PlaceOutlined,
   PlayArrowRounded,
   ReceiptLongOutlined,
-  SettingsOutlined,
+  PublicOutlined,
   VerifiedUserOutlined,
   VolunteerActivismOutlined,
   AssessmentOutlined,
   DescriptionOutlined,
   SupportAgentOutlined,
 } from "@mui/icons-material"
-import WelcomeMessageEditor from "@/components/WelcomeMessageEditor"
 
 export type HomeStats = {
   totalMembers: number
@@ -129,7 +128,7 @@ export default function DashboardHome({
   const quickActions: Tile[] = [
     { label: "Gérer les utilisateurs", icon: ManageAccountsOutlined, href: "/dashboard/users", color: "#b72736" },
     { label: "Journal d'activité", icon: ReceiptLongOutlined, href: "/dashboard/logs", color: "#b72736" },
-    { label: "Paramètres", icon: SettingsOutlined, href: "/dashboard/settings", color: "#475569" },
+    { label: "Site public", icon: PublicOutlined, href: "/dashboard/site", color: "#28868f" },
     { label: "Membres", icon: PeopleAltOutlined, href: "/dashboard/membres", color: "#28868f" },
   ]
 
@@ -182,7 +181,6 @@ export default function DashboardHome({
                 : "Bienvenue dans votre espace personnel. Accédez à vos activités et ressources."}
             </Typography>
           </Box>
-          {isAdmin && <WelcomeMessageEditor />}
         </Stack>
       </Paper>
 

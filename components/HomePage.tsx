@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 
 import Header from "@/components/public/layout/Header";
-import WelcomeSection from "@/components/public/sections/WelcomeSection";
+import HeroCarousel from "@/components/public/sections/HeroCarousel";
 import VerseOfTheDay from "@/components/VerseOfTheDay";
 import ServicesGrid from "@/components/public/sections/ServicesGrid";
 import EventsSection from "@/components/public/sections/EventsSection";
@@ -37,7 +37,7 @@ export default function HomePage() {
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
         <div id="home">
-          <WelcomeSection />
+          <HeroCarousel />
         </div>
 
         <VerseOfTheDay />
