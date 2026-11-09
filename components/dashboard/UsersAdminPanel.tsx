@@ -6,7 +6,7 @@ import { toast } from "sonner"
 import { createClient } from "@/lib/supabase/client"
 import { resetTempPassword, sendApprovalEmail } from "@/app/dashboard/users/actions"
 import DeleteAccountDialog from "@/components/dashboard/DeleteAccountDialog"
-import GrantAccessDialog, { TempPasswordReveal, type IssuedPassword } from "@/components/dashboard/GrantAccessDialog"
+import GrantAccessDialog, { ConfirmResetDialog, TempPasswordReveal, type IssuedPassword } from "@/components/dashboard/GrantAccessDialog"
 import UserDetailsDialog from "@/components/dashboard/UserDetailsDialog"
 
 type ProfileRecord = {
@@ -62,14 +62,24 @@ export default function UsersAdminPanel({
   const closeIssued = useCallback(() => setIssued(null), [])
   const [resettingId, setResettingId] = useState<string | null>(null)
 
-  async function handleResetPassword(profile: ProfileRecord) {
-    const who = profile.full_name ?? profile.email ?? "cette personne"
-    if (!window.confirm(`Générer un nouveau mot de passe temporaire pour ${who} ?\n\nSon mot de passe actuel ne fonctionnera plus et il devra en choisir un nouveau à la connexion.`)) return
+  const [toReset, setToReset] = useState<ProfileRecord | null>(null)
+
+  async function handleResetPassword(profile: ProfileRecord, emailPassword: boolean) {
     setResettingId(profile.id)
-    const result = await resetTempPassword(profile.id)
+    const result = await resetTempPassword(profile.id, emailPassword)
     setResettingId(null)
+    setToReset(null)
     if (!result.ok) return void toast.error(result.error)
-    setIssued({ email: result.email ?? profile.email ?? "", fullName: profile.full_name, tempPassword: result.tempPassword, isNew: false })
+    if (result.email && !profile.email) {
+      setProfiles(prev => prev.map(p => (p.id === profile.id ? { ...p, email: result.email } : p)))
+    }
+    setIssued({
+      email: result.email ?? profile.email ?? "",
+      fullName: profile.full_name,
+      tempPassword: result.tempPassword,
+      isNew: false,
+      emailed: emailPassword ? result.emailSent : null,
+    })
   }
 
   const canManageRoles = normalizeRole(currentUserRole) === "admin"
@@ -387,7 +397,7 @@ export default function UsersAdminPanel({
                       {profile.id !== currentUserId && (
                         <div className="inline-flex items-center gap-1">
                         <button
-                          onClick={() => void handleResetPassword(profile)}
+                          onClick={() => setToReset(profile)}
                           disabled={resettingId === profile.id}
                           title="Nouveau mot de passe temporaire"
                           aria-label={`Nouveau mot de passe temporaire pour ${profile.full_name ?? profile.email ?? "cet utilisateur"}`}
@@ -430,6 +440,13 @@ export default function UsersAdminPanel({
           setGrantOpen(false)
           setIssued(password)
         }}
+      />
+
+      <ConfirmResetDialog
+        target={toReset}
+        busy={!!toReset && resettingId === toReset.id}
+        onCancel={() => setToReset(null)}
+        onConfirm={emailPassword => toReset && void handleResetPassword(toReset, emailPassword)}
       />
 
       <TempPasswordReveal issued={issued} onClose={closeIssued} />

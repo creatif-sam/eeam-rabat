@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useRef, useState } from "react"
-import { Check, Copy, KeyRound, Loader2, ShieldCheck, UserPlus, X } from "lucide-react"
+import { AlertTriangle, Check, Copy, KeyRound, Loader2, MailCheck, ShieldCheck, UserPlus, X } from "lucide-react"
 import { toast } from "sonner"
 import { grantAccess, type GrantAccessResult } from "@/app/dashboard/users/actions"
 
@@ -12,7 +12,26 @@ const ROLE_OPTIONS = [
   { value: "admin", label: "Administrateur" },
 ]
 
-export type IssuedPassword = { email: string; fullName: string | null; tempPassword: string; isNew: boolean }
+export type IssuedPassword = {
+  email: string
+  fullName: string | null
+  tempPassword: string
+  isNew: boolean
+  /** true = emailed, false = email failed, null = not requested */
+  emailed: boolean | null
+}
+
+function EmailPasswordCheckbox({ checked, onChange }: { checked: boolean; onChange: (v: boolean) => void }) {
+  return (
+    <label className="flex items-start gap-2.5 text-sm text-gray-700 dark:text-gray-300 cursor-pointer">
+      <input type="checkbox" checked={checked} onChange={(e) => onChange(e.target.checked)} className="mt-0.5 h-4 w-4 accent-cyan-600" />
+      <span>
+        Envoyer le mot de passe temporaire par e-mail
+        <span className="block text-xs text-gray-500 dark:text-gray-400">Vous pourrez aussi le copier à l&apos;étape suivante.</span>
+      </span>
+    </label>
+  )
+}
 
 type NewProfile = Extract<GrantAccessResult, { ok: true }>["profile"]
 
@@ -53,6 +72,69 @@ function Header({ id, icon, title, subtitle, onClose, busy }: { id: string; icon
         <X size={18} />
       </button>
     </div>
+  )
+}
+
+/** Asks before replacing someone's password with a new temporary one. */
+export function ConfirmResetDialog({
+  target,
+  busy,
+  onCancel,
+  onConfirm,
+}: {
+  target: { full_name: string | null; email: string | null } | null
+  busy: boolean
+  onCancel: () => void
+  onConfirm: (emailPassword: boolean) => void
+}) {
+  const [emailIt, setEmailIt] = useState(true)
+
+  useEffect(() => {
+    if (!target) return
+    setEmailIt(true)
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && !busy && onCancel()
+    window.addEventListener("keydown", onKey)
+    return () => window.removeEventListener("keydown", onKey)
+  }, [target, busy, onCancel])
+
+  if (!target) return null
+  const who = target.full_name ?? target.email ?? "cette personne"
+
+  return shell(
+    <>
+      <Header
+        id="confirm-reset-title"
+        icon={<KeyRound size={18} />}
+        title="Nouveau mot de passe temporaire"
+        subtitle={who}
+        onClose={onCancel}
+        busy={busy}
+      />
+      <div className="p-5 space-y-4">
+        <p className="text-sm text-gray-700 dark:text-gray-300">
+          Son mot de passe actuel ne fonctionnera plus. Un mot de passe temporaire sera généré, et il devra en choisir un nouveau à la connexion.
+        </p>
+        <EmailPasswordCheckbox checked={emailIt} onChange={setEmailIt} />
+        <div className="flex flex-col-reverse sm:flex-row gap-2 sm:justify-end">
+          <button type="button" onClick={onCancel} disabled={busy} className="rounded-lg px-4 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-40">
+            Annuler
+          </button>
+          <button
+            type="button"
+            autoFocus
+            onClick={() => onConfirm(emailIt)}
+            disabled={busy}
+            className="inline-flex items-center justify-center gap-2 rounded-lg bg-cyan-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-cyan-700 disabled:opacity-50"
+          >
+            {busy ? <Loader2 size={16} className="animate-spin" /> : <KeyRound size={16} />}
+            Générer
+          </button>
+        </div>
+      </div>
+    </>,
+    onCancel,
+    busy,
+    "confirm-reset-title"
   )
 }
 
@@ -100,6 +182,19 @@ export function TempPasswordReveal({ issued, onClose }: { issued: IssuedPassword
         busy={false}
       />
       <div className="p-5 space-y-4">
+        {issued.emailed === true && (
+          <p className="flex items-start gap-2 rounded-lg bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 px-3 py-2.5 text-sm text-emerald-800 dark:text-emerald-300">
+            <MailCheck size={18} className="shrink-0 mt-px" />
+            <span>Le mot de passe temporaire a été envoyé par e-mail à <strong>{issued.email}</strong>.</span>
+          </p>
+        )}
+        {issued.emailed === false && (
+          <p className="flex items-start gap-2 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 px-3 py-2.5 text-sm text-red-800 dark:text-red-300">
+            <AlertTriangle size={18} className="shrink-0 mt-px" />
+            <span>L&apos;e-mail n&apos;a pas pu être envoyé. Copiez le mot de passe ci-dessous et transmettez-le vous-même.</span>
+          </p>
+        )}
+
         <div>
           <p className="text-xs font-medium uppercase tracking-wide text-gray-500 dark:text-gray-400 mb-1.5">Mot de passe temporaire</p>
           <div className="flex items-center gap-2">
@@ -118,7 +213,9 @@ export function TempPasswordReveal({ issued, onClose }: { issued: IssuedPassword
         </div>
 
         <p className="rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 px-3 py-2.5 text-sm text-amber-800 dark:text-amber-300">
-          Ce mot de passe ne sera plus affiché. Transmettez-le en privé (WhatsApp, SMS, de vive voix). La personne devra le changer dès sa première connexion.
+          {issued.emailed
+            ? "Ce mot de passe ne sera plus affiché ici. Copiez-le si vous voulez aussi l'envoyer autrement (WhatsApp, SMS). La personne devra le changer dès sa première connexion."
+            : "Ce mot de passe ne sera plus affiché. Transmettez-le en privé (WhatsApp, SMS, de vive voix). La personne devra le changer dès sa première connexion."}
         </p>
 
         <div className="flex flex-col-reverse sm:flex-row gap-2 sm:justify-end">
@@ -185,15 +282,15 @@ export default function GrantAccessDialog({
     if (saving) return
     setSaving(true)
     setError(null)
-    const result = await grantAccess({ email, fullName, role, sendWelcomeEmail: welcome })
+    const result = await grantAccess({ email, fullName, role, emailPassword: welcome })
     setSaving(false)
     if (!result.ok) return setError(result.error)
-    if (welcome && !result.emailSent) toast.warning("Accès créé, mais l'e-mail de bienvenue n'a pas pu être envoyé.")
     onGranted(result.profile, {
       email: result.profile.email,
       fullName: result.profile.full_name,
       tempPassword: result.tempPassword,
       isNew: true,
+      emailed: welcome ? result.emailSent : null,
     })
   }
 
@@ -236,13 +333,7 @@ export default function GrantAccessDialog({
             ))}
           </select>
         </div>
-        <label className="flex items-start gap-2.5 text-sm text-gray-700 dark:text-gray-300 cursor-pointer">
-          <input type="checkbox" checked={welcome} onChange={(e) => setWelcome(e.target.checked)} className="mt-0.5 h-4 w-4 accent-cyan-600" />
-          <span>
-            Envoyer un e-mail de bienvenue
-            <span className="block text-xs text-gray-500 dark:text-gray-400">Avec le lien de connexion, sans le mot de passe.</span>
-          </span>
-        </label>
+        <EmailPasswordCheckbox checked={welcome} onChange={setWelcome} />
 
         {error && <p className="text-sm text-red-600 dark:text-red-400">{error}</p>}
 

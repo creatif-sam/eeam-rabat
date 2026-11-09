@@ -3,7 +3,7 @@
 import { headers } from "next/headers"
 import { createSupabaseServerClient } from "@/lib/supabase/server"
 import { createSupabaseAdminClient } from "@/lib/supabase/admin"
-import { notifyUserApproved, notifyUserInvited } from "@/lib/accounts/notify"
+import { notifyTempPassword, notifyUserApproved } from "@/lib/accounts/notify"
 import { DELETE_PHRASE, deletionName } from "@/lib/accounts/delete"
 import { generateTempPassword } from "@/lib/accounts/temp-password"
 
@@ -37,7 +37,8 @@ export async function grantAccess(input: {
   email: string
   fullName?: string
   role?: string
-  sendWelcomeEmail?: boolean
+  /** Email the temporary password to the person (default: yes). */
+  emailPassword?: boolean
 }): Promise<GrantAccessResult> {
   const auth = await requireAdmin()
   if ("error" in auth) return { ok: false, error: auth.error! }
@@ -87,9 +88,9 @@ export async function grantAccess(input: {
   })
 
   let emailSent = false
-  if (input.sendWelcomeEmail) {
+  if (input.emailPassword !== false) {
     const origin = (await headers()).get("origin")
-    emailSent = !!(await notifyUserInvited({ email, fullName, origin }))
+    emailSent = !!(await notifyTempPassword({ email, fullName, tempPassword, isNew: true, origin }))
   }
 
   return {
@@ -104,7 +105,10 @@ export async function grantAccess(input: {
  * Replaces someone's password with a new one-time password (forgotten
  * password, never signed in…). They must change it at next sign-in.
  */
-export async function resetTempPassword(targetId: string): Promise<{ ok: true; tempPassword: string; email: string | null } | { ok: false; error: string }> {
+export async function resetTempPassword(
+  targetId: string,
+  emailPassword = true
+): Promise<{ ok: true; tempPassword: string; email: string | null; emailSent: boolean } | { ok: false; error: string }> {
   const auth = await requireAdmin()
   if ("error" in auth) return { ok: false, error: auth.error! }
   if (targetId === auth.user.id) {
@@ -133,7 +137,20 @@ export async function resetTempPassword(targetId: string): Promise<{ ok: true; t
     metadata: { target_user_id: targetId },
   })
 
-  return { ok: true, tempPassword, email: data.user.email ?? null }
+  const email = data.user.email ?? null
+  const { data: target } = await admin.from("profiles").select("full_name, email").eq("id", targetId).maybeSingle()
+  // Older profiles have no email saved: fill it in so the Utilisateurs list shows it.
+  if (email && target && !target.email) {
+    await admin.from("profiles").update({ email }).eq("id", targetId)
+  }
+
+  let emailSent = false
+  if (emailPassword && email) {
+    const origin = (await headers()).get("origin")
+    emailSent = !!(await notifyTempPassword({ email, fullName: target?.full_name ?? null, tempPassword, isNew: false, origin }))
+  }
+
+  return { ok: true, tempPassword, email, emailSent }
 }
 
 /** Emails a user that their account was approved. Caller must be an approver. */

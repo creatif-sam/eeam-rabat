@@ -22,7 +22,7 @@ Créer un fichier `.env.local` :
 |---|---|
 | `NEXT_PUBLIC_SUPABASE_URL` | URL du projet Supabase |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Clé publique Supabase |
-| `SUPABASE_SERVICE_ROLE_KEY` | Clé serveur (alertes d'inscription aux admins) — ne jamais exposer côté client |
+| `SUPABASE_SERVICE_ROLE_KEY` | Clé serveur : création des accès, mots de passe temporaires, suppression de comptes, notifications — ne jamais exposer côté client |
 | `RESEND_API_KEY` | Envoi des e-mails |
 | `NEXT_PUBLIC_SITE_URL` | URL de production, utilisée dans les liens des e-mails |
 | `ADMIN_ALERT_EMAILS` | (optionnel) destinataires supplémentaires des alertes, séparés par des virgules |
