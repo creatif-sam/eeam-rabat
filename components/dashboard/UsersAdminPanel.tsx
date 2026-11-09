@@ -291,7 +291,7 @@ export default function UsersAdminPanel({
                 <th className="p-3 text-left text-gray-700 dark:text-gray-300">Accès</th>
                 <th className="p-3 text-left text-gray-700 dark:text-gray-300 hidden lg:table-cell">Statut</th>
                 <th className="p-3 text-left text-gray-700 dark:text-gray-300 hidden lg:table-cell">Créé le</th>
-                {canManageRoles && <th className="p-3 text-right text-gray-700 dark:text-gray-300"><span className="sr-only">Actions</span></th>}
+                <th className="p-3 text-right text-gray-700 dark:text-gray-300"><span className="sr-only">Actions</span></th>
               </tr>
             </thead>
             <tbody>
@@ -304,14 +304,6 @@ export default function UsersAdminPanel({
                     <div className="flex items-center gap-2">
                       <UsersRound size={16} className="text-gray-400 shrink-0" />
                       <span>{profile.full_name ?? "Sans nom"}</span>
-                      <button
-                        onClick={() => setViewingId(profile.id)}
-                        title="Voir les détails"
-                        aria-label={`Voir les détails de ${profile.full_name ?? profile.email ?? "cet utilisateur"}`}
-                        className="shrink-0 rounded-md p-1 text-gray-400 hover:bg-cyan-50 hover:text-cyan-600 dark:hover:bg-cyan-900/20 dark:hover:text-cyan-400 transition-colors"
-                      >
-                        <Eye size={15} />
-                      </button>
                     </div>
                   </td>
                   <td className="p-3 text-gray-600 dark:text-gray-300">{profile.email ?? "-"}</td>
@@ -392,10 +384,18 @@ export default function UsersAdminPanel({
                       ? new Date(profile.created_at).toLocaleDateString("fr-FR")
                       : "-"}
                   </td>
-                  {canManageRoles && (
-                    <td className="p-3 text-right">
-                      {profile.id !== currentUserId && (
-                        <div className="inline-flex items-center gap-1">
+                  <td className="p-3 text-right">
+                    <div className="inline-flex items-center justify-end gap-1">
+                      <button
+                        onClick={() => setViewingId(profile.id)}
+                        title="Voir les détails"
+                        aria-label={`Voir les détails de ${profile.full_name ?? profile.email ?? "cet utilisateur"}`}
+                        className="rounded-lg p-2 text-gray-400 hover:bg-cyan-50 hover:text-cyan-600 dark:hover:bg-cyan-900/20 dark:hover:text-cyan-400 transition-colors"
+                      >
+                        <Eye size={16} />
+                      </button>
+                      {canManageRoles && profile.id !== currentUserId && (
+                        <>
                         <button
                           onClick={() => setToReset(profile)}
                           disabled={resettingId === profile.id}
@@ -413,10 +413,10 @@ export default function UsersAdminPanel({
                         >
                           <Trash2 size={16} />
                         </button>
-                        </div>
+                        </>
                       )}
-                    </td>
-                  )}
+                    </div>
+                  </td>
                 </tr>
               ))}
             </tbody>
