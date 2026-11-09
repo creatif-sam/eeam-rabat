@@ -36,6 +36,9 @@ export function LoginForm({
     if (searchParams.get("reason") === "session_expired") {
       toast.info("Votre session a expiré. Veuillez vous reconnecter.")
     }
+    if (searchParams.get("password_changed") === "1") {
+      toast.success("Mot de passe modifié avec succès. Connectez-vous avec votre nouveau mot de passe.", { id: "password-changed" })
+    }
     if (searchParams.get("confirmed") === "1") {
       toast.success("Adresse e-mail confirmée. Connectez-vous pour continuer.")
     }

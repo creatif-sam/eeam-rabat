@@ -70,7 +70,11 @@ export async function updateProfile(formData: FormData): Promise<Result<SavedPro
   return { ok: true, data: { full_name: fullName, phone, church, avatar_url: avatarUrl } }
 }
 
-export async function changePassword(password: string): Promise<Result> {
+/**
+ * `signOutAfter`: used by the password page (first sign-in / reset link) so
+ * the person then signs in fresh with the password they just chose.
+ */
+export async function changePassword(password: string, signOutAfter = false): Promise<Result> {
   if (typeof password !== "string" || password.length < 8) {
     return { ok: false, error: "Le mot de passe doit contenir au moins 8 caractères." }
   }
@@ -99,5 +103,7 @@ export async function changePassword(password: string): Promise<Result> {
       return { ok: false, error: "Mot de passe changé, mais l'accès n'a pas pu être débloqué. Contactez un administrateur." }
     }
   }
+
+  if (signOutAfter) await supabase.auth.signOut()
   return { ok: true }
 }

@@ -44,7 +44,7 @@ export function UpdatePasswordForm({
 
     setIsLoading(true);
     setError(null);
-    const result = await changePassword(password);
+    const result = await changePassword(password, true);
     setIsLoading(false);
 
     if (!result.ok) {
@@ -57,8 +57,11 @@ export function UpdatePasswordForm({
       );
       return;
     }
-    toast.success(firstLogin ? "Bienvenue ! Votre mot de passe est enregistré." : "Mot de passe mis à jour.");
-    router.replace("/dashboard");
+    // Same id as the login page's notice, so only one toast is shown.
+    toast.success("Mot de passe modifié avec succès. Connectez-vous avec votre nouveau mot de passe.", {
+      id: "password-changed",
+    });
+    router.replace("/auth/login?password_changed=1");
     router.refresh();
   };
 
