@@ -29,7 +29,7 @@ export const YEAR_THEME_KEYS = {
 /** Badge styles for the public bar (Tailwind) and dashboard (hex). */
 export const TONES: Record<AnnouncementTone, { name: string; badge: string; hex: string }> = {
   info: { name: "Information", badge: "bg-sky-500 text-white", hex: "#4ec2cd" },
-  urgent: { name: "Urgent", badge: "bg-rose-600 text-white", hex: "#b72736" },
+  urgent: { name: "Urgent", badge: "bg-white text-[#b72736]", hex: "#b72736" },
   event: { name: "Événement", badge: "bg-amber-400 text-gray-900", hex: "#f59e0b" },
   success: { name: "Bonne nouvelle", badge: "bg-emerald-500 text-white", hex: "#10b981" },
 }

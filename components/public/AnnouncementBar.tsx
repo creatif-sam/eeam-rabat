@@ -78,7 +78,7 @@ export default function AnnouncementBar({ preview }: Props) {
     <div
       role="region"
       aria-label="Annonces de la paroisse"
-      className="bg-[#0d2d30] text-white/85 text-[12px] leading-snug border-b border-white/10"
+      className="bg-[#b72736] text-white/90 text-[12px] leading-snug border-b border-black/10"
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
       onFocusCapture={() => setPaused(true)}
@@ -88,7 +88,7 @@ export default function AnnouncementBar({ preview }: Props) {
         {/* Year theme */}
         {hasTheme && (
           <p className="flex min-w-0 items-start md:items-center gap-2">
-            <span className="mt-1.5 md:mt-0 h-1.5 w-1.5 shrink-0 rounded-full bg-amber-400" aria-hidden />
+            <span className="mt-1.5 md:mt-0 h-1.5 w-1.5 shrink-0 rounded-full bg-white" aria-hidden />
             <span className="min-w-0 line-clamp-2 md:line-clamp-none md:!flex md:items-center md:gap-2 md:overflow-hidden">
               <span className="font-bold uppercase tracking-wide text-white md:shrink-0">
                 {theme!.label || "Thème de l'année"}
@@ -97,7 +97,7 @@ export default function AnnouncementBar({ preview }: Props) {
               <span className="md:hidden"> · </span>
               <span className="md:min-w-0 md:truncate">
               « {theme!.theme.trim()} »
-              {theme!.reference.trim() && <span className="text-white/60"> — {theme!.reference.trim()}</span>}
+              {theme!.reference.trim() && <span className="text-white/75"> — {theme!.reference.trim()}</span>}
               </span>
             </span>
           </p>
@@ -131,7 +131,7 @@ export default function AnnouncementBar({ preview }: Props) {
                 <button type="button" onClick={() => step(-1)} aria-label="Annonce précédente" className="rounded p-0.5 text-white/60 hover:bg-white/10 hover:text-white">
                   <ChevronLeft size={14} />
                 </button>
-                <span className="tabular-nums text-[10px] text-white/60">
+                <span className="tabular-nums text-[10px] text-white/75">
                   {index + 1}/{items.length}
                 </span>
                 <button type="button" onClick={() => step(1)} aria-label="Annonce suivante" className="rounded p-0.5 text-white/60 hover:bg-white/10 hover:text-white">
