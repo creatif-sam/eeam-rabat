@@ -30,7 +30,7 @@ import {
   type Occurrence,
 } from "@/lib/site/events";
 
-const SLIDE_MS = 7000;
+const SLIDE_MS = 5000;
 const SWIPE_PX = 50;
 const DEFAULT_YEAR_THEME = "Servir et Bâtir selon le modèle de Christ";
 
@@ -211,7 +211,7 @@ export default function HeroCarousel() {
         <div
           key={s.id}
           aria-hidden
-          className={`absolute inset-0 transition-opacity duration-1000 ease-out ${i === current ? "opacity-100" : "opacity-0"}`}
+          className={`absolute inset-0 transition-opacity duration-700 ease-out ${i === current ? "opacity-100" : "opacity-0"}`}
         >
           <Image
             src={bg.src}
@@ -219,16 +219,18 @@ export default function HeroCarousel() {
             fill
             priority={i === 0}
             sizes="(max-width: 1280px) 100vw, 1280px"
-            className={`object-cover transition-transform duration-[8000ms] ease-out ${i === current ? "scale-110" : "scale-100"}`}
+            className={`object-cover transition-transform duration-[6000ms] ease-out ${i === current ? "scale-110" : "scale-100"}`}
             style={{ objectPosition: bg.focus }}
           />
         </div>
         );
       })}
-      {/* Brand overlay: deep teal from the left, fading to the photo */}
-      <div aria-hidden className="absolute inset-0 bg-gradient-to-r from-[#0d2d30] via-[#0d2d30]/85 to-[#0d2d30]/10" />
-      <div aria-hidden className="absolute inset-0 bg-gradient-to-t from-[#0d2d30]/90 via-transparent to-[#0d2d30]/30 lg:from-[#0d2d30]/60" />
-      <div aria-hidden className="absolute -left-24 -bottom-24 h-72 w-72 rounded-full bg-[#b72736]/25 blur-3xl" />
+      {/* Brand overlay mixing both colours: deep red (#b72736 family) from the
+          left behind the title, deep teal (#4ec2cd family) rising from the bottom. */}
+      <div aria-hidden className="absolute inset-0 bg-gradient-to-r from-[#370c10]/95 via-[#5c141b]/70 to-transparent" />
+      <div aria-hidden className="absolute inset-0 bg-gradient-to-t from-[#0d2d30]/95 via-[#15474c]/35 to-transparent lg:from-[#0d2d30]/80" />
+      <div aria-hidden className="absolute -right-24 -bottom-32 h-96 w-96 rounded-full bg-[#4ec2cd]/25 blur-3xl" />
+      <div aria-hidden className="absolute -left-20 -top-20 h-72 w-72 rounded-full bg-[#b72736]/30 blur-3xl" />
 
       {/* Controls: pause + dots */}
       {count > 1 && (

@@ -80,7 +80,8 @@ export default function HeroImagePicker({
       <div className="relative aspect-[21/9] overflow-hidden rounded-xl border border-gray-200 dark:border-gray-800 bg-gray-100 dark:bg-gray-950">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={preview.src} alt="" className="h-full w-full object-cover" style={{ objectPosition: preview.focus }} />
-        <div className="absolute inset-0 bg-gradient-to-r from-[#0d2d30]/80 via-[#0d2d30]/30 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-r from-[#370c10]/90 via-[#5c141b]/60 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#0d2d30]/85 via-[#15474c]/30 to-transparent" />
         <span className="absolute left-3 top-3 rounded-full bg-black/40 px-2.5 py-1 text-xs font-medium text-white backdrop-blur-sm">
           {url ? "Photo personnalisée" : "Photo par défaut"}
         </span>
