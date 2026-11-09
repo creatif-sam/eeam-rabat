@@ -213,7 +213,7 @@ export default function ProfileForm({
         <Box
           sx={{
             height: { xs: 96, md: 128 },
-            background: "linear-gradient(135deg, #0891b2 0%, #2563eb 60%, #4338ca 100%)",
+            background: "linear-gradient(135deg, #28868f 0%, #227077 60%, #1b5a5f 100%)",
           }}
         />
         <CardContent sx={{ pt: 0, px: { xs: 2.5, md: 4 }, pb: { xs: 2.5, md: 3 } }}>

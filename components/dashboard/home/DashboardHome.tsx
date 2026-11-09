@@ -117,26 +117,26 @@ export default function DashboardHome({
   upcomingEvent: HomeEvent | null
 }) {
   const statTiles: Tile[] = [
-    { label: "Membres inscrits", value: stats.totalMembers, icon: PeopleAltOutlined, color: "#0891b2", href: "/dashboard/membres" },
-    { label: "Commissions", value: stats.totalCommissions, icon: GroupsOutlined, color: "#7c3aed", href: "/dashboard/groupes" },
+    { label: "Membres inscrits", value: stats.totalMembers, icon: PeopleAltOutlined, color: "#28868f", href: "/dashboard/membres" },
+    { label: "Commissions", value: stats.totalCommissions, icon: GroupsOutlined, color: "#b72736", href: "/dashboard/groupes" },
     { label: "Requêtes responsables", value: stats.pendingLeaderRequests, icon: DescriptionOutlined, color: "#ea580c", href: "/dashboard/formulaires?tab=request" },
-    { label: "Sujets de prière", value: stats.totalPrayerRequests, icon: VolunteerActivismOutlined, color: "#e11d48", href: "/dashboard/formulaires?tab=prayer" },
-    { label: "Entretiens pastoraux", value: stats.pendingCounsellingRequests, icon: SupportAgentOutlined, color: "#0d9488", href: "/dashboard/formulaires?tab=pastoral" },
-    { label: "Rejoindre commission", value: stats.pendingGroupRequests, icon: GroupAddOutlined, color: "#4f46e5", href: "/dashboard/formulaires?tab=group" },
+    { label: "Sujets de prière", value: stats.totalPrayerRequests, icon: VolunteerActivismOutlined, color: "#b72736", href: "/dashboard/formulaires?tab=prayer" },
+    { label: "Entretiens pastoraux", value: stats.pendingCounsellingRequests, icon: SupportAgentOutlined, color: "#28868f", href: "/dashboard/formulaires?tab=pastoral" },
+    { label: "Rejoindre commission", value: stats.pendingGroupRequests, icon: GroupAddOutlined, color: "#227077", href: "/dashboard/formulaires?tab=group" },
     { label: "Bénévoles en attente", value: stats.pendingVolunteerRequests, icon: Diversity3Outlined, color: "#16a34a", href: "/dashboard/formulaires?tab=volunteer" },
   ]
 
   const quickActions: Tile[] = [
-    { label: "Gérer les utilisateurs", icon: ManageAccountsOutlined, href: "/dashboard/users", color: "#e11d48" },
-    { label: "Journal d'activité", icon: ReceiptLongOutlined, href: "/dashboard/logs", color: "#7c3aed" },
+    { label: "Gérer les utilisateurs", icon: ManageAccountsOutlined, href: "/dashboard/users", color: "#b72736" },
+    { label: "Journal d'activité", icon: ReceiptLongOutlined, href: "/dashboard/logs", color: "#b72736" },
     { label: "Paramètres", icon: SettingsOutlined, href: "/dashboard/settings", color: "#475569" },
-    { label: "Membres", icon: PeopleAltOutlined, href: "/dashboard/membres", color: "#0891b2" },
+    { label: "Membres", icon: PeopleAltOutlined, href: "/dashboard/membres", color: "#28868f" },
   ]
 
   const memberLinks: Tile[] = [
-    { label: "Événements", desc: "Voir les prochains événements", icon: EventOutlined, href: "/dashboard/events", color: "#e11d48" },
-    { label: "Formulaires", desc: "Soumettre une demande", icon: AssignmentOutlined, href: "/dashboard/formulaires", color: "#0d9488" },
-    { label: "Rapports", desc: "Consulter les rapports", icon: AssessmentOutlined, href: "/dashboard/rapports", color: "#7c3aed" },
+    { label: "Événements", desc: "Voir les prochains événements", icon: EventOutlined, href: "/dashboard/events", color: "#b72736" },
+    { label: "Formulaires", desc: "Soumettre une demande", icon: AssignmentOutlined, href: "/dashboard/formulaires", color: "#28868f" },
+    { label: "Rapports", desc: "Consulter les rapports", icon: AssessmentOutlined, href: "/dashboard/rapports", color: "#b72736" },
   ]
 
   return (
@@ -150,7 +150,7 @@ export default function DashboardHome({
           borderRadius: 2,
           p: { xs: 3, md: 5 },
           color: "#fff",
-          background: "linear-gradient(135deg, #0891b2 0%, #2563eb 55%, #4338ca 100%)",
+          background: "linear-gradient(135deg, #28868f 0%, #227077 55%, #1b5a5f 100%)",
         }}
       >
         <Box
@@ -319,7 +319,7 @@ export default function DashboardHome({
           <Card>
             <CardContent sx={{ p: { xs: 2.5, md: 4 } }}>
               <Stack direction={{ xs: "column", md: "row" }} spacing={3} sx={{ alignItems: "flex-start" }}>
-                <TonalIcon icon={upcomingEvent ? EventOutlined : EventBusyOutlined} color="#e11d48" size={56} />
+                <TonalIcon icon={upcomingEvent ? EventOutlined : EventBusyOutlined} color="#b72736" size={56} />
                 <Box sx={{ flex: 1, minWidth: 0 }}>
                   <Chip label="Prochain événement" color="secondary" size="small" variant="outlined" sx={{ mb: 1.5, fontWeight: 600 }} />
                   {upcomingEvent ? (
@@ -363,7 +363,7 @@ export default function DashboardHome({
                     <Card>
                       <CardActionArea component={Link} href="/dashboard/formations">
                         <CardContent sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-                          <TonalIcon icon={PlayArrowRounded} color={i === 0 ? "#e11d48" : "#7c3aed"} size={48} />
+                          <TonalIcon icon={PlayArrowRounded} color={i === 0 ? "#b72736" : "#b72736"} size={48} />
                           <Box sx={{ flex: 1, minWidth: 0 }}>
                             <Typography sx={{ fontWeight: 600 }} noWrap>
                               {f.title}

@@ -131,7 +131,7 @@ export default function J5AnnexeTab() {
         <div className="flex items-center gap-4">
           <div
             className="w-12 h-12 sm:w-16 sm:h-16 rounded-2xl flex items-center justify-center"
-            style={{ backgroundColor: "#b92b39" }}
+            style={{ backgroundColor: "#b72736" }}
           >
             <Building2 size={24} className="sm:w-8 sm:h-8 text-white" />
           </div>
@@ -150,7 +150,7 @@ export default function J5AnnexeTab() {
           </button>
           <button
             className="px-4 py-2 text-white rounded-xl flex items-center justify-center gap-2 text-sm sm:text-base"
-            style={{ backgroundColor: "#b92b39" }}
+            style={{ backgroundColor: "#b72736" }}
           >
             <Plus size={18} />
             Ajouter activité
@@ -184,7 +184,7 @@ export default function J5AnnexeTab() {
             }`}
             style={{
               backgroundColor:
-                selectedView === v ? "#b92b39" : "transparent",
+                selectedView === v ? "#b72736" : "transparent",
               color: selectedView === v ? "white" : undefined
             }}
           >
@@ -318,7 +318,7 @@ export default function J5AnnexeTab() {
 function Stat({ icon: Icon, label, value }: any) {
   return (
     <div className="bg-white dark:bg-gray-900 rounded-2xl p-4 sm:p-6 shadow border border-gray-100 dark:border-gray-800">
-      <Icon size={20} className="sm:w-6 sm:h-6" style={{ color: "#0CC0DF" }} />
+      <Icon size={20} className="sm:w-6 sm:h-6" style={{ color: "#4ec2cd" }} />
       <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mt-2">{label}</p>
       <p className="text-xl sm:text-2xl font-bold mt-1 text-gray-900 dark:text-white">{value}</p>
     </div>

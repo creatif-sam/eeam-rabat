@@ -35,7 +35,7 @@ import { toast } from "sonner";
 
 type Period = "all" | "week" | "month" | "quarter" | "year";
 
-const COLORS = ["#06b6d4", "#3b82f6", "#ec4899", "#8b5cf6", "#f59e0b", "#10b981"];
+const COLORS = ["#4ec2cd", "#b72736", "#227077", "#e99aa2", "#90d9e0", "#7a1a24"];
 
 function monthKey(dateValue: string | Date) {
   const d = new Date(dateValue);
@@ -492,9 +492,9 @@ export default function ReportsTab() {
               <XAxis dataKey="month" />
               <YAxis />
               <Tooltip />
-              <Area type="monotone" dataKey="membres" stackId="1" stroke="#3b82f6" fill="#93c5fd" />
-              <Area type="monotone" dataKey="baptemes" stackId="1" stroke="#06b6d4" fill="#67e8f9" />
-              <Line type="monotone" dataKey="evenements" stroke="#8b5cf6" strokeWidth={2} />
+              <Area type="monotone" dataKey="membres" stackId="1" stroke="#28868f" fill="#90d9e0" />
+              <Area type="monotone" dataKey="baptemes" stackId="1" stroke="#4ec2cd" fill="#90d9e0" />
+              <Line type="monotone" dataKey="evenements" stroke="#97202d" strokeWidth={2} />
             </AreaChart>
           </ResponsiveContainer>
           <div className="flex flex-wrap gap-3 text-xs text-gray-600 dark:text-gray-400 pt-3 border-t border-gray-100 dark:border-gray-800">
@@ -517,7 +517,7 @@ export default function ReportsTab() {
               <Tooltip formatter={v => formatMoney(Number(v ?? 0))} />
               <Legend />
               <Bar dataKey="revenus" fill="#10b981" />
-              <Bar dataKey="depenses" fill="#ef4444" />
+              <Bar dataKey="depenses" fill="#b72736" />
             </BarChart>
           </ResponsiveContainer>
           <div className="flex flex-wrap gap-3 text-xs text-gray-600 dark:text-gray-400 pt-3 border-t border-gray-100 dark:border-gray-800">
@@ -535,7 +535,7 @@ export default function ReportsTab() {
               <XAxis type="number" />
               <YAxis dataKey="ministry" type="category" width={120} />
               <Tooltip />
-              <Bar dataKey="participants" fill="#06b6d4" />
+              <Bar dataKey="participants" fill="#4ec2cd" />
             </BarChart>
           </ResponsiveContainer>
           <div className="flex flex-wrap gap-3 text-xs text-gray-600 dark:text-gray-400 pt-3 border-t border-gray-100 dark:border-gray-800">
@@ -576,11 +576,11 @@ export default function ReportsTab() {
             <YAxis />
             <Tooltip />
             <Legend />
-            <Bar dataKey="commissions" stackId="a" fill="#3b82f6" />
-            <Bar dataKey="groupes" stackId="a" fill="#06b6d4" />
-            <Bar dataKey="benevolat" stackId="a" fill="#10b981" />
-            <Bar dataKey="prieres" stackId="a" fill="#f59e0b" />
-            <Bar dataKey="counselling" stackId="a" fill="#ec4899" />
+            <Bar dataKey="commissions" stackId="a" fill="#28868f" />
+            <Bar dataKey="groupes" stackId="a" fill="#4ec2cd" />
+            <Bar dataKey="benevolat" stackId="a" fill="#90d9e0" />
+            <Bar dataKey="prieres" stackId="a" fill="#e99aa2" />
+            <Bar dataKey="counselling" stackId="a" fill="#d43546" />
           </BarChart>
         </ResponsiveContainer>
         <div className="flex flex-wrap gap-3 text-xs text-gray-600 dark:text-gray-400 pt-3 border-t border-gray-100 dark:border-gray-800">

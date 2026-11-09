@@ -86,7 +86,7 @@ export default function TaskyPage() {
   const [mentionQuery, setMentionQuery] = useState("");
   const [loadingAction, setLoadingAction] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const [projectForm, setProjectForm] = useState({ name: "", description: "", color: "#06b6d4" });
+  const [projectForm, setProjectForm] = useState({ name: "", description: "", color: "#4ec2cd" });
   const [taskForm, setTaskForm] = useState({
     title: "", description: "", status: "backlog" as Status,
     priority: "medium" as Priority, due_date: "", assigned_to: ""
@@ -122,7 +122,7 @@ export default function TaskyPage() {
     setLoadingAction(false);
     if (error) { toast.error("Impossible de créer le projet"); return; }
     toast.success("Projet créé !");
-    setProjectForm({ name: "", description: "", color: "#06b6d4" });
+    setProjectForm({ name: "", description: "", color: "#4ec2cd" });
     setShowProjectModal(false);
     loadAll();
   }
@@ -153,7 +153,7 @@ export default function TaskyPage() {
     const priorityLabels: Record<string, string> = { low: "Basse", medium: "Moyenne", high: "Elevée" };
     const html = `
       <div style="font-family:sans-serif;max-width:520px;margin:auto;padding:32px 24px;background:#f9fafb;border-radius:12px">
-        <h2 style="color:#0e7490;margin-bottom:8px">📋 Nouvelle tâche assignée</h2>
+        <h2 style="color:#227077;margin-bottom:8px">📋 Nouvelle tâche assignée</h2>
         <p style="color:#374151">Bonjour <strong>${profile.full_name}</strong>,</p>
         <p style="color:#374151">Une tâche vous a été assignée dans le projet <strong>${projectName}</strong>.</p>
         <div style="background:#fff;border:1px solid #e5e7eb;border-radius:8px;padding:16px;margin:20px 0">
@@ -298,7 +298,7 @@ export default function TaskyPage() {
                     : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
                 }`}
               >
-                <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: p.color || "#06b6d4" }} />
+                <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: p.color || "#4ec2cd" }} />
                 <span className="truncate flex-1 text-left">{p.name}</span>
                 <span className="text-xs text-gray-400 font-normal">{tasks.filter(t => t.project_id === p.id).length}</span>
               </button>

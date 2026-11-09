@@ -78,7 +78,7 @@ export default function AnnouncementBar({ preview }: Props) {
     <div
       role="region"
       aria-label="Annonces de la paroisse"
-      className="bg-[#0b2a45] text-white/85 text-[12px] leading-snug border-b border-white/10"
+      className="bg-[#0d2d30] text-white/85 text-[12px] leading-snug border-b border-white/10"
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
       onFocusCapture={() => setPaused(true)}

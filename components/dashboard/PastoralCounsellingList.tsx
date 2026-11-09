@@ -38,7 +38,7 @@ async function sendConfirmationEmail(item: Counselling) {
     s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
   const html = `
     <div style="font-family:sans-serif;max-width:520px;margin:auto;padding:32px 24px;background:#f9fafb;border-radius:12px">
-      <h2 style="color:#0e7490;margin-bottom:8px">✅ Entretien pastoral confirmé</h2>
+      <h2 style="color:#227077;margin-bottom:8px">✅ Entretien pastoral confirmé</h2>
       <p style="color:#374151;margin-bottom:16px">Bonjour <strong>${esc(item.full_name)}</strong>,</p>
       <p style="color:#374151">Votre entretien pastoral a été <strong>confirmé</strong>.</p>
       <div style="background:#fff;border:1px solid #e5e7eb;border-radius:8px;padding:16px;margin:20px 0">
@@ -189,11 +189,11 @@ export default function PastoralCounsellingList() {
         <td style="padding:8px 12px">${item.email ?? "—"}</td>
         <td style="padding:8px 12px">${item.pastors?.name ?? "Indifférent"}</td>
         <td style="padding:8px 12px">${item.reason}</td>
-        <td style="padding:8px 12px;color:${item.confirmed ? "#16a34a" : "#dc2626"}">${item.confirmed ? "✓ Confirmé" : "En attente"}</td>
+        <td style="padding:8px 12px;color:${item.confirmed ? "#16a34a" : "#b72736"}">${item.confirmed ? "✓ Confirmé" : "En attente"}</td>
       </tr>`).join("");
     const html = `<!DOCTYPE html><html><head><meta charset="utf-8">
       <title>Entretiens pastoraux — ${fmtDate}</title>
-      <style>body{font-family:sans-serif;padding:32px;color:#111}h1{color:#0e7490;font-size:20px;margin-bottom:4px}p.sub{color:#6b7280;font-size:13px;margin-bottom:24px}table{width:100%;border-collapse:collapse;font-size:13px}thead{background:#f0f9ff}th{padding:10px 12px;text-align:left;color:#0e7490;font-weight:600;border-bottom:2px solid #bae6fd}tr:nth-child(even){background:#f9fafb}footer{margin-top:32px;font-size:11px;color:#9ca3af;border-top:1px solid #e5e7eb;padding-top:12px}</style>
+      <style>body{font-family:sans-serif;padding:32px;color:#111}h1{color:#227077;font-size:20px;margin-bottom:4px}p.sub{color:#6b7280;font-size:13px;margin-bottom:24px}table{width:100%;border-collapse:collapse;font-size:13px}thead{background:#edfbfd}th{padding:10px 12px;text-align:left;color:#227077;font-weight:600;border-bottom:2px solid #bbe8ec}tr:nth-child(even){background:#f9fafb}footer{margin-top:32px;font-size:11px;color:#9ca3af;border-top:1px solid #e5e7eb;padding-top:12px}</style>
       </head><body>
       <h1>Entretiens pastoraux</h1>
       <p class="sub">${fmtDate} — ${items.length} entretien${items.length > 1 ? "s" : ""}</p>

@@ -358,14 +358,14 @@ export default function FinancesClient({
           <KpiCard label="Revenus" value={formatMAD(totals.revenus)} icon={<TrendingUp />} color="#16a34a" />
         </Grid>
         <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
-          <KpiCard label="Dépenses" value={formatMAD(totals.depenses)} icon={<TrendingDown />} color="#e11d48" />
+          <KpiCard label="Dépenses" value={formatMAD(totals.depenses)} icon={<TrendingDown />} color="#b72736" />
         </Grid>
         <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
           <KpiCard
             label="Solde de la période"
             value={formatMAD(totals.solde)}
             icon={<AccountBalanceWalletOutlined />}
-            color={totals.solde >= 0 ? "#0891b2" : "#e11d48"}
+            color={totals.solde >= 0 ? "#28868f" : "#b72736"}
           />
         </Grid>
         <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
@@ -373,7 +373,7 @@ export default function FinancesClient({
             label="Solde global"
             value={data?.overallBalance != null ? formatMAD(data.overallBalance) : "—"}
             icon={<AccountBalanceOutlined />}
-            color="#4f46e5"
+            color="#227077"
             hint="Toutes périodes confondues"
           />
         </Grid>
